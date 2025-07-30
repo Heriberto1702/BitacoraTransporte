@@ -9,8 +9,16 @@ datasource db {
 }
 
 model Login {
-  id_login      Int      @id @default(autoincrement())
-  correo        String   @unique
-  password      String
+  id_login       Int      @id @default(autoincrement())
+  correo         String   @unique
+  password       String?
+  fecha_creacion DateTime @default(now())
+  rol            String?  @db.VarChar
+}
+
+model Tienda {
+  id_tienda      Int      @id @default(autoincrement())
+  num_tienda     Int
+  nombre_tienda  String
   fecha_creacion DateTime @default(now())
 }
