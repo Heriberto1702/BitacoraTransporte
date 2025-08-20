@@ -41,6 +41,7 @@ export default function BuscadorOrdenes({ onEditar, session }) {
 
     return (
       orden.num_ticket?.toString().toLowerCase().includes(busqueda) ||
+      orden.fecha_entrega?.toString().toLowerCase().includes(busqueda) ||
       orden.estado?.toString().toLowerCase().includes(busqueda) ||
       orden.direccion_entrega?.toString().toLowerCase().includes(busqueda) ||
       orden.nombre_cliente?.toLowerCase().includes(busqueda) ||
