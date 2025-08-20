@@ -1,0 +1,101 @@
+.formContainer {
+
+  margin: 2rem auto;
+  padding: 2rem 2.5rem;
+  background-color: #f9fafb;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgb(0 0 0 / 0.1);
+  font-family: 'Inter', system-ui, sans-serif;
+  color: #1f2937;
+}
+
+.title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 2rem;
+  color: #2563eb;
+  text-align: center;
+}
+.limpiarButton {
+    margin-top: 1rem;
+  width: 10%;
+  padding: 0.7rem 0;
+ 
+  color: white;
+  font-weight: 700;
+  font-size: 1.1rem;
+  border: none;
+  border-radius: 7px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  background-color: #f44336; /* rojo */
+  margin-left: 10px;
+}
+.formRow {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.formGroup {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem; /* espacio entre label e input */
+  flex: 1 1 250px; /* cada grupo mínimo 250px, se adapta */
+}
+
+.label {
+  font-weight: 600;
+  color: #374151;
+  font-size: 0.95rem;
+  min-width: 130px; /* ancho fijo para que se alineen los inputs */
+}
+
+.input,
+.select {
+  flex: 1; /* el input ocupa el resto del espacio */
+  padding: 0.5rem 0.75rem;
+  border: 1.8px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 1rem;
+  color: #111827;
+  background-color: #fff;
+}
+
+.input:focus,
+.select:focus {
+  outline: none;
+  border-color: #2563eb;
+  box-shadow: 0 0 5px #2563ebaa;
+}
+
+.button {
+  margin-top: 1rem;
+  width: 10%;
+  padding: 0.7rem 0;
+  background-color: #2563eb;
+  color: white;
+  font-weight: 700;
+  font-size: 1.1rem;
+  border: none;
+  border-radius: 7px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.button:hover {
+  background-color: #1e40af;
+}
+.limpiarButton:hover {
+  background-color: #971b12; /* rojo */
+}
+.errorMessage {
+  color: #b91c1c;
+  font-weight: 600;
+  text-align: center;
+  margin: 1rem 0;
+}

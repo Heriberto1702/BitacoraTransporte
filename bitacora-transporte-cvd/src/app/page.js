@@ -1,55 +1,60 @@
-"use client"
+"use client";
 
-import { useSession, signOut } from "next-auth/react"
+import { useEffect } from "react";
+import { useSession, signOut } from "next-auth/react";
+import OrdenesManager from "./componentes/OrdenesManager/OrdenesManager";
+import styles from "./Home.module.css";
 
 export default function Home() {
-  const { data: session, status } = useSession()
+  const { data: session, status } = useSession();
 
-  if (status === "loading") return <p>Cargando...</p>
+  useEffect(() => {
+    document.title = "Bitácora de Transporte CVD - Home";
+  }, []);
+
+  if (status === "loading")
+    return <p className={styles.loading}>Cargando...</p>;
 
   return (
     <>
       {/* Navbar */}
-      <nav style={styles.navbar}>
-        <div style={styles.userInfo}>
+      <nav className={styles.navbar}>
+
+        <div className={styles.userInfo}>
           {session?.user?.email && (
-            <span>Sesión iniciada como: <strong>{session.user.email} - {session.user.rol}</strong></span>
+            <p>
+                Sesión iniciada como:{" "}
+                <strong>
+                  {session.user.email} - {session.user.rol}
+                </strong>
+              </p>
+                
           )}
         </div>
-        <button onClick={() => signOut()} style={styles.logoutButton}>Cerrar sesión</button>
+        <div className={styles.usertitle}>
+              <p  className={styles.saludo}>
+                Bienvenid@ {session.user.nombre_vendedor}{" "}
+                {session.user.apellido_vendedor}{" "}
+              </p>
+        <button onClick={() => signOut()} className={styles.logoutButton}>
+          Cerrar sesión
+        </button>
+
+            </div>
       </nav>
 
       {/* Contenido principal */}
-      <div style={styles.content}>
-        <p>Bienvenido a la Bitácora de Transporte CVD</p>
-        <p>Esta aplicación te permite registrar y gestionar la información de transporte de manera eficiente.</p>
+      <div className={styles.content}>
+        <h1 className={styles.title}>Bitácora de Transporte CVD</h1>
+
+
+
+        <section className={styles.ordersSection}>
+          <div className={styles.contentMain}>
+            <OrdenesManager session={session} />
+          </div>
+        </section>
       </div>
     </>
-  )
-}
-
-// Estilos simples
-const styles = {
-  navbar: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: '10px 20px',
-    backgroundColor: '#333',
-    color: '#fff'
-  },
-  userInfo: {
-    fontSize: '16px'
-  },
-  logoutButton: {
-    backgroundColor: '#ff4d4f',
-    border: 'none',
-    color: '#fff',
-    padding: '6px 12px',
-    cursor: 'pointer',
-    borderRadius: '4px'
-  },
-  content: {
-    padding: '20px'
-  }
+  );
 }

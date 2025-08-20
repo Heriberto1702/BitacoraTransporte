@@ -5,6 +5,8 @@ export default function NuevoUsuario() {
   const [correo, setCorreo] = useState("");
   const [password, setPassword] = useState("");
   const [rol, setRol] = useState("vendedor");
+  const [nombre_vendedor, setNombreVendedor] = useState("");
+  const [apellido_vendedor, setApellidoVendedor] = useState("");
   const [mensaje, setMensaje] = useState("");
   const [usuarios, setUsuarios] = useState([]);
 
@@ -24,14 +26,16 @@ export default function NuevoUsuario() {
     const res = await fetch("/api/auth/nuevousuario", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ correo, rol, password }),
+      body: JSON.stringify({ correo, rol, password, nombre_vendedor, apellido_vendedor }),
     });
 
     const data = await res.json();
     if (res.ok) {
       setMensaje("Usuario creado ✅");
       setCorreo("");
-      setRol("vendedor");
+      setRol("");
+      setNombreVendedor("");
+      setApellidoVendedor("");
       setTimeout(() => setMensaje(""), 3000);
       obtenerUsuarios();
     } else {
@@ -63,6 +67,18 @@ export default function NuevoUsuario() {
       <form onSubmit={crear}>
         <h2>Registrar nuevo usuario</h2>
         <input
+          type="text"
+          value={nombre_vendedor}
+          onChange={(e) => setNombreVendedor(e.target.value)}
+          placeholder="Nombre"
+          required/>
+         <input
+          type="text"
+          value={apellido_vendedor}
+          onChange={(e) => setApellidoVendedor(e.target.value)}
+          placeholder="Apellido"
+          required/>
+        <input
           type="email"
           value={correo}
           onChange={(e) => setCorreo(e.target.value)}
@@ -89,6 +105,8 @@ export default function NuevoUsuario() {
       <table border="1" cellPadding="5">
         <thead>
           <tr>
+            <th>Nombre</th>
+            <th>Apellido</th>
             <th>Correo</th>
             <th>Rol</th>
             <th>Acción</th>
@@ -97,6 +115,8 @@ export default function NuevoUsuario() {
         <tbody>
           {usuarios.map((u) => (
             <tr key={u.id_login}>
+              <td>{u.nombre_vendedor}</td>
+              <td>{u.apellido_vendedor}</td>
               <td>{u.correo}</td>
               <td>{u.rol}</td>
               <td>

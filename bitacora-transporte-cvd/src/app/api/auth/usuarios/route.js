@@ -1,7 +1,5 @@
-import { PrismaClient } from '@/generated/prisma'
+import prisma from "../../../../lib/prisma";
 import { NextResponse } from 'next/server'
-
-const prisma = new PrismaClient()
 
 export async function GET() {
   const usuarios = await prisma.login.findMany({
@@ -13,6 +11,8 @@ export async function GET() {
     orderBy: { id_login: 'asc' },
     select: {
       id_login: true,
+      nombre_vendedor: true,
+      apellido_vendedor: true,
       correo: true,
       rol: true,
     },

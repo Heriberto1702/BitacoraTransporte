@@ -1,8 +1,7 @@
 // /src/app/api/auth/eliminarusuario/route.js
-import { PrismaClient } from '@/generated/prisma'
+import prisma from "../../../../lib/prisma";
 import { NextResponse } from 'next/server'
 
-const prisma = new PrismaClient()
 
 export async function POST(req) {
   const { correo } = await req.json()

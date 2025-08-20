@@ -18,7 +18,7 @@ export default function Login() {
     })
 
     if (res.ok) {
-      router.push('/') // o donde querás
+      router.push('/')
     } else {
       setMessage('Credenciales inválidas')
     }

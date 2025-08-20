@@ -1,0 +1,23 @@
+/* Variables globales para colores y estilos base */
+:root {
+  --primary: #0052cc;
+  --secondary: #172b4d;
+  --background: #f4f6f8;
+  --white: #ffffff;
+  --text: #333333;
+  --danger: #ff4d4f;
+  --shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+/* Reset básico para que todo se vea igual en todos los navegadores */
+* {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  background: var(--background);
+  color: var(--text);
+  text-align: center;
+}
