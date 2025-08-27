@@ -1,6 +1,7 @@
 import { getServerSession } from "next-auth";
 import { authOptions } from "../../auth/[...nextauth]/route";
 import prisma from "../../../../lib/prisma";
+
 export async function POST(req) {
   try {
     const session = await getServerSession(authOptions);
@@ -18,6 +19,9 @@ export async function POST(req) {
 
     const data = await req.json();
 
+    // 👇 Ajuste de fecha (para que Prisma lo reciba como Date válido)
+    const fechaEntrega = new Date(data.fecha_entrega + "T00:00:00");
+
     const nuevaOrden = await prisma.registroBitacora.create({
       data: {
         num_ticket: parseInt(data.num_ticket),
@@ -25,7 +29,7 @@ export async function POST(req) {
         direccion_entrega: data.direccion_entrega,
         flete: data.flete ? parseInt(data.flete) : null,
         estado: data.estado,
-        fecha_entrega: data.fecha_entrega,
+        fecha_entrega: fechaEntrega, // 👈 aquí ya va convertido
         id_tipenvio: parseInt(data.id_tipenvio),
         id_originventario: parseInt(data.id_originventario),
         id_tienda: parseInt(data.id_tienda),

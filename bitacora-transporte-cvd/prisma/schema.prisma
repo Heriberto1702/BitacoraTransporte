@@ -70,7 +70,7 @@ model RegistroBitacora {
   id_tipopago       Int
   id_login          Int
   estado            String?
-  fecha_entrega     String
+  fecha_entrega     DateTime
   observacion       String?
   login             Login            @relation(fields: [id_login], references: [id_login])
   origen_inventario OrigenInventario @relation(fields: [id_originventario], references: [id_originventario])

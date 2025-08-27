@@ -18,9 +18,13 @@ const estadoInicial = {
   estado: "Nueva",
 };
 
-export default function RegistrarOrden({ session, ordenSeleccionada, onFinish }) {
+export default function RegistrarOrden({
+  session,
+  ordenSeleccionada,
+  onFinish,
+  onActualizado, // 🔹 función para refrescar tabla
+}) {
   const [formData, setFormData] = useState(estadoInicial);
-
   const [catalogos, setCatalogos] = useState({
     tiendas: [],
     envios: [],
@@ -28,13 +32,10 @@ export default function RegistrarOrden({ session, ordenSeleccionada, onFinish })
     pagos: [],
     tiendasinsa: [],
   });
-
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  // Obtener rol directamente desde la sesión
   const rolUsuario = session?.user?.rol || "usuario";
-  const origenEstado = formData.estado;
 
   // Cargar catálogos
   useEffect(() => {
@@ -55,7 +56,7 @@ export default function RegistrarOrden({ session, ordenSeleccionada, onFinish })
     fetchCatalogos();
   }, []);
 
-  // Si llega una orden seleccionada (modo edición)
+  // Cargar datos de la orden seleccionada
   useEffect(() => {
     if (ordenSeleccionada) {
       setFormData({
@@ -69,7 +70,8 @@ export default function RegistrarOrden({ session, ordenSeleccionada, onFinish })
         id_originventario: ordenSeleccionada.id_originventario || "",
         id_tienda: ordenSeleccionada.id_tienda || "",
         id_tipopago: ordenSeleccionada.id_tipopago || "",
-        id_tiendasinsa: ordenSeleccionada.tiendasinsa?.nombre_tiendasinsa || "",
+        id_tiendasinsa:
+          ordenSeleccionada.tiendasinsa?.nombre_tiendasinsa || "",
         estado: ordenSeleccionada.estado || "Nueva",
       });
     }
@@ -81,7 +83,7 @@ export default function RegistrarOrden({ session, ordenSeleccionada, onFinish })
 
   const handleLimpiar = () => {
     setFormData(estadoInicial);
-    if (onFinish) onFinish(); // limpia orden seleccionada si estaba en edición
+    if (onFinish) onFinish();
   };
 
   const handleSubmit = async (e) => {
@@ -95,7 +97,9 @@ export default function RegistrarOrden({ session, ordenSeleccionada, onFinish })
     const tiendaSinsaObj = catalogos.tiendasinsa.find(
       (t) => t.nombre_tiendasinsa === formData.id_tiendasinsa
     );
-    const id_tiendasinsa = tiendaSinsaObj ? tiendaSinsaObj.id_tiendasinsa : null;
+    const id_tiendasinsa = tiendaSinsaObj
+      ? tiendaSinsaObj.id_tiendasinsa
+      : null;
 
     const payload = {
       ...formData,
@@ -109,20 +113,25 @@ export default function RegistrarOrden({ session, ordenSeleccionada, onFinish })
       : "/api/bitacora/crear";
     const method = formData.id_registro ? "PUT" : "POST";
 
-    const res = await fetch(url, {
-      method,
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    });
+    try {
+      const res = await fetch(url, {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
 
-    if (res.ok) {
+      if (!res.ok) throw new Error("Error guardando la orden");
+
       alert(
         formData.id_registro
           ? "Orden actualizada con éxito"
           : "Orden registrada con éxito"
       );
       handleLimpiar();
-    } else {
+
+      if (onActualizado) onActualizado(); // 🔹 refresca tabla
+    } catch (err) {
+      console.error(err);
       alert("Error guardando la orden");
     }
   };
@@ -133,7 +142,9 @@ export default function RegistrarOrden({ session, ordenSeleccionada, onFinish })
   return (
     <form onSubmit={handleSubmit} className={styles.formContainer}>
       <h2 className={styles.title}>
-        {formData.id_registro ? "Editar Orden de Compra" : "Registrar Orden de Compra"}
+        {formData.id_registro
+          ? "Editar Orden de Compra"
+          : "Registrar Orden de Compra"}
       </h2>
 
       <div className={styles.formRow}>
@@ -290,9 +301,8 @@ export default function RegistrarOrden({ session, ordenSeleccionada, onFinish })
         <div className={styles.formGroup}>
           <label className={styles.label}>Fecha de entrega:</label>
           <input
-            type="text"
+            type="date"
             name="fecha_entrega"
-            placeholder="MM/DD/AA"
             value={formData.fecha_entrega}
             onChange={handleChange}
             className={styles.input}
@@ -300,24 +310,35 @@ export default function RegistrarOrden({ session, ordenSeleccionada, onFinish })
         </div>
 
         {/* Estado */}
-        <div className={styles.formGroup}>
-          <label className={styles.label}>Estado:</label>
-          <select
-            name="estado"
-            value={formData.estado}
-            onChange={handleChange}
-            className={styles.select}
-            required
-          >
-            <option value="Nueva">Nueva</option>
-            <option value="Refacturada">Refacturada</option>
-            {(rolUsuario === "admin" || rolUsuario === "superusuario") && (
-              <option value="Recibida">
-                {origenEstado === "Refacturada" ? "Refacturada-Recibida" : "Recibida"}
-              </option>
-            )}
-          </select>
-        </div>
+        {!(rolUsuario === "vendedor" && formData.id_registro) && (
+          <div className={styles.formGroup}>
+            <label className={styles.label}>Estado:</label>
+            <select
+              name="estado"
+              value={formData.estado}
+              onChange={handleChange}
+              className={styles.select}
+              required
+            >
+              {rolUsuario === "vendedor" && (
+                <>
+                  <option value="Nueva">Nueva</option>
+                  <option value="Refacturada">Refacturada</option>
+                </>
+              )}
+              {(rolUsuario === "admin" || rolUsuario === "superusuario") && (
+                <>
+                  <option value="Nueva">Nueva</option>
+                  <option value="Recibida">Recibida</option>
+                  <option value="Refacturada">Refacturada</option>
+                  <option value="Refacturada-Recibida">
+                    Refacturada-Recibida
+                  </option>
+                </>
+              )}
+            </select>
+          </div>
+        )}
       </div>
 
       <div className={styles.buttonGroup}>
@@ -327,7 +348,7 @@ export default function RegistrarOrden({ session, ordenSeleccionada, onFinish })
         <button
           type="button"
           onClick={handleLimpiar}
-          className={` ${styles.limpiarButton}`}
+          className={styles.limpiarButton}
         >
           Limpiar
         </button>

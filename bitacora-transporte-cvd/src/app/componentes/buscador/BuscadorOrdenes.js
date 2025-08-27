@@ -1,42 +1,49 @@
 "use client";
-import { useEffect, useState } from "react";
+
+import { useEffect, useState, forwardRef, useImperativeHandle } from "react";
 import styles from "./BuscadorOrdenes.module.css";
 
-export default function BuscadorOrdenes({ onEditar, session }) {
+const BuscadorOrdenes = forwardRef(({ onEditar, session }, ref) => {
   const [ordenes, setOrdenes] = useState([]);
   const [filtro, setFiltro] = useState("");
   const [loading, setLoading] = useState(true);
 
   const rolUsuario = session?.user?.rol;
 
-  useEffect(() => {
-    async function fetchOrdenes() {
-      try {
-        const res = await fetch("/api/bitacora/obtener");
-        if (!res.ok) throw new Error("Error cargando órdenes");
-        const data = await res.json();
-        setOrdenes(data.ordenes || []);
-      } catch (error) {
-        console.error(error);
-      } finally {
-        setLoading(false);
-      }
+  async function fetchOrdenes() {
+    try {
+      setLoading(true);
+      const res = await fetch("/api/bitacora/obtener");
+      if (!res.ok) throw new Error("Error cargando órdenes");
+      const data = await res.json();
+      setOrdenes(data.ordenes || []);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoading(false);
     }
+  }
+
+  // Método que se puede llamar desde el padre
+  useImperativeHandle(ref, () => ({
+    recargarOrdenes: fetchOrdenes,
+  }));
+
+  useEffect(() => {
     fetchOrdenes();
   }, []);
 
   const ordenesFiltradas = ordenes.filter((orden) => {
     const busqueda = filtro.toLowerCase().trim();
-
     let fechaFormateadaES = "";
     let fechaFormateadaUS = "";
     let fechaISO = "";
 
     if (orden.fecha_creacion) {
       const fecha = new Date(orden.fecha_creacion);
-      fechaFormateadaES = fecha.toLocaleDateString("es-ES"); // 14/8/2025
-      fechaFormateadaUS = fecha.toLocaleDateString("en-US"); // 8/14/2025
-      fechaISO = fecha.toISOString().split("T")[0]; // 2025-08-14
+      fechaFormateadaES = fecha.toLocaleDateString("es-ES");
+      fechaFormateadaUS = fecha.toLocaleDateString("en-US");
+      fechaISO = fecha.toISOString().split("T")[0];
     }
 
     return (
@@ -96,7 +103,7 @@ export default function BuscadorOrdenes({ onEditar, session }) {
               <tr key={orden.id_registro}>
                 <td>{orden.num_ticket}</td>
                 {(rolUsuario === "admin" || rolUsuario === "superusuario") && (
-                  <td>{orden.login.nombre_vendedor || "-"}</td>
+                  <td>{orden.login?.nombre_vendedor || "-"}</td>
                 )}
                 <td>{orden.nombre_cliente}</td>
                 <td>{orden.direccion_entrega}</td>
@@ -105,13 +112,35 @@ export default function BuscadorOrdenes({ onEditar, session }) {
                 <td>{orden.tienda?.nombre_tienda || "-"}</td>
                 <td>{orden.tipoenvio?.nombre_Tipo || "-"}</td>
                 <td>{orden.tipopago?.nombre_tipopago || "-"}</td>
-                <td>{new Date(orden.fecha_creacion).toLocaleDateString()}</td>
-                <td>{orden.fecha_entrega}</td>
+                <td>
+                  {new Date(orden.fecha_creacion).toLocaleDateString("en-US", {
+                    month: "2-digit",
+                    day: "2-digit",
+                    year: "numeric",
+                  })}
+                </td>
+                <td>
+                  {orden.fecha_entrega
+                    ? new Date(orden.fecha_entrega).toLocaleDateString(
+                        "en-US",
+                        { month: "2-digit", day: "2-digit", year: "numeric" }
+                      )
+                    : "-"}
+                </td>
                 <td>{orden.estado}</td>
                 <td>
                   <button
                     className={styles.button}
-                    onClick={() => onEditar(orden)}
+                    onClick={() =>
+                      onEditar({
+                        ...orden,
+                        fecha_entrega: orden.fecha_entrega
+                          ? new Date(orden.fecha_entrega)
+                              .toISOString()
+                              .split("T")[0]
+                          : "",
+                      })
+                    }
                   >
                     Editar
                   </button>
@@ -123,4 +152,8 @@ export default function BuscadorOrdenes({ onEditar, session }) {
       )}
     </div>
   );
-}
+});
+
+BuscadorOrdenes.displayName = "BuscadorOrdenes";
+
+export default BuscadorOrdenes;
