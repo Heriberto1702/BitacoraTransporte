@@ -2,13 +2,6 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "../../auth/[...nextauth]/route";
 import prisma from "../../../../lib/prisma";
 
-// Convierte fecha UTC a hora local Managua (UTC−6)
-function convertirAHoraManagua(fechaUtc) {
-  const fecha = new Date(fechaUtc);
-  fecha.setHours(fecha.getHours() - 6); // Ajuste manual
-  return fecha;
-}
-
 export async function PUT(req) {
   try {
     const session = await getServerSession(authOptions);
@@ -46,13 +39,13 @@ export async function PUT(req) {
       });
     }
 
-    // Convertir a hora local Managua (usando fecha_creacion)
-    const creadaLocal = convertirAHoraManagua(orden.fecha_creacion);
-    const ahoraLocal = convertirAHoraManagua(new Date());
+    // 🔹 Usamos directamente UTC: fecha de creación y hora actual del servidor
+    const creadaUTC = new Date(orden.fecha_creacion);
+    const ahoraUTC = new Date();
 
     // Diferencia en horas
     const diffHoras =
-      (ahoraLocal.getTime() - creadaLocal.getTime()) / (1000 * 60 * 60);
+      (ahoraUTC.getTime() - creadaUTC.getTime()) / (1000 * 60 * 60);
 
     let dataToUpdate = {
       num_ticket: parseInt(data.num_ticket),
@@ -66,13 +59,12 @@ export async function PUT(req) {
         ? parseInt(data.id_tiendasinsa)
         : null,
       id_tipopago: parseInt(data.id_tipopago),
-      // 👇 conversión a Date para guardar en la DB
       fecha_entrega: data.fecha_entrega
         ? new Date(data.fecha_entrega + "T00:00:00")
         : null,
     };
 
-    // Lógica de permisos según rol
+    // 🔹 Reglas según rol
     if (usuario.rol === "vendedor") {
       if (diffHoras > 1) {
         return new Response(

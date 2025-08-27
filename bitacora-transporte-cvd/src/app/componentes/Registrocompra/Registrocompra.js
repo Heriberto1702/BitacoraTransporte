@@ -89,10 +89,10 @@ export default function RegistrarOrden({
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (formData.direccion_entrega.trim().length < 20) {
-      alert("La dirección de entrega debe tener al menos 20 caracteres.");
-      return;
-    }
+if (formData.direccion_entrega && formData.direccion_entrega.trim().length < 20) {
+  alert("La dirección de entrega debe tener al menos 20 caracteres.");
+  return;
+}
 
     const tiendaSinsaObj = catalogos.tiendasinsa.find(
       (t) => t.nombre_tiendasinsa === formData.id_tiendasinsa
@@ -104,6 +104,7 @@ export default function RegistrarOrden({
     const payload = {
       ...formData,
       num_ticket: parseInt(formData.num_ticket),
+      direccion_entrega: formData.direccion_entrega ? formData.direccion_entrega : null,
       flete: formData.flete ? parseInt(formData.flete) : null,
       id_tiendasinsa,
     };
@@ -119,22 +120,29 @@ export default function RegistrarOrden({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
-
-      if (!res.ok) throw new Error("Error guardando la orden");
-
-      alert(
-        formData.id_registro
-          ? "Orden actualizada con éxito"
-          : "Orden registrada con éxito"
-      );
-      handleLimpiar();
-
-      if (onActualizado) onActualizado(); // 🔹 refresca tabla
-    } catch (err) {
-      console.error(err);
-      alert("Error guardando la orden");
+      const result = await res.json();
+     if (!res.ok) {
+      // 🔹 Aquí mostramos los mensajes que vengan del backend
+      if (result.error) {
+        alert(result.error);
+      } else {
+        alert("Error guardando la orden");
+      }
+      return;
     }
-  };
+
+    alert(
+      formData.id_registro
+        ? "Orden actualizada con éxito"
+        : "Orden registrada con éxito"
+    );
+      handleLimpiar();
+    if (onActualizado) onActualizado(); // 🔹 refresca tabla
+  } catch (err) {
+    console.error(err);
+    alert("Error de conexión con el servidor");
+  }
+};
 
   if (loading) return <p>Cargando...</p>;
   if (error) return <p className={styles.errorMessage}>{error}</p>;
@@ -205,7 +213,7 @@ export default function RegistrarOrden({
             value={formData.direccion_entrega}
             onChange={handleChange}
             className={styles.input}
-            required
+           
           />
         </div>
 
