@@ -4,6 +4,7 @@ import { useSession } from 'next-auth/react'
 import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Login from '../../componentes/login/Login'
+import styles from './loginpage.module.css'
 
 export default function LoginPage() {
   const { data: session, status } = useSession()
@@ -11,19 +12,23 @@ export default function LoginPage() {
 
   useEffect(() => {
     if (status === 'authenticated') {
-      router.replace('/') // o la ruta que querés redirigir
+      router.replace('/')
     }
   }, [status, router])
 
   if (status === 'loading') {
-    return <p>Cargando...</p>
+    return <p className={styles.cargando}>Cargando...</p>
   }
 
   return (
-    <div>
-      <h1>Iniciar sesión</h1>
-      <p>Ingresa tus credenciales para acceder a tu cuenta.</p>
-      <Login />
+    <div className={styles.container}>
+      <div className={styles.subcontainer}>
+      <h1 className={styles.title}>Iniciar sesión</h1>
+      <p className={styles.subtitle}>Ingresa tus credenciales para acceder a tu cuenta.</p>
+      <div className={styles.loginBox}>
+        <Login />
+      </div>
+      </div>
     </div>
   )
 }

@@ -111,9 +111,7 @@ margin:0;
     margin-bottom: 30px;
   }
 
-  .ordersSection {
-    padding: 20px;
-  }
+
 }
 
 /* Móviles pequeños */
@@ -140,7 +138,6 @@ margin:0;
   }
 
   .contentMain > * {
-    padding: 15px;
     border-radius: 8px;
   }
 }

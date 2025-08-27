@@ -11,6 +11,7 @@
 
 /* Reset básico para que todo se vea igual en todos los navegadores */
 * {
+  box-sizing: border-box;
   margin: 0;
   padding: 0;
 }

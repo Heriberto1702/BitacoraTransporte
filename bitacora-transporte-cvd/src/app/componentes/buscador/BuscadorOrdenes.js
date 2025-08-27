@@ -56,7 +56,9 @@ const BuscadorOrdenes = forwardRef(({ onEditar, session }, ref) => {
       fechaFormateadaUS.toLowerCase().includes(busqueda) ||
       fechaISO.toLowerCase().includes(busqueda) ||
       orden.tiendasinsa?.nombre_tiendasinsa?.toLowerCase().includes(busqueda) ||
-      orden.origen_inventario?.nombre_origen?.toLowerCase().includes(busqueda) ||
+      orden.origen_inventario?.nombre_origen
+        ?.toLowerCase()
+        .includes(busqueda) ||
       orden.tienda?.nombre_tienda?.toLowerCase().includes(busqueda) ||
       orden.tipoenvio?.nombre_Tipo?.toLowerCase().includes(busqueda)
     );
@@ -99,55 +101,76 @@ const BuscadorOrdenes = forwardRef(({ onEditar, session }, ref) => {
             </tr>
           </thead>
           <tbody>
-            {ordenesFiltradas.map((orden) => (
-              <tr key={orden.id_registro}>
-                <td>{orden.num_ticket}</td>
-                {(rolUsuario === "admin" || rolUsuario === "superusuario") && (
-                  <td>{orden.login?.nombre_vendedor || "-"}</td>
-                )}
-                <td>{orden.nombre_cliente}</td>
-                <td>{orden.direccion_entrega}</td>
-                <td>{orden.tiendasinsa?.nombre_tiendasinsa || "-"}</td>
-                <td>{orden.origen_inventario?.nombre_origen || "-"}</td>
-                <td>{orden.tienda?.nombre_tienda || "-"}</td>
-                <td>{orden.tipoenvio?.nombre_Tipo || "-"}</td>
-                <td>{orden.tipopago?.nombre_tipopago || "-"}</td>
-                <td>
-                  {new Date(orden.fecha_creacion).toLocaleDateString("en-US", {
-                    month: "2-digit",
-                    day: "2-digit",
-                    year: "numeric",
-                  })}
-                </td>
-                <td>
-                  {orden.fecha_entrega
-                    ? new Date(orden.fecha_entrega).toLocaleDateString(
-                        "en-US",
-                        { month: "2-digit", day: "2-digit", year: "numeric" }
-                      )
-                    : "-"}
-                </td>
-                <td>{orden.estado}</td>
-                <td>
-                  <button
-                    className={styles.button}
-                    onClick={() =>
-                      onEditar({
-                        ...orden,
-                        fecha_entrega: orden.fecha_entrega
-                          ? new Date(orden.fecha_entrega)
-                              .toISOString()
-                              .split("T")[0]
-                          : "",
-                      })
-                    }
-                  >
-                    Editar
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
+  {ordenesFiltradas.map((orden) => (
+    <tr key={orden.id_registro}>
+      <td data-label="N° Ticket">{orden.num_ticket}</td>
+
+      {(rolUsuario === "admin" || rolUsuario === "superusuario") && (
+        <td data-label="Vendedor">{orden.login?.nombre_vendedor || "-"}</td>
+      )}
+
+      <td data-label="Cliente">{orden.nombre_cliente}</td>
+      <td data-label="Dirección">{orden.direccion_entrega}</td>
+      <td data-label="Tienda Sinsa">{orden.tiendasinsa?.nombre_tiendasinsa || "-"}</td>
+      <td data-label="Inventario">{orden.origen_inventario?.nombre_origen || "-"}</td>
+      <td data-label="Tienda">{orden.tienda?.nombre_tienda || "-"}</td>
+      <td data-label="Tipo Envío">{orden.tipoenvio?.nombre_Tipo || "-"}</td>
+      <td data-label="Tipo Pago">{orden.tipopago?.nombre_tipopago || "-"}</td>
+
+      <td data-label="Fecha creación">
+        {new Date(orden.fecha_creacion).toLocaleDateString("en-US", {
+          month: "2-digit",
+          day: "2-digit",
+          year: "numeric",
+        })}
+      </td>
+
+      <td data-label="Fecha entrega">
+        {orden.fecha_entrega
+          ? new Date(orden.fecha_entrega).toLocaleDateString("en-US", {
+              month: "2-digit",
+              day: "2-digit",
+              year: "numeric",
+            })
+          : "-"}
+      </td>
+
+      <td
+        data-label="Estado"
+        className={
+          orden.estado === "Nueva"
+            ? styles.estadoNueva
+            : orden.estado === "Recibida"
+            ? styles.estadoRecibida
+            : orden.estado === "Refacturada"
+            ? styles.estadoRefacturada
+            : orden.estado === "Refacturada-Recibida"
+            ? styles.estadoRefacturadaRecibida
+            : ""
+        }
+      >
+        <p className={styles.estadoBadge}>{orden.estado}</p>
+      </td>
+
+      <td data-label="Acción">
+        <button
+          className={styles.button}
+          onClick={() =>
+            onEditar({
+              ...orden,
+              fecha_entrega: orden.fecha_entrega
+                ? new Date(orden.fecha_entrega).toISOString().split("T")[0]
+                : "",
+            })
+          }
+        >
+          Editar
+        </button>
+      </td>
+    </tr>
+  ))}
+</tbody>
+
         </table>
       )}
     </div>

@@ -1,32 +1,18 @@
+/* Contenedor principal */
 .container {
-  padding: 20px;
   background-color: #ffffff;
   border-radius: 12px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
   max-width: 100%;
+  overflow-x: auto; /* scroll horizontal si tabla es grande */
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
 }
 
-.title {
-  font-size: 1.5rem;
-  font-weight: 600;
-  margin-bottom: 20px;
-  color: #333;
-}
-.button {
-  background-color: #2563eb;
-  color: white;
-  border: none;
-  border-radius: 7px;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
-}
-
-.button:hover {
-  background-color: #1e40af;
-}
+/* Input de búsqueda */
 .searchInput {
   width: 50%;
-  padding: 17px 4px;
+  min-width: 250px;
+  padding: 12px 15px;
   margin-bottom: 20px;
   border-radius: 8px;
   border: 1px solid #ddd;
@@ -35,41 +21,183 @@
 }
 
 .searchInput:focus {
-  border-color: #4cafef;
+  border-color: #2563eb;
   outline: none;
-  box-shadow: 0 0 0 3px rgba(76, 175, 239, 0.2);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2);
 }
 
+/* Tabla */
 .table {
   width: 100%;
   border-collapse: collapse;
-  overflow: hidden;
   border-radius: 8px;
+  overflow: hidden;
+  min-width: 800px; /* forzar scroll horizontal si pantalla pequeña */
 }
 
 .table th {
   background-color: #f4f6f8;
-  color: #444;
+  color: #333;
   font-weight: 600;
-  padding: 12px;
+  padding: 12px 15px;
   border-bottom: 2px solid #e0e0e0;
   text-align: left;
 }
 
 .table td {
-  padding: 10px 12px;
+  padding: 10px 15px;
   border-bottom: 1px solid #eaeaea;
   color: #555;
+  vertical-align: middle;
 }
 
 .table tr:hover {
-  background-color: #f9f9f9;
+  background-color: #f0f4ff;
   transition: background 0.2s ease;
 }
 
+/* Botones */
+.button {
+  background-color: #2563eb;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 6px 12px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.button:hover {
+  background-color: #1e40af;
+  transform: translateY(-1px);
+}
+
+/* Mensaje sin resultados */
 .noResults {
   color: #888;
   font-style: italic;
   text-align: center;
   margin-top: 10px;
+}
+
+/* Estados de orden con badges */
+.estadoBadge {
+  display: inline-block;
+  font-weight: 600;
+  font-size: 0.85rem;
+  padding: 4px 10px;
+  border-radius: 12px;
+  color: white;
+  text-align: center;
+  min-width: 100px;
+}
+
+/* Colores de estado */
+.estadoNueva {
+  background-color: #ff9800;
+}
+
+.estadoRecibida {
+  background-color: #4caf50;
+}
+
+.estadoRefacturada {
+  background-color: #f57c00;
+}
+
+.estadoRefacturadaRecibida {
+  background-color: #388e3c;
+}
+
+/* Título opcional */
+.title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 20px;
+  color: #333;
+}
+
+/* Media Queries */
+@media (max-width: 1024px) {
+  .searchInput {
+    width: 70%;
+  }
+
+  .table {
+    min-width: 700px;
+  }
+
+  .estadoBadge {
+    font-size: 0.8rem;
+    min-width: 90px;
+    padding: 3px 8px;
+  }
+}
+
+@media (max-width: 768px) {
+  .searchInput {
+    width: 90%;
+  }
+
+  .table thead {
+    display: none; /* escondemos encabezados */
+  }
+
+  .table tr {
+    display: block;
+    margin-bottom: 15px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 10px;
+  }
+
+  .table td {
+    display: flex;
+    justify-content: space-between;
+    padding: 6px 0;
+    border-bottom: none;
+  }
+
+  .table td::before {
+    content: attr(data-label); /* etiqueta para cada celda */
+    font-weight: 600;
+    color: #333;
+    margin-right: 10px;
+  }
+
+  .estadoBadge {
+    font-size: 0.75rem;
+    min-width: 80px;
+    padding: 2px 6px;
+  }
+
+  .button {
+    padding: 5px 10px;
+  }
+}
+
+@media (max-width: 480px) {
+  .table {
+    width: 0%;
+    min-width: 348px;
+    font-size: 14px;
+    margin: 0 auto;
+  }
+
+  .estadoBadge {
+    font-size: 0.7rem;
+    min-width: 70px;
+    padding: 2px 5px;
+  }
+
+  .searchInput {
+    width: 90%;
+    margin: 10px;
+  }
+
+  .button {
+    padding: 4px 8px;
+    font-size: 14px;
+  }
 }

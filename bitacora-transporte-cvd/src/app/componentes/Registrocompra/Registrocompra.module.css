@@ -1,5 +1,4 @@
 .formContainer {
-
   margin: 2rem auto;
   padding: 2rem 2.5rem;
   background-color: #f9fafb;
@@ -7,6 +6,9 @@
   box-shadow: 0 4px 12px rgb(0 0 0 / 0.1);
   font-family: 'Inter', system-ui, sans-serif;
   color: #1f2937;
+ 
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .title {
@@ -16,54 +18,39 @@
   color: #2563eb;
   text-align: center;
 }
-.limpiarButton {
-    margin-top: 1rem;
-  width: 10%;
-  padding: 0.7rem 0;
- 
-  color: white;
-  font-weight: 700;
-  font-size: 1.1rem;
-  border: none;
-  border-radius: 7px;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
-  background-color: #f44336; /* rojo */
-  margin-left: 10px;
-}
+
 .formRow {
   display: flex;
-  flex-direction: row;
-  justify-content: center;
-  align-items: center;
   flex-wrap: wrap;
   gap: 1rem;
   margin-bottom: 1rem;
+  justify-content: center;
 }
 
 .formGroup {
   display: flex;
   align-items: center;
-  gap: 0.5rem; /* espacio entre label e input */
-  flex: 1 1 250px; /* cada grupo mínimo 250px, se adapta */
+  gap: 0.5rem;
+  flex: 1 1 250px; /* mínimo 250px y se adapta */
 }
 
 .label {
   font-weight: 600;
   color: #374151;
   font-size: 0.95rem;
-  min-width: 130px; /* ancho fijo para que se alineen los inputs */
+  min-width: 130px;
 }
 
 .input,
 .select {
-  flex: 1; /* el input ocupa el resto del espacio */
+  flex: 1;
   padding: 0.5rem 0.75rem;
   border: 1.8px solid #d1d5db;
   border-radius: 6px;
   font-size: 1rem;
   color: #111827;
   background-color: #fff;
+  box-sizing: border-box;
 }
 
 .input:focus,
@@ -73,29 +60,129 @@
   box-shadow: 0 0 5px #2563ebaa;
 }
 
-.button {
+.button,
+.limpiarButton {
   margin-top: 1rem;
-  width: 10%;
   padding: 0.7rem 0;
-  background-color: #2563eb;
-  color: white;
   font-weight: 700;
   font-size: 1.1rem;
   border: none;
   border-radius: 7px;
   cursor: pointer;
   transition: background-color 0.3s ease;
+  width: 10%;
+}
+
+.button {
+  background-color: #2563eb;
+  color: white;
 }
 
 .button:hover {
   background-color: #1e40af;
 }
-.limpiarButton:hover {
-  background-color: #971b12; /* rojo */
+
+.limpiarButton {
+  background-color: #f44336;
+  margin-left: 10px;
 }
+
+.limpiarButton:hover {
+  background-color: #971b12;
+}
+
 .errorMessage {
   color: #b91c1c;
   font-weight: 600;
   text-align: center;
   margin: 1rem 0;
+}
+
+/* Media Queries */
+
+/* Tablets */
+@media (max-width: 1024px) {
+  .formContainer {
+    padding: 1.8rem 2rem;
+  }
+
+  .formRow {
+    gap: 0.8rem;
+  }
+
+  .input,
+  .select {
+    font-size: 0.95rem;
+  }
+
+  .button,
+  .limpiarButton {
+    font-size: 1rem;
+    width: 15%;
+  }
+}
+
+/* Tablets pequeñas / Móviles grandes */
+@media (max-width: 768px) {
+  .formRow {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .formGroup {
+    flex-direction: column;
+    flex: 0;
+    gap:0.5rem
+  }
+
+  .label {
+    min-width: auto;
+    margin-bottom: 0.3rem;
+  }
+
+  .input,
+  .select {
+    width: 100%;
+  }
+
+  .button,
+  .limpiarButton {
+    width: 45%;
+    font-size: 1rem;
+    margin-top: 0.5rem;
+  }
+
+  .button + .limpiarButton {
+    margin-left: 0;
+  }
+}
+
+/* Móviles pequeños */
+@media (max-width: 480px) {
+  .formContainer {
+    padding: 1rem 1rem;
+  }
+
+  .title {
+    font-size: 1.3rem;
+  }
+
+  .label {
+    font-size: 0.9rem;
+  }
+
+  .input,
+  .select {
+    font-size: 0.95rem;
+  }
+
+  .button,
+  .limpiarButton {
+    width: 100%;
+    font-size: 1rem;
+  }
+
+  .formRow {
+    gap: 0.6rem;
+  }
 }
