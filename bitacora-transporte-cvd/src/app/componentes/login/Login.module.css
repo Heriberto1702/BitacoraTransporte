@@ -1,0 +1,66 @@
+.form {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  margin: 0 auto;
+  gap: 16px;
+  align-items: center;
+  background-color: rgba(255, 255, 255, 0.1);
+  padding: 30px;
+  border-radius: 15px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+  width: 100%;
+    min-width: 360px;
+  backdrop-filter: blur(10px);
+}
+
+.input {
+  width: 100%;
+  padding: 10px 12px;
+  font-size: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  outline: none;
+}
+
+.passwordWrapper {
+  position: relative;
+  width: 100%;
+}
+
+.togglePasswordButton {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: transparent;
+  background-color: #fff;
+  border: none;
+  cursor: pointer;
+  font-size: 1.1rem;
+}
+
+
+
+.submitButton {
+  padding: 12px 15px;
+  width: 100%;
+  font-size: 1rem;
+  background-color: #f59e0b;
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  outline: none;
+}
+
+.submitButton:hover {
+   background-color: #d97706;
+}
+
+.error {
+  color: red;
+  font-size: 0.9rem;
+}

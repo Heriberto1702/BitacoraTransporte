@@ -46,6 +46,7 @@ export async function POST(req) {
         id_tiendasinsa: data.id_tiendasinsa ? parseInt(data.id_tiendasinsa) : null,
         id_tipopago: parseInt(data.id_tipopago),
         id_login: usuario.id_login,
+        observacion: data.observacion || null, // 🔹 Nuevo campo agregado
       },
     });
 

@@ -1,188 +1,222 @@
+/* Contenedor general */
 .formContainer {
-  margin: 2rem auto;
-  padding: 2rem 2.5rem;
-  background-color: #f9fafb;
-  border-radius: 8px;
-  box-shadow: 0 4px 12px rgb(0 0 0 / 0.1);
-  font-family: 'Inter', system-ui, sans-serif;
-  color: #1f2937;
- 
-  width: 100%;
-  box-sizing: border-box;
+  max-width: 980px;
+  margin: 10px auto;
+  padding: 25px;
+  background: #ffffff;
+  border-radius: 25px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.06);
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  transition: all 0.4s ease;
 }
 
+/* Título */
 .title {
-  font-size: 1.5rem;
-  font-weight: 700;
-  margin-bottom: 2rem;
-  color: #2563eb;
   text-align: center;
+  font-size: 2.2rem;
+  margin-bottom: 35px;
+  color: #1f2937;
+  font-weight: 700;
+  letter-spacing: 0.6px;
 }
 
-.formRow {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 1rem;
-  margin-bottom: 1rem;
-  justify-content: center;
+/* Secciones */
+.section {
+  border: 1px solid #e5e7eb;
+  border-radius: 18px;
+  padding: 15px;
+  transition: all 0.4s ease;
+  background: #fafafa;
 }
 
+.section:hover {
+  box-shadow: 0 12px 25px rgba(0, 0, 0, 0.08);
+  background: #fff;
+}
+
+.section legend {
+  font-weight: 600;
+  padding: 0 10px;
+  color: #374151;
+  font-size: 1.15rem;
+}
+
+/* Grid para inputs */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
+  gap: 22px;
+}
+
+/* Grupos de campos */
 .formGroup {
   display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  flex: 1 1 250px; /* mínimo 250px y se adapta */
+  flex-direction: column;
+  position: relative;
 }
 
+/* Grupo de textarea que ocupa todo el ancho */
+.formGroupFull {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Label con asterisco rojo para required */
 .label {
   font-weight: 600;
+  margin-bottom: 8px;
   color: #374151;
-  font-size: 0.95rem;
-  min-width: 130px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.96rem;
 }
 
+.requiredLabel::after {
+  content: "*";
+  color: #dc2626;
+  margin-left: 4px;
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
+/* Inputs y selects */
 .input,
-.select {
-  flex: 1;
-  padding: 0.5rem 0.75rem;
-  border: 1.8px solid #d1d5db;
-  border-radius: 6px;
+.select,
+.textarea {
+  padding: 13px 16px;
+  border-radius: 14px;
+  border: 1.5px solid #d1d5db;
   font-size: 1rem;
+  transition: all 0.35s ease;
+  background: #f9fafb;
   color: #111827;
-  background-color: #fff;
-  box-sizing: border-box;
+  box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.03);
 }
 
 .input:focus,
-.select:focus {
+.select:focus,
+.textarea:focus {
   outline: none;
-  border-color: #2563eb;
-  box-shadow: 0 0 5px #2563ebaa;
+  border-color: #6366f1;
+  box-shadow: 0 0 14px rgba(99, 102, 241, 0.3);
+  background: #fff;
+}
+
+.select {
+  appearance: none;
+  cursor: pointer;
+}
+
+/* Disabled inputs */
+.input:disabled,
+.select:disabled {
+  background: #f3f4f6;
+  cursor: not-allowed;
+  border-color: #d1d5db;
+  color: #9ca3af;
+}
+
+/* Textarea */
+.textarea {
+  resize: vertical;
+  min-height: 80px;
+  transition: all 0.3s ease;
+}
+
+.textarea:focus {
+  box-shadow: 0 0 15px rgba(99, 102, 241, 0.25);
+}
+
+/* Error message */
+.errorMessage {
+  color: #b91c1c;
+  text-align: center;
+  font-weight: 600;
+  margin-bottom: 20px;
+  font-size: 0.95rem;
+}
+
+/* Error banner */
+.errorBanner {
+  background: #fee2e2;
+  color: #b91c1c;
+  padding: 14px 20px;
+  border-radius: 14px;
+  margin-bottom: 20px;
+  text-align: center;
+  font-weight: 600;
+  font-size: 0.95rem;
+  box-shadow: 0 5px 12px rgba(185, 28, 28, 0.18);
+}
+
+/* Botones */
+.buttonGroup {
+  display: flex;
+  justify-content: flex-end;
+  gap: 20px;
+  margin-top: 28px;
+  flex-wrap: wrap;
 }
 
 .button,
 .limpiarButton {
-  margin-top: 1rem;
-  padding: 0.7rem 0;
-  font-weight: 700;
-  font-size: 1.1rem;
-  border: none;
-  border-radius: 7px;
+  padding: 15px 30px;
+  border-radius: 16px;
+  font-weight: 600;
+  font-size: 1rem;
   cursor: pointer;
-  transition: background-color 0.3s ease;
-  width: 10%;
+  transition: all 0.35s ease;
+  border: none;
+  min-width: 140px;
+  text-align: center;
 }
 
 .button {
-  background-color: #2563eb;
-  color: white;
+  background: linear-gradient(120deg, #6366f1, #4f46e5);
+  color: #ffffff;
+  box-shadow: 0 7px 22px rgba(99, 102, 241, 0.32);
 }
 
 .button:hover {
-  background-color: #1e40af;
+  background: linear-gradient(120deg, #4f46e5, #4338ca);
+  box-shadow: 0 12px 28px rgba(79, 70, 229, 0.42);
+  transform: translateY(-2px);
 }
 
 .limpiarButton {
-  background-color: #f44336;
-  margin-left: 10px;
+  background: #e5e7eb;
+  color: #374151;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.06);
 }
 
 .limpiarButton:hover {
-  background-color: #971b12;
+  background: #d1d5db;
+  transform: translateY(-1px);
 }
 
-.errorMessage {
-  color: #b91c1c;
-  font-weight: 600;
-  text-align: center;
-  margin: 1rem 0;
-}
-
-/* Media Queries */
-
-/* Tablets */
-@media (max-width: 1024px) {
-  .formContainer {
-    padding: 1.8rem 2rem;
-  }
-
-  .formRow {
-    gap: 0.8rem;
-  }
-
-  .input,
-  .select {
-    font-size: 0.95rem;
-  }
-
-  .button,
-  .limpiarButton {
-    font-size: 1rem;
-    width: 15%;
-  }
-}
-
-/* Tablets pequeñas / Móviles grandes */
+/* Responsive */
 @media (max-width: 768px) {
-  .formRow {
-    flex-direction: column;
-    align-items: stretch;
+  .formContainer {
+    padding: 30px;
   }
 
-  .formGroup {
-    flex-direction: column;
-    flex: 0;
-    gap:0.5rem
+  .grid {
+    grid-template-columns: 1fr;
   }
 
-  .label {
-    min-width: auto;
-    margin-bottom: 0.3rem;
-  }
-
-  .input,
-  .select {
-    width: 100%;
-  }
-
-  .button,
-  .limpiarButton {
-    width: 45%;
-    font-size: 1rem;
-    margin-top: 0.5rem;
-  }
-
-  .button + .limpiarButton {
-    margin-left: 0;
+  .buttonGroup {
+    justify-content: center;
   }
 }
 
-/* Móviles pequeños */
 @media (max-width: 480px) {
   .formContainer {
-    padding: 1rem 1rem;
+    padding: 22px;
   }
 
   .title {
-    font-size: 1.3rem;
-  }
-
-  .label {
-    font-size: 0.9rem;
-  }
-
-  .input,
-  .select {
-    font-size: 0.95rem;
-  }
-
-  .button,
-  .limpiarButton {
-    width: 100%;
-    font-size: 1rem;
-  }
-
-  .formRow {
-    gap: 0.6rem;
+    font-size: 1.7rem;
   }
 }

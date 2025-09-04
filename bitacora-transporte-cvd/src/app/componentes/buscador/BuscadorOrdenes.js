@@ -8,6 +8,9 @@ const BuscadorOrdenes = forwardRef(({ onEditar, session }, ref) => {
   const [ordenes, setOrdenes] = useState([]);
   const [filtro, setFiltro] = useState("");
   const [loading, setLoading] = useState(true);
+  const [paginaActual, setPaginaActual] = useState(1);
+  const [filasPorPagina, setFilasPorPagina] = useState(10);
+  const [ordenSeleccionadaId, setOrdenSeleccionadaId] = useState(null);
 
   const rolUsuario = session?.user?.rol;
 
@@ -25,45 +28,69 @@ const BuscadorOrdenes = forwardRef(({ onEditar, session }, ref) => {
     }
   }
 
-  // Método que se puede llamar desde el padre
   useImperativeHandle(ref, () => ({
     recargarOrdenes: fetchOrdenes,
+    limpiarFilaSeleccionada: () => setOrdenSeleccionadaId(null),
   }));
 
   useEffect(() => {
     fetchOrdenes();
   }, []);
 
+  // --- FILTRADO ---
   const ordenesFiltradas = ordenes.filter((orden) => {
     const busqueda = filtro.toLowerCase().trim();
-    let fechaFormateadaES = "";
-    let fechaFormateadaUS = "";
-    let fechaISO = "";
 
-    if (orden.fecha_creacion) {
-      const fecha = new Date(orden.fecha_creacion);
-      fechaFormateadaES = fecha.toLocaleDateString("es-ES");
-      fechaFormateadaUS = fecha.toLocaleDateString("en-US");
-      fechaISO = fecha.toISOString().split("T")[0];
-    }
+    const formatearFecha = (fecha) => {
+      if (!fecha) return "";
+      const d = new Date(fecha);
+      const dd = String(d.getDate()).padStart(2, "0");
+      const mm = String(d.getMonth() + 1).padStart(2, "0");
+      const yyyy = d.getFullYear();
+      return `${mm}/${dd}/${yyyy}`;
+    };
+
+    const fechaCreacionStr = formatearFecha(orden.fecha_creacion);
+    const fechaEntregaStr = formatearFecha(orden.fecha_entrega);
 
     return (
       orden.num_ticket?.toString().toLowerCase().includes(busqueda) ||
-      orden.fecha_entrega?.toString().toLowerCase().includes(busqueda) ||
-      orden.estado?.toString().toLowerCase().includes(busqueda) ||
-      orden.direccion_entrega?.toString().toLowerCase().includes(busqueda) ||
+      orden.estado?.toLowerCase().includes(busqueda) ||
+      orden.login?.nombre_vendedor?.toLowerCase().includes(busqueda) ||
+      orden.direccion_entrega?.toLowerCase().includes(busqueda) ||
       orden.nombre_cliente?.toLowerCase().includes(busqueda) ||
-      fechaFormateadaES.toLowerCase().includes(busqueda) ||
-      fechaFormateadaUS.toLowerCase().includes(busqueda) ||
-      fechaISO.toLowerCase().includes(busqueda) ||
+      fechaCreacionStr.includes(busqueda) ||
+      fechaEntregaStr.includes(busqueda) ||
       orden.tiendasinsa?.nombre_tiendasinsa?.toLowerCase().includes(busqueda) ||
-      orden.origen_inventario?.nombre_origen
-        ?.toLowerCase()
-        .includes(busqueda) ||
+      orden.origen_inventario?.nombre_origen?.toLowerCase().includes(busqueda) ||
+      orden.tipopago?.nombre_tipopago?.toLowerCase().includes(busqueda) ||
       orden.tienda?.nombre_tienda?.toLowerCase().includes(busqueda) ||
       orden.tipoenvio?.nombre_Tipo?.toLowerCase().includes(busqueda)
     );
   });
+
+  // --- PAGINACIÓN ---
+  const totalPaginas =
+    filasPorPagina === "Todas"
+      ? 1
+      : Math.ceil(ordenesFiltradas.length / filasPorPagina);
+
+  const indiceUltimaOrden =
+    filasPorPagina === "Todas"
+      ? ordenesFiltradas.length
+      : paginaActual * filasPorPagina;
+  const indicePrimeraOrden =
+    filasPorPagina === "Todas" ? 0 : indiceUltimaOrden - filasPorPagina;
+
+  const ordenesMostradas =
+    filasPorPagina === "Todas"
+      ? ordenesFiltradas
+      : ordenesFiltradas.slice(indicePrimeraOrden, indiceUltimaOrden);
+
+  const manejarCambioPagina = (nuevaPagina) => {
+    if (nuevaPagina < 1 || nuevaPagina > totalPaginas) return;
+    setPaginaActual(nuevaPagina);
+  };
 
   if (loading) return <p>Cargando órdenes...</p>;
   if (!ordenes.length) return <p>No hay órdenes para mostrar.</p>;
@@ -73,14 +100,72 @@ const BuscadorOrdenes = forwardRef(({ onEditar, session }, ref) => {
       <div className={styles.header}>
         <input
           type="text"
-          placeholder="Buscar orden por ticket, cliente, tienda, tipo envío, estado..."
+          placeholder="Buscar orden por ticket, cliente, vendedor, tienda, tipo envío, estado o fecha..."
           value={filtro}
-          onChange={(e) => setFiltro(e.target.value)}
+          onChange={(e) => {
+            setFiltro(e.target.value);
+            setPaginaActual(1);
+          }}
           className={styles.searchInput}
         />
-        <ExportarExcel data={ordenesFiltradas} fileName="ordenes.xlsx" />
+        {(rolUsuario === "admin" || rolUsuario === "superusuario") && (
+          <ExportarExcel data={ordenesFiltradas} fileName="ordenes.xlsx" />
+        )}
       </div>
-      {ordenesFiltradas.length === 0 ? (
+
+      {/* --- PAGINACIÓN CONTROLS --- */}
+      <div className={styles.paginacionControls}>
+        <label>
+          Mostrar{" "}
+          <select
+            value={filasPorPagina}
+            onChange={(e) => {
+              setFilasPorPagina(
+                e.target.value === "Todas" ? "Todas" : Number(e.target.value)
+              );
+              setPaginaActual(1);
+            }}
+          >
+            {[5, 10, 25, 50, 100, "Todas"].map((n) => (
+              <option key={n} value={n}>
+                {n}
+              </option>
+            ))}
+          </select>{" "}
+          filas
+        </label>
+
+        {filasPorPagina !== "Todas" && (
+          <div className={styles.botonesPagina}>
+            <button
+              onClick={() => manejarCambioPagina(paginaActual - 1)}
+              disabled={paginaActual === 1}
+            >
+              Anterior
+            </button>
+
+            {Array.from({ length: totalPaginas }, (_, i) => (
+              <button
+                key={i + 1}
+                onClick={() => manejarCambioPagina(i + 1)}
+                className={paginaActual === i + 1 ? styles.activo : ""}
+              >
+                {i + 1}
+              </button>
+            ))}
+
+            <button
+              onClick={() => manejarCambioPagina(paginaActual + 1)}
+              disabled={paginaActual === totalPaginas}
+            >
+              Siguiente
+            </button>
+          </div>
+        )}
+      </div>
+
+      {/* --- TABLA --- */}
+      {ordenesMostradas.length === 0 ? (
         <p className={styles.noResults}>No se encontraron resultados.</p>
       ) : (
         <table className={styles.table}>
@@ -104,16 +189,19 @@ const BuscadorOrdenes = forwardRef(({ onEditar, session }, ref) => {
             </tr>
           </thead>
           <tbody>
-            {ordenesFiltradas.map((orden) => (
-              <tr key={orden.id_registro}>
+            {ordenesMostradas.map((orden) => (
+              <tr
+                key={orden.id_registro}
+                className={
+                  orden.id_registro === ordenSeleccionadaId
+                    ? styles.filaSeleccionada
+                    : ""
+                }
+              >
                 <td data-label="N° Ticket">{orden.num_ticket}</td>
-
                 {(rolUsuario === "admin" || rolUsuario === "superusuario") && (
-                  <td data-label="Vendedor">
-                    {orden.login?.nombre_vendedor || "-"}
-                  </td>
+                  <td data-label="Vendedor">{orden.login?.nombre_vendedor || "-"}</td>
                 )}
-
                 <td data-label="Cliente">{orden.nombre_cliente}</td>
                 <td data-label="Dirección">{orden.direccion_entrega}</td>
                 <td data-label="Tienda Sinsa">
@@ -122,16 +210,9 @@ const BuscadorOrdenes = forwardRef(({ onEditar, session }, ref) => {
                 <td data-label="Inventario">
                   {orden.origen_inventario?.nombre_origen || "-"}
                 </td>
-                <td data-label="Tienda">
-                  {orden.tienda?.nombre_tienda || "-"}
-                </td>
-                <td data-label="Tipo Envío">
-                  {orden.tipoenvio?.nombre_Tipo || "-"}
-                </td>
-                <td data-label="Tipo Pago">
-                  {orden.tipopago?.nombre_tipopago || "-"}
-                </td>
-
+                <td data-label="Tienda">{orden.tienda?.nombre_tienda || "-"}</td>
+                <td data-label="Tipo Envío">{orden.tipoenvio?.nombre_Tipo || "-"}</td>
+                <td data-label="Tipo Pago">{orden.tipopago?.nombre_tipopago || "-"}</td>
                 <td data-label="Fecha creación">
                   {new Date(orden.fecha_creacion).toLocaleDateString("en-US", {
                     month: "2-digit",
@@ -139,20 +220,15 @@ const BuscadorOrdenes = forwardRef(({ onEditar, session }, ref) => {
                     year: "numeric",
                   })}
                 </td>
-
                 <td data-label="Fecha entrega">
                   {orden.fecha_entrega
-                    ? new Date(orden.fecha_entrega).toLocaleDateString(
-                        "en-US",
-                        {
-                          month: "2-digit",
-                          day: "2-digit",
-                          year: "numeric",
-                        }
-                      )
+                    ? new Date(orden.fecha_entrega).toLocaleDateString("en-US", {
+                        month: "2-digit",
+                        day: "2-digit",
+                        year: "numeric",
+                      })
                     : "-"}
                 </td>
-
                 <td
                   data-label="Estado"
                   className={
@@ -169,20 +245,18 @@ const BuscadorOrdenes = forwardRef(({ onEditar, session }, ref) => {
                 >
                   <p className={styles.estadoBadge}>{orden.estado}</p>
                 </td>
-
                 <td data-label="Acción">
                   <button
                     className={styles.button}
-                    onClick={() =>
+                    onClick={() => {
+                      setOrdenSeleccionadaId(orden.id_registro);
                       onEditar({
                         ...orden,
                         fecha_entrega: orden.fecha_entrega
-                          ? new Date(orden.fecha_entrega)
-                              .toISOString()
-                              .split("T")[0]
+                          ? new Date(orden.fecha_entrega).toISOString().split("T")[0]
                           : "",
-                      })
-                    }
+                      });
+                    }}
                   >
                     Editar
                   </button>

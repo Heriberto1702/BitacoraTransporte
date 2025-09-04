@@ -1,44 +1,65 @@
-/* Barra de navegación */
+/* Navbar general */
 .navbar {
   display: flex;
   justify-content: space-between;
   align-items: center;
-
-  background: linear-gradient(90deg, #0052cc, #003d99);
+  padding: 0.8rem 2rem;
+  background: linear-gradient(90deg, #1e3c72, #2a5298); /* azul degradado profesional */
   color: #fff;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  font-family: 'Inter', sans-serif;
 }
 
+/* Información del usuario */
 .userInfo {
-  font-size: 18px;
+  font-size: 0.9rem;
 }
+
+.userInfo p {
+  margin: 0;
+  color: #e0e0e0;
+}
+
+.userInfo strong {
+  color: #fff;
+  font-weight: 600;
+}
+
+/* Título y saludo */
 .usertitle {
-  font-size: 24px;
   display: flex;
-  flex-direction: row;
-  justify-content: space-evenly;
   align-items: center;
-  gap: 20px;
+  gap: 1.5rem;
 }
+
 .saludo {
   margin: 0;
-}
-.logoutButton {
-  background: #ff4d4f;
-  border: none;
-  color: #fff;
-  padding: 8px 16px;
-  cursor: pointer;
-  border-radius: 6px;
-  font-size: 14px;
+  font-size: 1rem;
   font-weight: 500;
-  transition: background 0.3s ease, transform 0.2s ease;
-  margin-right: 8px;
+  color: #fff;
+}
+
+/* Botón cerrar sesión */
+.logoutButton {
+  background-color: #ff4d4f;
+  color: #fff;
+  border: none;
+  padding: 0.5rem 1.2rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
 }
 
 .logoutButton:hover {
-  background: #d9363e;
-  transform: scale(1.05);
+  background-color: #e33a3c;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.3);
 }
 
 /* Contenido principal */
@@ -92,16 +113,24 @@ margin:0;
 
 /* Móviles grandes */
 @media (max-width: 768px) {
-  .navbar {
+.navbar {
     flex-direction: column;
-    gap: 12px;
-    text-align: center;
+    align-items: flex-start;
+    padding: 1rem;
   }
-
+  .usertitle {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.8rem;
+    margin-top: 0.5rem;
+  }
   .userInfo {
     font-size: 14px;
   }
-
+  .logoutButton {
+    width: 100%;
+    text-align: center;
+  }
   .title {
     font-size: 26px;
   }

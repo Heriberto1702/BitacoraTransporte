@@ -7,16 +7,21 @@ import RegistrarOrden from "../Registrocompra/Registrocompra";
 export default function OrdenesManager({ session }) {
   const [ordenSeleccionada, setOrdenSeleccionada] = useState(null);
 
-  // 🔹 Ref para recargar órdenes desde el formulario
   const buscadorRef = useRef(null);
 
   const handleFinish = () => {
     setOrdenSeleccionada(null);
+    if (buscadorRef.current?.limpiarFilaSeleccionada) {
+      buscadorRef.current.limpiarFilaSeleccionada();
+    }
   };
 
   const handleActualizado = () => {
     if (buscadorRef.current?.recargarOrdenes) {
       buscadorRef.current.recargarOrdenes();
+    }
+    if (buscadorRef.current?.limpiarFilaSeleccionada) {
+      buscadorRef.current.limpiarFilaSeleccionada();
     }
   };
 
@@ -26,7 +31,7 @@ export default function OrdenesManager({ session }) {
         session={session}
         ordenSeleccionada={ordenSeleccionada}
         onFinish={handleFinish}
-        onActualizado={handleActualizado} // 🔹 recarga tabla
+        onActualizado={handleActualizado}
       />
       <BuscadorOrdenes
         ref={buscadorRef}

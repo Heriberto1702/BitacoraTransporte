@@ -30,40 +30,12 @@
   color: #e0e0e0;
 }
 
-.loginBox {
-  background-color: rgba(255, 255, 255, 0.1);
-  padding: 30px;
-  border-radius: 15px;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
-  width: 100%;
-  max-width: 400px;
-  backdrop-filter: blur(10px);
-}
 
-.loginBox input {
-  width: 90%;
-  padding: 12px 15px;
-  margin-bottom: 15px;
-  border-radius: 10px;
-  border: none;
-  outline: none;
-}
 
-.loginBox button {
-  width: 90%;
-  padding: 12px 15px;
-  border-radius: 10px;
-  border: none;
-  background-color: #f59e0b;
-  color: white;
-  font-weight: bold;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
 
-.loginBox button:hover {
-  background-color: #d97706;
-}
+
+
+
 
 .cargando {
   font-size: 1rem;

@@ -39,37 +39,32 @@ export async function PUT(req) {
       });
     }
 
-    // 🔹 Usamos directamente UTC: fecha de creación y hora actual del servidor
     const creadaUTC = new Date(orden.fecha_creacion);
     const ahoraUTC = new Date();
+    const diffHoras = (ahoraUTC.getTime() - creadaUTC.getTime()) / (1000 * 60 * 60);
 
-    // Diferencia en horas
-    const diffHoras =
-      (ahoraUTC.getTime() - creadaUTC.getTime()) / (1000 * 60 * 60);
-
-    let dataToUpdate = {
+    const dataToUpdate = {
       num_ticket: parseInt(data.num_ticket),
       nombre_cliente: data.nombre_cliente,
-      direccion_entrega: data.direccion_entrega,
+      direccion_entrega: data.direccion_entrega || null,
       flete: data.flete ? parseInt(data.flete) : null,
       id_tipenvio: parseInt(data.id_tipenvio),
       id_originventario: parseInt(data.id_originventario),
       id_tienda: parseInt(data.id_tienda),
-      id_tiendasinsa: data.id_tiendasinsa
-        ? parseInt(data.id_tiendasinsa)
-        : null,
+      id_tiendasinsa: data.id_tiendasinsa ? parseInt(data.id_tiendasinsa) : null,
       id_tipopago: parseInt(data.id_tipopago),
       fecha_entrega: data.fecha_entrega
         ? new Date(data.fecha_entrega + "T00:00:00")
         : null,
+      observacion: data.observacion || null, // 🔹 Agregamos observaciones
     };
 
-    // 🔹 Reglas según rol
+    // Reglas según rol
     if (usuario.rol === "vendedor") {
-      if (diffHoras > 1) {
+      if (diffHoras > 24) {
         return new Response(
           JSON.stringify({
-            error: "No puedes editar órdenes con más de 1 hora",
+            error: "No puedes editar órdenes con más de 24 hora",
           }),
           { status: 403 }
         );

@@ -45,10 +45,7 @@ export default function Home() {
 
       {/* Contenido principal */}
       <div className={styles.content}>
-        <h1 className={styles.title}>Bitácora de Transporte CVD</h1>
-
-
-
+        
         <section className={styles.ordersSection}>
           <div className={styles.contentMain}>
             <OrdenesManager session={session} />

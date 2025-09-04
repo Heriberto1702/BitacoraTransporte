@@ -25,7 +25,7 @@ export default function LoginPage() {
       <div className={styles.subcontainer}>
       <h1 className={styles.title}>Iniciar sesión</h1>
       <p className={styles.subtitle}>Ingresa tus credenciales para acceder a tu cuenta.</p>
-      <div className={styles.loginBox}>
+      <div >
         <Login />
       </div>
       </div>

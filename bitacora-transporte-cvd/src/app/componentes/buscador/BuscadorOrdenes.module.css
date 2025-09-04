@@ -7,7 +7,8 @@
   overflow-x: auto; /* scroll horizontal si tabla es grande */
   font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
 }
-.header{
+
+.header {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -15,6 +16,7 @@
   padding: 20px;
   gap: 10px;
 }
+
 /* Input de búsqueda */
 .searchInput {
   width: 50%;
@@ -25,12 +27,14 @@
   border: 1px solid #ddd;
   font-size: 16px;
   transition: all 0.3s ease;
+  background-color: #f9fafb;
 }
 
 .searchInput:focus {
   border-color: #2563eb;
   outline: none;
   box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2);
+  background-color: #fff;
 }
 
 /* Tabla */
@@ -62,7 +66,11 @@
   background-color: #f0f4ff;
   transition: background 0.2s ease;
 }
-
+/* Fila seleccionada */
+.filaSeleccionada {
+  background-color: #e0ebff !important;
+  transition: background 0.2s ease;
+}
 /* Botones */
 .button {
   background-color: #2563eb;
@@ -117,15 +125,94 @@
   background-color: #388e3c;
 }
 
-/* Título opcional */
-.title {
-  font-size: 1.5rem;
-  font-weight: 600;
-  margin-bottom: 20px;
-  color: #333;
+/* Paginación */
+.paginacionControls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 20px 0;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 0 10px;
 }
 
-/* Media Queries */
+.paginacionControls select {
+  padding: 8px 12px;
+  border-radius: 10px;
+  border: 1.5px solid #d1d5db;
+  background: #f9fafb;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.paginacionControls select:focus {
+  outline: none;
+  border-color: #6366f1;
+  box-shadow: 0 0 10px rgba(99, 102, 241, 0.25);
+  background: #fff;
+}
+
+.botonesPagina {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.botonesPagina button {
+  position: relative;
+  padding: 8px 16px;
+  border-radius: 12px;
+  border: none;
+  cursor: pointer;
+  background: linear-gradient(120deg, #6366f1, #4f46e5);
+  color: #fff;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.botonesPagina button:hover {
+  background: linear-gradient(120deg, #4f46e5, #4338ca);
+  transform: translateY(-1px);
+}
+
+.botonesPagina button:disabled {
+  background: #e5e7eb;
+  color: #9ca3af;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Página activa con indicador */
+.botonesPagina button.activo::after {
+  content: "";
+  position: absolute;
+  bottom: -4px;
+  left: 10%;
+  width: 80%;
+  height: 4px;
+  background-color: #facc15;
+  border-radius: 4px;
+  animation: slideIn 0.3s ease forwards;
+}
+
+@keyframes slideIn {
+  0% {
+    width: 0%;
+  }
+  100% {
+    width: 80%;
+  }
+}
+
+/* Texto de página */
+.botonesPagina span {
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: #374151;
+}
+
+/* Media Queries - manteniendo tus originales intactos */
 @media (max-width: 1024px) {
   .searchInput {
     width: 70%;
@@ -148,7 +235,7 @@
   }
 
   .table thead {
-    display: none; /* escondemos encabezados */
+    display: none;
   }
 
   .table tr {
@@ -167,7 +254,7 @@
   }
 
   .table td::before {
-    content: attr(data-label); /* etiqueta para cada celda */
+    content: attr(data-label);
     font-weight: 600;
     color: #333;
     margin-right: 10px;
@@ -191,10 +278,12 @@
     font-size: 14px;
     margin: 0 auto;
   }
-  .header{
+
+  .header {
     flex-direction: column;
     align-items: center;
   }
+
   .estadoBadge {
     font-size: 0.7rem;
     min-width: 70px;
