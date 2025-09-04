@@ -16,6 +16,7 @@ export default function OrdenesManager({ session }) {
     }
   };
 
+  
   const handleActualizado = () => {
     if (buscadorRef.current?.recargarOrdenes) {
       buscadorRef.current.recargarOrdenes();
