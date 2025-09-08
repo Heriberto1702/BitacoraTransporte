@@ -1,6 +1,6 @@
 /* Contenedor general */
 .formContainer {
-  max-width: 980px;
+  width: 1800px;
   margin: 10px auto;
   padding: 25px;
   background: #ffffff;
@@ -68,7 +68,7 @@
   margin-bottom: 8px;
   color: #374151;
   display: flex;
-  justify-content: space-between;
+  
   align-items: center;
   font-size: 0.96rem;
 }
@@ -77,7 +77,7 @@
   content: "*";
   color: #dc2626;
   margin-left: 4px;
-  font-size: 1.1rem;
+  font-size: 1.5rem;
   font-weight: 700;
 }
 
@@ -199,6 +199,7 @@
 /* Responsive */
 @media (max-width: 768px) {
   .formContainer {
+    width: 760px;
     padding: 30px;
   }
 
@@ -211,8 +212,9 @@
   }
 }
 
-@media (max-width: 480px) {
+@media (max-width: 375px) {
   .formContainer {
+    width: 360px;
     padding: 22px;
   }
 

@@ -141,7 +141,7 @@ const BuscadorOrdenes = forwardRef(({ onEditar, session }, ref) => {
               onClick={() => manejarCambioPagina(paginaActual - 1)}
               disabled={paginaActual === 1}
             >
-              Anterior
+              <span>«</span>
             </button>
 
             {Array.from({ length: totalPaginas }, (_, i) => (
@@ -158,7 +158,7 @@ const BuscadorOrdenes = forwardRef(({ onEditar, session }, ref) => {
               onClick={() => manejarCambioPagina(paginaActual + 1)}
               disabled={paginaActual === totalPaginas}
             >
-              Siguiente
+              <span>»</span>
             </button>
           </div>
         )}
