@@ -17,7 +17,44 @@ const estadoInicial = {
   id_tiendasinsa: "",
   observacion: "",
   estado: "Nueva",
+  monto_factura: "",
+  cedula: "",
+  telefono: "",
 };
+
+// Función para formatear cédula automáticamente
+function formatCedula(value) {
+  let raw = value.toUpperCase();
+
+  // Separar la parte numérica y la letra final
+  let letter = "";
+  if (raw.length > 15) {
+    // Tomar solo la primera letra válida después de los 13 números
+    const lastChar = raw[raw.length - 1];
+    if (/[A-Z]/.test(lastChar)) {
+      letter = lastChar;
+    }
+  }
+
+  // Mantener solo números de los primeros 13 caracteres
+  raw = raw.slice(0, 15).replace(/\D/g, "");
+
+  // Bloques
+  const block1 = raw.slice(0, 3);
+  const block2 = raw.slice(3, 9);
+  const block3 = raw.slice(9, 13);
+
+  // Unir con guiones
+  let result = "";
+  if (block1) result += block1;
+  if (block2) result += block2 ? `-${block2}` : "";
+  if (block3) result += block3 ? `-${block3}` : "";
+
+  // Agregar letra al final
+  if (letter) result += letter;
+
+  return result;
+}
 
 export default function RegistrarOrden({
   session,
@@ -40,7 +77,6 @@ export default function RegistrarOrden({
 
   const rolUsuario = session?.user?.rol || "usuario";
 
-  // Cargar catálogos
   useEffect(() => {
     async function fetchCatalogos() {
       try {
@@ -59,42 +95,40 @@ export default function RegistrarOrden({
     fetchCatalogos();
   }, []);
 
-// Cargar datos de la orden seleccionada
-useEffect(() => {
-  if (ordenSeleccionada) {
-    setFormData({
-      id_registro: ordenSeleccionada.id_registro,
-      num_ticket: ordenSeleccionada.num_ticket || "",
-      nombre_cliente: ordenSeleccionada.nombre_cliente || "",
-      direccion_entrega: ordenSeleccionada.direccion_entrega || "",
-      flete: ordenSeleccionada.flete || "",
-      fecha_entrega: ordenSeleccionada.fecha_entrega || "",
-      id_tipenvio: ordenSeleccionada.id_tipenvio?.toString() || "",
-      id_originventario: ordenSeleccionada.id_originventario?.toString() || "",
-      id_tienda: ordenSeleccionada.id_tienda?.toString() || "",
-      id_tipopago: ordenSeleccionada.id_tipopago?.toString() || "",
-      id_tiendasinsa: ordenSeleccionada.tiendasinsa?.nombre_tiendasinsa || "",
-      observacion: ordenSeleccionada.observacion || "",
-      estado: ordenSeleccionada.estado || "Nueva",
-    });
-  }
-}, [ordenSeleccionada]);
+  useEffect(() => {
+    if (ordenSeleccionada) {
+      setFormData({
+        id_registro: ordenSeleccionada.id_registro,
+        num_ticket: ordenSeleccionada.num_ticket || "",
+        nombre_cliente: ordenSeleccionada.nombre_cliente || "",
+        direccion_entrega: ordenSeleccionada.direccion_entrega || "",
+        flete: ordenSeleccionada.flete || "",
+        fecha_entrega: ordenSeleccionada.fecha_entrega || "",
+        id_tipenvio: ordenSeleccionada.id_tipenvio?.toString() || "",
+        id_originventario:
+          ordenSeleccionada.id_originventario?.toString() || "",
+        id_tienda: ordenSeleccionada.id_tienda?.toString() || "",
+        id_tipopago: ordenSeleccionada.id_tipopago?.toString() || "",
+        id_tiendasinsa: ordenSeleccionada.tiendasinsa?.nombre_tiendasinsa || "",
+        observacion: ordenSeleccionada.observacion || "",
+        estado: ordenSeleccionada.estado || "",
+        monto_factura: ordenSeleccionada.monto_factura || "",
+        cedula: ordenSeleccionada.cedula || "",
+        telefono: ordenSeleccionada.telefono || "",
+      });
+    }
+  }, [ordenSeleccionada]);
 
-  // Habilitar/deshabilitar campos según tipo de envío (solo creación)
   useEffect(() => {
     if (!ordenSeleccionada) {
-      if (
-        formData.id_tipenvio === "1" ||
-        formData.id_tipenvio === "5"
-      ) {
+      if (["1", "5", "6"].includes(formData.id_tipenvio)) {
         setActivarDireccion(true);
         setActivarTiendaSinsa(false);
-      } else if (
-        formData.id_tipenvio === "6" ||
-        formData.id_tipenvio === "4" ||
-        formData.id_tipenvio === "2"
-      ) {
+      } else if (["4"].includes(formData.id_tipenvio)) {
         setActivarDireccion(false);
+        setActivarTiendaSinsa(true);
+      } else if (["2"].includes(formData.id_tipenvio)) {
+        setActivarDireccion(true);
         setActivarTiendaSinsa(true);
       } else {
         setActivarDireccion(false);
@@ -102,15 +136,37 @@ useEffect(() => {
       }
     }
   }, [formData.id_tipenvio, ordenSeleccionada]);
+
   const hoy = new Date().toISOString().split("T")[0];
-  // Manejo de cambios en inputs
+
   const handleChange = (e) => {
     const { name, value } = e.target;
 
-    // Validar solo números para campos numéricos
-    if (name === "num_ticket" || name === "flete") {
+    // Campos numéricos
+    if (["num_ticket", "telefono"].includes(name)) {
       const soloNumeros = value.replace(/\D/g, "");
       setFormData({ ...formData, [name]: soloNumeros });
+      return;
+    }
+    // Campo de monto con decimales
+    if ((name === "monto_factura" || name === "flete")) {
+      // Eliminar todo excepto números y punto
+      let soloNumerosYDecimal = value.replace(/[^0-9.]/g, "");
+
+      // Evitar más de un punto
+      const partes = soloNumerosYDecimal.split(".");
+      if (partes.length > 2) {
+        soloNumerosYDecimal = partes[0] + "." + partes[1];
+      }
+
+      setFormData({ ...formData, [name]: soloNumerosYDecimal });
+      return;
+    }
+    // Cédula con formato y restricción de caracteres
+
+    if (name === "cedula") {
+      // Formatear cédula pero respetando guiones borrados
+      setFormData({ ...formData, [name]: formatCedula(value) });
       return;
     }
 
@@ -135,6 +191,12 @@ useEffect(() => {
       return;
     }
 
+    const cedulaRegex = /^\d{3}-\d{6}-\d{4}[A-Z]$/;
+    if (!cedulaRegex.test(formData.cedula)) {
+      alert("La cédula debe tener el formato 001-210995-0038W");
+      return;
+    }
+
     const tiendaSinsaObj = catalogos.tiendasinsa.find(
       (t) => t.nombre_tiendasinsa === formData.id_tiendasinsa
     );
@@ -145,8 +207,8 @@ useEffect(() => {
     const payload = {
       ...formData,
       num_ticket: parseInt(formData.num_ticket),
-      direccion_entrega: formData.direccion_entrega || null,
       flete: formData.flete ? parseInt(formData.flete) : null,
+      monto_factura: parseFloat(formData.monto_factura),
       id_tiendasinsa,
     };
 
@@ -232,22 +294,53 @@ useEffect(() => {
               className={styles.input}
               placeholder="Número de ticket"
               inputMode="numeric"
-              pattern="\d*"
               required
             />
           </div>
 
           <div className={styles.formGroup}>
             <label className={`${styles.label} ${styles.requiredLabel}`}>
-              Cliente
+              Nombre Cliente
             </label>
             <input
               type="text"
               name="nombre_cliente"
               value={formData.nombre_cliente}
               onChange={handleChange}
+              placeholder="Nombre completo"
               className={styles.input}
               required
+            />
+          </div>
+
+          {/* Cédula con formato automático */}
+          <div className={styles.formGroup}>
+            <label className={`${styles.label} ${styles.requiredLabel}`}>
+              Cédula
+            </label>
+            <input
+              type="text"
+              name="cedula"
+              value={formData.cedula}
+              onChange={handleChange}
+              className={styles.input}
+              required
+              placeholder="Ej: 123-456789-0123X"
+            />
+          </div>
+
+          <div className={styles.formGroup}>
+            <label className={`${styles.label} ${styles.requiredLabel}`}>
+              Teléfono
+            </label>
+            <input
+              type="text"
+              name="telefono"
+              value={formData.telefono}
+              onChange={handleChange}
+              className={styles.input}
+              required
+              placeholder="Teléfono"
             />
           </div>
         </div>
@@ -313,19 +406,6 @@ useEffect(() => {
           </div>
 
           <div className={styles.formGroup}>
-            <label className={styles.label}>Dirección</label>
-            <input
-              type="text"
-              name="direccion_entrega"
-              value={formData.direccion_entrega}
-              onChange={handleChange}
-              className={styles.input}
-              placeholder="Dirección de entrega"
-              disabled={ordenSeleccionada ? false : !activarDireccion}
-            />
-          </div>
-
-          <div className={styles.formGroup}>
             <label className={styles.label}>Tienda Sinsa</label>
             <input
               list="tiendasinsa-options"
@@ -343,6 +423,20 @@ useEffect(() => {
             </datalist>
           </div>
         </div>
+        <div className={styles.grid}>
+          <div className={styles.formGroupFull}>
+            <label className={styles.label}>Dirección</label>
+            <input
+              type="text"
+              name="direccion_entrega"
+              value={formData.direccion_entrega}
+              onChange={handleChange}
+              className={styles.input}
+              placeholder="Dirección de entrega"
+              disabled={ordenSeleccionada ? false : !activarDireccion}
+            />
+          </div>
+        </div>
       </fieldset>
 
       {/* Administración */}
@@ -357,9 +451,7 @@ useEffect(() => {
               value={formData.flete}
               onChange={handleChange}
               className={styles.input}
-              placeholder="Opcional"
-              inputMode="numeric"
-              pattern="\d*"
+              placeholder="Monto en córdobas"
             />
           </div>
 
@@ -381,6 +473,20 @@ useEffect(() => {
                 </option>
               ))}
             </select>
+          </div>
+          <div className={styles.formGroup}>
+            <label className={`${styles.label} ${styles.requiredLabel}`}>
+              Monto Factura
+            </label>
+            <input
+              type="text"
+              name="monto_factura"
+              value={formData.monto_factura}
+              onChange={handleChange}
+              className={styles.input}
+              required
+              placeholder="Monto en córdobas"
+            />
           </div>
 
           {(rolUsuario !== "vendedor" || !formData.id_registro) && (
@@ -412,6 +518,7 @@ useEffect(() => {
             </div>
           )}
 
+        </div>
           <div className={styles.formGroupFull}>
             <label className={styles.label}>Observaciones</label>
             <textarea
@@ -422,7 +529,6 @@ useEffect(() => {
               rows={3}
             />
           </div>
-        </div>
       </fieldset>
 
       {/* Botones */}

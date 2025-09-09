@@ -4,10 +4,10 @@
   border-radius: 12px;
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
   max-width: 100%;
-  overflow-x: auto; /* scroll horizontal si tabla es grande */
   font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
 }
 
+/* Header */
 .header {
   display: flex;
   justify-content: space-between;
@@ -15,6 +15,16 @@
   flex-wrap: wrap;
   padding: 20px;
   gap: 10px;
+}
+
+/* Wrapper para la tabla con scroll */
+.tableWrapper {
+  width: 100%;
+  max-height: 500px; /* altura máxima visible */
+  overflow-x: auto;   /* scroll horizontal */
+  overflow-y: auto;   /* scroll vertical */
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
 }
 
 /* Input de búsqueda */
@@ -41,9 +51,7 @@
 .table {
   width: 100%;
   border-collapse: collapse;
-  border-radius: 8px;
-  overflow: hidden;
-  min-width: 800px; /* forzar scroll horizontal si pantalla pequeña */
+  min-width: 800px;
 }
 
 .table th {
@@ -52,7 +60,9 @@
   font-weight: 600;
   padding: 12px 15px;
   border-bottom: 2px solid #e0e0e0;
-  text-align: left;
+  position: sticky; /* Cabecera fija */
+  top: 0;
+  z-index: 1;
 }
 
 .table td {
@@ -66,11 +76,13 @@
   background-color: #f0f4ff;
   transition: background 0.2s ease;
 }
+
 /* Fila seleccionada */
 .filaSeleccionada {
   background-color: #e0ebff !important;
   transition: background 0.2s ease;
 }
+
 /* Botones */
 .button {
   background-color: #2563eb;
@@ -109,21 +121,10 @@
 }
 
 /* Colores de estado */
-.estadoNueva {
-  background-color: #ff9800;
-}
-
-.estadoRecibida {
-  background-color: #4caf50;
-}
-
-.estadoRefacturada {
-  background-color: #f57c00;
-}
-
-.estadoRefacturadaRecibida {
-  background-color: #388e3c;
-}
+.estadoNueva { background-color: #ff9800; }
+.estadoRecibida { background-color: #4caf50; }
+.estadoRefacturada { background-color: #f57c00; }
+.estadoRefacturadaRecibida { background-color: #388e3c; }
 
 /* Paginación */
 .paginacionControls {
@@ -183,7 +184,6 @@
   transform: none;
 }
 
-/* Página activa con indicador */
 .botonesPagina button.activo::after {
   content: "";
   position: absolute;
@@ -197,106 +197,36 @@
 }
 
 @keyframes slideIn {
-  0% {
-    width: 0%;
-  }
-  100% {
-    width: 80%;
-  }
+  0% { width: 0%; }
+  100% { width: 80%; }
 }
 
-/* Texto de página */
 .botonesPagina span {
   font-weight: 600;
   font-size: 0.95rem;
   color: #374151;
 }
 
-/* Media Queries - manteniendo tus originales intactos */
+/* Media Queries */
 @media (max-width: 1024px) {
-  .searchInput {
-    width: 70%;
-  }
-
-  .table {
-    min-width: 700px;
-  }
-
-  .estadoBadge {
-    font-size: 0.8rem;
-    min-width: 90px;
-    padding: 3px 8px;
-  }
+  .searchInput { width: 70%; }
+  .table { min-width: 700px; }
+  .estadoBadge { font-size: 0.8rem; min-width: 90px; padding: 3px 8px; }
 }
 
 @media (max-width: 768px) {
-  .searchInput {
-    width: 90%;
-  }
-
-  .table thead {
-    display: none;
-  }
-
-  .table tr {
-    display: block;
-    margin-bottom: 15px;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    padding: 10px;
-  }
-
-  .table td {
-    display: flex;
-    justify-content: space-between;
-    padding: 6px 0;
-    border-bottom: none;
-  }
-
-  .table td::before {
-    content: attr(data-label);
-    font-weight: 600;
-    color: #333;
-    margin-right: 10px;
-  }
-
-  .estadoBadge {
-    font-size: 0.75rem;
-    min-width: 80px;
-    padding: 2px 6px;
-  }
-
-  .button {
-    padding: 5px 10px;
-  }
+  .searchInput { width: 90%; }
+  .table thead { display: none; }
+  .table tr { display: block; margin-bottom: 15px; border: 1px solid #ddd; border-radius: 8px; padding: 10px; }
+  .table td { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: none; }
+  .table td::before { content: attr(data-label); font-weight: 600; color: #333; margin-right: 10px; }
+  .estadoBadge { font-size: 0.75rem; min-width: 80px; padding: 2px 6px; }
+  .button { padding: 5px 10px; }
 }
 
 @media (max-width: 480px) {
-  .table {
-    width: 0%;
-    min-width: 348px;
-    font-size: 14px;
-    margin: 0 auto;
-  }
-
-  .header {
-    flex-direction: column;
-    align-items: center;
-  }
-
-  .estadoBadge {
-    font-size: 0.7rem;
-    min-width: 70px;
-    padding: 2px 5px;
-  }
-
-  .searchInput {
-    width: 90%;
-    margin: 10px;
-  }
-
-  .button {
-    padding: 4px 8px;
-    font-size: 14px;
-  }
+  .table { width: 0%; min-width: 348px; font-size: 14px; margin: 0 auto; }
+  .header { flex-direction: column; align-items: center; }
+  .estadoBadge { font-size: 0.7rem; min-width: 70px; padding: 2px 5px; }
+  .botonesPagina { flex-wrap: wrap; gap: 8px; justify-content: center; }
 }

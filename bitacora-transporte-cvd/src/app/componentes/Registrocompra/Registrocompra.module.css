@@ -68,7 +68,7 @@
   margin-bottom: 8px;
   color: #374151;
   display: flex;
-  
+  justify-content: space-between;
   align-items: center;
   font-size: 0.96rem;
 }
@@ -77,7 +77,7 @@
   content: "*";
   color: #dc2626;
   margin-left: 4px;
-  font-size: 1.5rem;
+  font-size: 1rem;
   font-weight: 700;
 }
 
@@ -109,22 +109,58 @@
   cursor: pointer;
 }
 
-/* Disabled inputs */
+/* Inputs deshabilitados más visibles */
 .input:disabled,
 .select:disabled {
-  background: #f3f4f6;
+  background-color: #e0e0e0; /* un gris más oscuro que contraste */
+  border: 1px solid #b0b0b0; /* borde más marcado */
+  color: #6b6b6b; /* texto gris más oscuro para mejor contraste */
   cursor: not-allowed;
-  border-color: #d1d5db;
-  color: #9ca3af;
+  opacity: 0.8; /* efecto de “apagado” */
 }
 
+/* Opcional: al pasar el mouse, que no cambie nada para no confundir */
+.input:disabled:hover,
+.select:disabled:hover {
+  background-color: #e0e0e0;
+  border-color: #b0b0b0;
+}
+.input:enabled,
+.select:enabled {
+  background-color: #fff;
+  border: 1px solid #4caf50; /* borde verde activo */
+  color: #111;
+  transition: all 0.2s;
+}
+
+.input:enabled:focus,
+.select:enabled:focus {
+  border-color: #218838; /* borde más fuerte al enfocar */
+  box-shadow: 0 0 3px rgba(33, 136, 56, 0.5);
+}
 /* Textarea */
 .textarea {
   resize: vertical;
   min-height: 80px;
   transition: all 0.3s ease;
 }
+.inputWithSymbol {
+  position: relative;
+}
 
+.currencySymbol {
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #4b5563; /* gris oscuro */
+  font-weight: 500;
+  pointer-events: none; /* que no interfiera con el input */
+}
+
+.inputWithSymbol input {
+  padding-left: 2.2rem; /* dejar espacio para el símbolo */
+}
 .textarea:focus {
   box-shadow: 0 0 15px rgba(99, 102, 241, 0.25);
 }

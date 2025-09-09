@@ -59,6 +59,9 @@ const BuscadorOrdenes = forwardRef(({ onEditar, session }, ref) => {
       orden.login?.nombre_vendedor?.toLowerCase().includes(busqueda) ||
       orden.direccion_entrega?.toLowerCase().includes(busqueda) ||
       orden.nombre_cliente?.toLowerCase().includes(busqueda) ||
+      orden.cedula?.toLowerCase().includes(busqueda) ||
+      orden.flete?.toString().includes(busqueda) ||
+      orden.monto_factura?.toString().includes(busqueda) ||
       fechaCreacionStr.includes(busqueda) ||
       fechaEntregaStr.includes(busqueda) ||
       orden.tiendasinsa?.nombre_tiendasinsa?.toLowerCase().includes(busqueda) ||
@@ -100,7 +103,7 @@ const BuscadorOrdenes = forwardRef(({ onEditar, session }, ref) => {
       <div className={styles.header}>
         <input
           type="text"
-          placeholder="Buscar orden por ticket, cliente, vendedor, tienda, tipo envío, estado o fecha..."
+          placeholder="Buscar orden por ticket, cliente, vendedor, tienda, tipo envío, estado, cédula, flete o monto..."
           value={filtro}
           onChange={(e) => {
             setFiltro(e.target.value);
@@ -164,108 +167,106 @@ const BuscadorOrdenes = forwardRef(({ onEditar, session }, ref) => {
         )}
       </div>
 
-      {/* --- TABLA --- */}
-      {ordenesMostradas.length === 0 ? (
-        <p className={styles.noResults}>No se encontraron resultados.</p>
-      ) : (
-        <table className={styles.table}>
-          <thead>
-            <tr>
-              <th>N° Ticket</th>
-              {(rolUsuario === "admin" || rolUsuario === "superusuario") && (
-                <th>Vendedor</th>
-              )}
-              <th>Cliente</th>
-              <th>Dirección</th>
-              <th>Tienda Sinsa</th>
-              <th>Inventario</th>
-              <th>Tienda</th>
-              <th>Tipo Envío</th>
-              <th>Tipo Pago</th>
-              <th>Fecha creación</th>
-              <th>Fecha entrega</th>
-              <th>Estado</th>
-              <th>Acción</th>
-            </tr>
-          </thead>
-          <tbody>
-            {ordenesMostradas.map((orden) => (
-              <tr
-                key={orden.id_registro}
-                className={
-                  orden.id_registro === ordenSeleccionadaId
-                    ? styles.filaSeleccionada
-                    : ""
-                }
-              >
-                <td data-label="N° Ticket">{orden.num_ticket}</td>
+      {/* --- TABLA CON SCROLL --- */}
+      <div className={styles.tableWrapper}>
+        {ordenesMostradas.length === 0 ? (
+          <p className={styles.noResults}>No se encontraron resultados.</p>
+        ) : (
+          <table className={styles.table}>
+            <thead>
+              <tr>
+                <th>N° Ticket</th>
                 {(rolUsuario === "admin" || rolUsuario === "superusuario") && (
-                  <td data-label="Vendedor">{orden.login?.nombre_vendedor || "-"}</td>
+                  <th>Vendedor</th>
                 )}
-                <td data-label="Cliente">{orden.nombre_cliente}</td>
-                <td data-label="Dirección">{orden.direccion_entrega}</td>
-                <td data-label="Tienda Sinsa">
-                  {orden.tiendasinsa?.nombre_tiendasinsa || "-"}
-                </td>
-                <td data-label="Inventario">
-                  {orden.origen_inventario?.nombre_origen || "-"}
-                </td>
-                <td data-label="Tienda">{orden.tienda?.nombre_tienda || "-"}</td>
-                <td data-label="Tipo Envío">{orden.tipoenvio?.nombre_Tipo || "-"}</td>
-                <td data-label="Tipo Pago">{orden.tipopago?.nombre_tipopago || "-"}</td>
-                <td data-label="Fecha creación">
-                  {new Date(orden.fecha_creacion).toLocaleDateString("en-US", {
-                    month: "2-digit",
-                    day: "2-digit",
-                    year: "numeric",
-                  })}
-                </td>
-                <td data-label="Fecha entrega">
-                  {orden.fecha_entrega
-                    ? new Date(orden.fecha_entrega).toLocaleDateString("en-US", {
-                        month: "2-digit",
-                        day: "2-digit",
-                        year: "numeric",
-                      })
-                    : "-"}
-                </td>
-                <td
-                  data-label="Estado"
+                <th>Cliente</th>
+                <th>Cédula</th>
+                <th>Dirección</th>
+                <th>Tienda Sinsa</th>
+                <th>Inventario</th>
+                <th>Tienda</th>
+                <th>Tipo Envío</th>
+                <th>Tipo Pago</th>
+                <th>Flete</th>
+                <th>Monto Factura</th>
+                <th>Fecha creación</th>
+                <th>Fecha entrega</th>
+                <th>Estado</th>
+                <th>Acción</th>
+              </tr>
+            </thead>
+            <tbody>
+              {ordenesMostradas.map((orden) => (
+                <tr
+                  key={orden.id_registro}
                   className={
-                    orden.estado === "Nueva"
-                      ? styles.estadoNueva
-                      : orden.estado === "Recibida"
-                      ? styles.estadoRecibida
-                      : orden.estado === "Refacturada"
-                      ? styles.estadoRefacturada
-                      : orden.estado === "Refacturada-Recibida"
-                      ? styles.estadoRefacturadaRecibida
+                    orden.id_registro === ordenSeleccionadaId
+                      ? styles.filaSeleccionada
                       : ""
                   }
                 >
-                  <p className={styles.estadoBadge}>{orden.estado}</p>
-                </td>
-                <td data-label="Acción">
-                  <button
-                    className={styles.button}
-                    onClick={() => {
-                      setOrdenSeleccionadaId(orden.id_registro);
-                      onEditar({
-                        ...orden,
-                        fecha_entrega: orden.fecha_entrega
-                          ? new Date(orden.fecha_entrega).toISOString().split("T")[0]
-                          : "",
-                      });
-                    }}
+                  <td data-label="N° Ticket">{orden.num_ticket}</td>
+                  {(rolUsuario === "admin" || rolUsuario === "superusuario") && (
+                    <td data-label="Vendedor">{orden.login?.nombre_vendedor || "-"}</td>
+                  )}
+                  <td data-label="Cliente">{orden.nombre_cliente}</td>
+                  <td data-label="Cédula">{orden.cedula || "-"}</td>
+                  <td data-label="Dirección">{orden.direccion_entrega}</td>
+                  <td data-label="Tienda Sinsa">
+                    {orden.tiendasinsa?.nombre_tiendasinsa || "-"}
+                  </td>
+                  <td data-label="Inventario">{orden.origen_inventario?.nombre_origen || "-"}</td>
+                  <td data-label="Tienda">{orden.tienda?.nombre_tienda || "-"}</td>
+                  <td data-label="Tipo Envío">{orden.tipoenvio?.nombre_Tipo || "-"}</td>
+                  <td data-label="Tipo Pago">{orden.tipopago?.nombre_tipopago || "-"}</td>
+                  <td data-label="Flete">{orden.flete ? `C$ ${orden.flete}` : "-"}</td>
+                  <td data-label="Monto Factura">{orden.monto_factura ? `C$ ${orden.monto_factura}` : "-"}</td>
+                  <td data-label="Fecha creación">
+                    {new Date(orden.fecha_creacion).toLocaleDateString("en-US")}
+                  </td>
+                  <td data-label="Fecha entrega">
+                    {orden.fecha_entrega
+                      ? new Date(orden.fecha_entrega).toLocaleDateString("en-US")
+                      : "-"}
+                  </td>
+                  <td
+                    data-label="Estado"
+                    className={
+                      orden.estado === "Nueva"
+                        ? styles.estadoNueva
+                        : orden.estado === "Recibida"
+                        ? styles.estadoRecibida
+                        : orden.estado === "Refacturada"
+                        ? styles.estadoRefacturada
+                        : orden.estado === "Refacturada-Recibida"
+                        ? styles.estadoRefacturadaRecibida
+                        : ""
+                    }
                   >
-                    Editar
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      )}
+                    <p className={styles.estadoBadge}>{orden.estado}</p>
+                  </td>
+                  <td data-label="Acción">
+                    <button
+                      className={styles.button}
+                      onClick={() => {
+                        setOrdenSeleccionadaId(orden.id_registro);
+                        onEditar({
+                          ...orden,
+                          fecha_entrega: orden.fecha_entrega
+                            ? new Date(orden.fecha_entrega).toISOString().split("T")[0]
+                            : "",
+                        });
+                      }}
+                    >
+                      Editar
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+      </div>
     </div>
   );
 });

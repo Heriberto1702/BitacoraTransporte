@@ -39,10 +39,13 @@ export async function PUT(req) {
       });
     }
 
+    // Calcular diferencia de horas entre creación y ahora
     const creadaUTC = new Date(orden.fecha_creacion);
     const ahoraUTC = new Date();
-    const diffHoras = (ahoraUTC.getTime() - creadaUTC.getTime()) / (1000 * 60 * 60);
+    const diffHoras =
+      (ahoraUTC.getTime() - creadaUTC.getTime()) / (1000 * 60 * 60);
 
+    // Datos a actualizar
     const dataToUpdate = {
       num_ticket: parseInt(data.num_ticket),
       nombre_cliente: data.nombre_cliente,
@@ -51,12 +54,22 @@ export async function PUT(req) {
       id_tipenvio: parseInt(data.id_tipenvio),
       id_originventario: parseInt(data.id_originventario),
       id_tienda: parseInt(data.id_tienda),
-      id_tiendasinsa: data.id_tiendasinsa ? parseInt(data.id_tiendasinsa) : null,
+      id_tiendasinsa: data.id_tiendasinsa
+        ? parseInt(data.id_tiendasinsa)
+        : null,
       id_tipopago: parseInt(data.id_tipopago),
       fecha_entrega: data.fecha_entrega
         ? new Date(data.fecha_entrega + "T00:00:00")
         : null,
-      observacion: data.observacion || null, // 🔹 Agregamos observaciones
+      observacion: data.observacion || null,
+
+      // 🔹 Nuevos campos obligatorios
+      monto_factura: parseFloat(data.monto_factura),
+      cedula: data.cedula,
+      telefono: data.telefono,
+
+      // 🔹 Guardamos la hora de actualización
+      hora_actualizacion: ahoraUTC,
     };
 
     // Reglas según rol
@@ -64,7 +77,7 @@ export async function PUT(req) {
       if (diffHoras > 24) {
         return new Response(
           JSON.stringify({
-            error: "No puedes editar órdenes con más de 24 hora",
+            error: "No puedes editar órdenes con más de 24 horas",
           }),
           { status: 403 }
         );

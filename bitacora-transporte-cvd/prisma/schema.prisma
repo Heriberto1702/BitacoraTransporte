@@ -56,26 +56,29 @@ model TipoPago {
 }
 
 model RegistroBitacora {
-  id_registro       Int              @id @default(autoincrement())
-  hora_actual       DateTime         @default(now())
-  num_ticket        Int
-  nombre_cliente    String
-  direccion_entrega String?
-  flete             Int?
-  fecha_creacion    DateTime         @default(now())
-  id_tiendasinsa    Int?
-  id_tipenvio       Int
-  id_originventario Int
-  id_tienda         Int
-  id_tipopago       Int
-  id_login          Int
-  estado            String?
-  fecha_entrega     DateTime
-  observacion       String?
-  login             Login            @relation(fields: [id_login], references: [id_login])
-  origen_inventario OrigenInventario @relation(fields: [id_originventario], references: [id_originventario])
-  tienda            Tienda           @relation(fields: [id_tienda], references: [id_tienda])
-  tiendasinsa       Tiendasinsa?     @relation(fields: [id_tiendasinsa], references: [id_tiendasinsa])
-  tipoenvio         Tipo_Envio       @relation(fields: [id_tipenvio], references: [id_tipenvio])
-  tipopago          TipoPago         @relation(fields: [id_tipopago], references: [id_tipopago])
+  id_registro        Int              @id @default(autoincrement())
+  num_ticket         Int
+  nombre_cliente     String
+  direccion_entrega  String?
+  flete              Decimal?          @db.Decimal(10, 2)
+  fecha_creacion     DateTime         @default(now())
+  id_tiendasinsa     Int?
+  id_tipenvio        Int
+  id_originventario  Int
+  id_tienda          Int
+  id_tipopago        Int
+  id_login           Int
+  estado             String
+  fecha_entrega      DateTime
+  observacion        String?
+  monto_factura      Decimal          @db.Decimal(10, 2)
+  cedula             String
+  telefono           String
+  hora_actualizacion DateTime         @updatedAt
+  login              Login            @relation(fields: [id_login], references: [id_login])
+  origen_inventario  OrigenInventario @relation(fields: [id_originventario], references: [id_originventario])
+  tienda             Tienda           @relation(fields: [id_tienda], references: [id_tienda])
+  tiendasinsa        Tiendasinsa?     @relation(fields: [id_tiendasinsa], references: [id_tiendasinsa])
+  tipoenvio          Tipo_Envio       @relation(fields: [id_tipenvio], references: [id_tipenvio])
+  tipopago           TipoPago         @relation(fields: [id_tipopago], references: [id_tipopago])
 }
