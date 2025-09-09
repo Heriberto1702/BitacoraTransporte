@@ -6,7 +6,7 @@ export async function middleware(req) {
 
   const baseURL =
     process.env.NODE_ENV === 'production'
-      ? 'https://DOMINIO.com' // ⬅️ reemplazalo por tu dominio real en producción
+      ? 'http://bitacora-transporte.vercel.app' // ⬅️ reemplazalo por tu dominio real en producción
       : 'http://localhost:3000'
 
   // Si no hay sesión, redirigir al login
