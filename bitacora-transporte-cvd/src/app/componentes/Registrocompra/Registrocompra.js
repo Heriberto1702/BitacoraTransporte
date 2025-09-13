@@ -16,46 +16,58 @@ const estadoInicial = {
   id_tipopago: "",
   id_tiendasinsa: "",
   observacion: "",
-  estado: "Nueva",
+  id_estado: "", // ahora es id_estado
   monto_factura: "",
   cedula: "",
   telefono: "",
+  tipo_identificacion: "cedula", // nuevo campo
 };
 
 // Función para formatear cédula automáticamente
 function formatCedula(value) {
   let raw = value.toUpperCase();
 
-  // Separar la parte numérica y la letra final
   let letter = "";
   if (raw.length > 15) {
-    // Tomar solo la primera letra válida después de los 13 números
     const lastChar = raw[raw.length - 1];
     if (/[A-Z]/.test(lastChar)) {
       letter = lastChar;
     }
   }
 
-  // Mantener solo números de los primeros 13 caracteres
   raw = raw.slice(0, 15).replace(/\D/g, "");
 
-  // Bloques
   const block1 = raw.slice(0, 3);
   const block2 = raw.slice(3, 9);
   const block3 = raw.slice(9, 13);
 
-  // Unir con guiones
   let result = "";
   if (block1) result += block1;
-  if (block2) result += block2 ? `-${block2}` : "";
-  if (block3) result += block3 ? `-${block3}` : "";
+  if (block2) result += `-${block2}`;
+  if (block3) result += `-${block3}`;
 
-  // Agregar letra al final
   if (letter) result += letter;
 
   return result;
 }
+// Función para formatear RUC automáticamente
+function formatRuc(value) {
+  // Convertir a mayúscula y eliminar todo lo que no sea dígito o letra
+  let raw = value.toUpperCase().replace(/[^A-Z0-9]/g, "");
 
+  // El primer carácter debe ser letra (si no, lo ignoramos)
+  let result = "";
+  const firstChar = raw.charAt(0);
+  if (/[A-Z]/.test(firstChar)) {
+    result = firstChar;
+  }
+
+  // Tomamos hasta 13 dígitos después de la letra
+  const digits = raw.slice(1).replace(/\D/g, "").slice(0, 13);
+  result += digits;
+
+  return result;
+}
 export default function RegistrarOrden({
   session,
   ordenSeleccionada,
@@ -69,6 +81,8 @@ export default function RegistrarOrden({
     origenes: [],
     pagos: [],
     tiendasinsa: [],
+    estados: [],
+    transiciones: [],
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -77,47 +91,78 @@ export default function RegistrarOrden({
 
   const rolUsuario = session?.user?.rol || "usuario";
 
-  useEffect(() => {
-    async function fetchCatalogos() {
-      try {
-        setLoading(true);
-        const res = await fetch("/api/catalogos/todos");
-        if (!res.ok) throw new Error("Error al cargar catálogos");
-        const data = await res.json();
-        setCatalogos(data);
-      } catch (err) {
-        console.error(err);
-        setError("No se pudieron cargar los catálogos");
-      } finally {
-        setLoading(false);
-      }
-    }
-    fetchCatalogos();
-  }, []);
+useEffect(() => {
+  async function fetchCatalogos() {
+    try {
+      setLoading(true);
 
-  useEffect(() => {
-    if (ordenSeleccionada) {
-      setFormData({
-        id_registro: ordenSeleccionada.id_registro,
-        num_ticket: ordenSeleccionada.num_ticket || "",
-        nombre_cliente: ordenSeleccionada.nombre_cliente || "",
-        direccion_entrega: ordenSeleccionada.direccion_entrega || "",
-        flete: ordenSeleccionada.flete || "",
-        fecha_entrega: ordenSeleccionada.fecha_entrega || "",
-        id_tipenvio: ordenSeleccionada.id_tipenvio?.toString() || "",
-        id_originventario:
-          ordenSeleccionada.id_originventario?.toString() || "",
-        id_tienda: ordenSeleccionada.id_tienda?.toString() || "",
-        id_tipopago: ordenSeleccionada.id_tipopago?.toString() || "",
-        id_tiendasinsa: ordenSeleccionada.tiendasinsa?.nombre_tiendasinsa || "",
-        observacion: ordenSeleccionada.observacion || "",
-        estado: ordenSeleccionada.estado || "",
-        monto_factura: ordenSeleccionada.monto_factura || "",
-        cedula: ordenSeleccionada.cedula || "",
-        telefono: ordenSeleccionada.telefono || "",
+      const res = await fetch("/api/catalogos/todos");
+      if (!res.ok) throw new Error("Error al cargar catálogos");
+
+      const data = await res.json();
+
+      setCatalogos({
+        tiendas: data.tiendas || [],
+        envios: data.envios || [],
+        origenes: data.origenes || [],
+        pagos: data.pagos || [],
+        tiendasinsa: data.tiendasinsa || [],
+        estados: data.estados || [],
+        transiciones: data.transiciones || [],
       });
+    } catch (err) {
+      console.error(err);
+      setError("No se pudieron cargar los catálogos");
+    } finally {
+      setLoading(false);
     }
-  }, [ordenSeleccionada]);
+  }
+
+  fetchCatalogos();
+}, []);
+
+
+
+
+useEffect(() => {
+  if (!ordenSeleccionada) {
+    // Si no hay orden seleccionada, restaurar estado inicial limpio
+    setFormData(estadoInicial);
+    return;
+  }
+
+  // Merge inicial (estadoInicial <- ordenSeleccionada)
+  const merged = {
+    ...estadoInicial,
+    ...ordenSeleccionada,
+    // mapeos específicos para inputs controlados
+    id_tipenvio: ordenSeleccionada.id_tipenvio?.toString() ?? "",
+    id_originventario: ordenSeleccionada.id_originventario?.toString() ?? "",
+    id_tienda: ordenSeleccionada.id_tienda?.toString() ?? "",
+    id_tipopago: ordenSeleccionada.id_tipopago?.toString() ?? "",
+    // si tu API devuelve objeto tiendasinsa, lo convertimos a nombre (para input text/datalist)
+    id_tiendasinsa: ordenSeleccionada.tiendasinsa?.nombre_tiendasinsa ?? "",
+    // fecha_entrega para input type=date (YYYY-MM-DD) o "" si no existe
+    fecha_entrega: ordenSeleccionada.fecha_entrega
+      ? new Date(ordenSeleccionada.fecha_entrega).toISOString().split("T")[0]
+      : "",
+    // monto_factura a string (evita null)
+    monto_factura:
+      ordenSeleccionada.monto_factura !== null &&
+      ordenSeleccionada.monto_factura !== undefined
+        ? String(ordenSeleccionada.monto_factura)
+        : "",
+    tipo_identificacion: ordenSeleccionada.tipo_identificacion ?? "cedula",
+    id_estado: ordenSeleccionada.id_estado?.toString() ?? "",
+  };
+
+  // Reemplazar sólo null/undefined por "" para todas las claves
+  const limpio = Object.fromEntries(
+    Object.entries(merged).map(([k, v]) => [k, v ?? ""])
+  );
+
+  setFormData(limpio);
+}, [ordenSeleccionada]);
 
   useEffect(() => {
     if (!ordenSeleccionada) {
@@ -142,31 +187,35 @@ export default function RegistrarOrden({
   const handleChange = (e) => {
     const { name, value } = e.target;
 
-    // Campos numéricos
     if (["num_ticket", "telefono"].includes(name)) {
       const soloNumeros = value.replace(/\D/g, "");
       setFormData({ ...formData, [name]: soloNumeros });
       return;
     }
-    // Campo de monto con decimales
-    if ((name === "monto_factura" || name === "flete")) {
-      // Eliminar todo excepto números y punto
-      let soloNumerosYDecimal = value.replace(/[^0-9.]/g, "");
 
-      // Evitar más de un punto
+    if (["monto_factura", "flete"].includes(name)) {
+      let soloNumerosYDecimal = value.replace(/[^0-9.]/g, "");
       const partes = soloNumerosYDecimal.split(".");
       if (partes.length > 2) {
         soloNumerosYDecimal = partes[0] + "." + partes[1];
       }
-
       setFormData({ ...formData, [name]: soloNumerosYDecimal });
       return;
     }
-    // Cédula con formato y restricción de caracteres
 
     if (name === "cedula") {
-      // Formatear cédula pero respetando guiones borrados
-      setFormData({ ...formData, [name]: formatCedula(value) });
+      if (formData.tipo_identificacion === "cedula") {
+        setFormData({ ...formData, [name]: formatCedula(value) });
+      } else if (formData.tipo_identificacion === "ruc") {
+        setFormData({ ...formData, [name]: formatRuc(value) });
+      } else {
+        setFormData({ ...formData, [name]: value });
+      }
+      return;
+    }
+
+    if (name === "tipo_identificacion") {
+      setFormData({ ...formData, tipo_identificacion: value, cedula: "" });
       return;
     }
 
@@ -191,10 +240,18 @@ export default function RegistrarOrden({
       return;
     }
 
-    const cedulaRegex = /^\d{3}-\d{6}-\d{4}[A-Z]$/;
-    if (!cedulaRegex.test(formData.cedula)) {
-      alert("La cédula debe tener el formato 001-210995-0038W");
-      return;
+    if (formData.tipo_identificacion === "cedula") {
+      const cedulaRegex = /^\d{3}-\d{6}-\d{4}[A-Z]$/;
+      if (!cedulaRegex.test(formData.cedula)) {
+        alert("La cédula debe tener el formato 001-210995-0038W");
+        return;
+      }
+    } else if (formData.tipo_identificacion === "ruc") {
+      const rucRegex = /^[A-Z]{1}[0-9]{13}$/;
+      if (!rucRegex.test(formData.cedula)) {
+        alert("El RUC debe tener el formato J0310000003456");
+        return;
+      }
     }
 
     const tiendaSinsaObj = catalogos.tiendasinsa.find(
@@ -212,10 +269,13 @@ export default function RegistrarOrden({
       id_tiendasinsa,
     };
 
-    const url = formData.id_registro
-      ? "/api/bitacora/actualizar"
-      : "/api/bitacora/crear";
-    const method = formData.id_registro ? "PUT" : "POST";
+const isActualizar = formData.id_registro != null && formData.id_registro !== "";
+
+const url = isActualizar
+  ? "/api/bitacora/actualizar"
+  : "/api/bitacora/crear";
+
+const method = isActualizar ? "PUT" : "POST";
 
     try {
       const res = await fetch(url, {
@@ -246,8 +306,35 @@ export default function RegistrarOrden({
   if (loading) return <p>Cargando...</p>;
   if (error) return <p className={styles.errorMessage}>{error}</p>;
 
-  const tieneDatos = Object.values(formData).some((v) => v && v !== "Nueva");
+  const tieneDatos = Object.entries(formData).some(([key, value]) => {
+  // Excluir campos con valor inicial fijo
+  if (key === "estado" || key === "tipo_identificacion") return false;
 
+  // Considerar llenado solo si no está vacío
+  return value && value !== "";
+});
+function obtenerEstadosPermitidos(id_estado_actual) {
+  if (!id_estado_actual) {
+    // Si es creación o no hay estado aún, los vendedores solo pueden Nueva o Refacturada
+    if (rolUsuario === "vendedor") {
+      return catalogos.estados.filter(e => e.id_estado === 1 || e.id_estado === 2);
+    }
+    if ( rolUsuario === "agente") {
+      return catalogos.estados.filter(e => e.id_estado === 4 || e.id_estado === 5 || e.id_estado === 6);
+    }
+    return catalogos.estados;
+  }
+
+  // Para edición: filtrar transiciones válidas según rol
+  const idsPermitidos = catalogos.transiciones
+    .filter(t => t.estado_origen === Number(id_estado_actual) && t.rol === rolUsuario)
+    .map(t => t.estado_destino);
+
+  // Siempre incluir el estado actual
+  return catalogos.estados.filter(
+    e => e.id_estado === Number(id_estado_actual) || idsPermitidos.includes(e.id_estado)
+  );
+}
   return (
     <form onSubmit={handleSubmit} className={styles.formContainer}>
       <h2 className={styles.title}>
@@ -313,11 +400,45 @@ export default function RegistrarOrden({
             />
           </div>
 
-          {/* Cédula con formato automático */}
+          {/* Tipo Identificación */}
           <div className={styles.formGroup}>
-            <label className={`${styles.label} ${styles.requiredLabel}`}>
-              Cédula
-            </label>
+            <div className={styles.formRadioGroup}>
+              <label className={`${styles.label} ${styles.requiredLabel}`}>
+                Identificación
+              </label>
+              <div>
+                <label>
+                  <input
+                    type="radio"
+                    name="tipo_identificacion"
+                    value="cedula"
+                    checked={formData.tipo_identificacion === "cedula"}
+                    onChange={handleChange}
+                  />{" "}
+                  Cédula
+                </label>{" "}
+                <label>
+                  <input
+                    type="radio"
+                    name="tipo_identificacion"
+                    value="ruc"
+                    checked={formData.tipo_identificacion === "ruc"}
+                    onChange={handleChange}
+                  />{" "}
+                  RUC
+                </label>{" "}
+                <label>
+                  <input
+                    type="radio"
+                    name="tipo_identificacion"
+                    value="otro"
+                    checked={formData.tipo_identificacion === "otro"}
+                    onChange={handleChange}
+                  />{" "}
+                  Otro
+                </label>
+              </div>
+            </div>
             <input
               type="text"
               name="cedula"
@@ -325,7 +446,13 @@ export default function RegistrarOrden({
               onChange={handleChange}
               className={styles.input}
               required
-              placeholder="Ej: 123-456789-0123X"
+              placeholder={
+                formData.tipo_identificacion === "cedula"
+                  ? "Ej: 123-456789-0123X"
+                  : formData.tipo_identificacion === "ruc"
+                  ? "Ej: J0310000003456"
+                  : "Número de pasaporte u otro"
+              }
             />
           </div>
 
@@ -489,46 +616,37 @@ export default function RegistrarOrden({
             />
           </div>
 
-          {(rolUsuario !== "vendedor" || !formData.id_registro) && (
-            <div className={styles.formGroup}>
-              <label className={styles.label}>Estado</label>
-              <select
-                name="estado"
-                value={formData.estado}
-                onChange={handleChange}
-                className={styles.select}
-                required
-              >
-                {rolUsuario === "vendedor" ? (
-                  <>
-                    <option value="Nueva">Nueva</option>
-                    <option value="Refacturada">Refacturada</option>
-                  </>
-                ) : (
-                  <>
-                    <option value="Nueva">Nueva</option>
-                    <option value="Recibida">Recibida</option>
-                    <option value="Refacturada">Refacturada</option>
-                    <option value="Refacturada-Recibida">
-                      Refacturada-Recibida
-                    </option>
-                  </>
-                )}
-              </select>
-            </div>
-          )}
+{(rolUsuario !== "vendedor" || !formData.id_registro) && (
+  <div className={styles.formGroup}>
+    <label className={styles.label}>Estado:</label>
+    <select
+      name="id_estado"
+      value={formData.id_estado || ""}
+      onChange={handleChange}
+      className={styles.select}
+      required
+    >
+      <option value="">Seleccione un estado</option>
+      {obtenerEstadosPermitidos(formData.id_estado).map((e) => (
+        <option key={e.id_estado} value={e.id_estado}>
+          {e.nombre}
+        </option>
+      ))}
+    </select>
+  </div>
+)}
 
         </div>
-          <div className={styles.formGroupFull}>
-            <label className={styles.label}>Observaciones</label>
-            <textarea
-              name="observacion"
-              value={formData.observacion}
-              onChange={handleChange}
-              className={styles.textarea}
-              rows={3}
-            />
-          </div>
+        <div className={styles.formGroupFull}>
+          <label className={styles.label}>Observaciones</label>
+          <textarea
+            name="observacion"
+            value={formData.observacion || ""}
+            onChange={handleChange}
+            className={styles.textarea}
+            rows={3}
+          />
+        </div>
       </fieldset>
 
       {/* Botones */}

@@ -55,7 +55,7 @@ const BuscadorOrdenes = forwardRef(({ onEditar, session }, ref) => {
 
     return (
       orden.num_ticket?.toString().toLowerCase().includes(busqueda) ||
-      orden.estado?.toLowerCase().includes(busqueda) ||
+      orden.estado?.nombre?.toLowerCase().includes(busqueda) ||
       orden.login?.nombre_vendedor?.toLowerCase().includes(busqueda) ||
       orden.direccion_entrega?.toLowerCase().includes(busqueda) ||
       orden.nombre_cliente?.toLowerCase().includes(busqueda) ||
@@ -65,7 +65,9 @@ const BuscadorOrdenes = forwardRef(({ onEditar, session }, ref) => {
       fechaCreacionStr.includes(busqueda) ||
       fechaEntregaStr.includes(busqueda) ||
       orden.tiendasinsa?.nombre_tiendasinsa?.toLowerCase().includes(busqueda) ||
-      orden.origen_inventario?.nombre_origen?.toLowerCase().includes(busqueda) ||
+      orden.origen_inventario?.nombre_origen
+        ?.toLowerCase()
+        .includes(busqueda) ||
       orden.tipopago?.nombre_tipopago?.toLowerCase().includes(busqueda) ||
       orden.tienda?.nombre_tienda?.toLowerCase().includes(busqueda) ||
       orden.tipoenvio?.nombre_Tipo?.toLowerCase().includes(busqueda)
@@ -97,7 +99,15 @@ const BuscadorOrdenes = forwardRef(({ onEditar, session }, ref) => {
 
   if (loading) return <p>Cargando órdenes...</p>;
   if (!ordenes.length) return <p>No hay órdenes para mostrar.</p>;
-
+  const estadoClases = {
+    Nueva: styles.estadoNueva,
+    Refacturada: styles.estadoRefacturada,
+    Preparacion: styles.estadoPreparacion,
+    "Enviado a Cliente": styles.estadoEnviado,
+    "En espera cliente": styles.estadoEspera,
+    Entregada: styles.estadoEntregada,
+    Anulada: styles.estadoAnulada,
+  };
   return (
     <div className={styles.container}>
       <div className={styles.header}>
@@ -206,8 +216,11 @@ const BuscadorOrdenes = forwardRef(({ onEditar, session }, ref) => {
                   }
                 >
                   <td data-label="N° Ticket">{orden.num_ticket}</td>
-                  {(rolUsuario === "admin" || rolUsuario === "superusuario") && (
-                    <td data-label="Vendedor">{orden.login?.nombre_vendedor || "-"}</td>
+                  {(rolUsuario === "admin" ||
+                    rolUsuario === "superusuario") && (
+                    <td data-label="Vendedor">
+                      {orden.login?.nombre_vendedor || "-"}
+                    </td>
                   )}
                   <td data-label="Cliente">{orden.nombre_cliente}</td>
                   <td data-label="Cédula">{orden.cedula || "-"}</td>
@@ -215,35 +228,43 @@ const BuscadorOrdenes = forwardRef(({ onEditar, session }, ref) => {
                   <td data-label="Tienda Sinsa">
                     {orden.tiendasinsa?.nombre_tiendasinsa || "-"}
                   </td>
-                  <td data-label="Inventario">{orden.origen_inventario?.nombre_origen || "-"}</td>
-                  <td data-label="Tienda">{orden.tienda?.nombre_tienda || "-"}</td>
-                  <td data-label="Tipo Envío">{orden.tipoenvio?.nombre_Tipo || "-"}</td>
-                  <td data-label="Tipo Pago">{orden.tipopago?.nombre_tipopago || "-"}</td>
-                  <td data-label="Flete">{orden.flete ? `C$ ${orden.flete}` : "-"}</td>
-                  <td data-label="Monto Factura">{orden.monto_factura ? `C$ ${orden.monto_factura}` : "-"}</td>
+                  <td data-label="Inventario">
+                    {orden.origen_inventario?.nombre_origen || "-"}
+                  </td>
+                  <td data-label="Tienda">
+                    {orden.tienda?.nombre_tienda || "-"}
+                  </td>
+                  <td data-label="Tipo Envío">
+                    {orden.tipoenvio?.nombre_Tipo || "-"}
+                  </td>
+                  <td data-label="Tipo Pago">
+                    {orden.tipopago?.nombre_tipopago || "-"}
+                  </td>
+                  <td data-label="Flete">
+                    {orden.flete ? `C$ ${orden.flete}` : "-"}
+                  </td>
+                  <td data-label="Monto Factura">
+                    {orden.monto_factura ? `C$ ${orden.monto_factura}` : "-"}
+                  </td>
                   <td data-label="Fecha creación">
                     {new Date(orden.fecha_creacion).toLocaleDateString("en-US")}
                   </td>
                   <td data-label="Fecha entrega">
                     {orden.fecha_entrega
-                      ? new Date(orden.fecha_entrega).toLocaleDateString("en-US")
+                      ? new Date(orden.fecha_entrega).toLocaleDateString(
+                          "en-US"
+                        )
                       : "-"}
                   </td>
                   <td
                     data-label="Estado"
                     className={
-                      orden.estado === "Nueva"
-                        ? styles.estadoNueva
-                        : orden.estado === "Recibida"
-                        ? styles.estadoRecibida
-                        : orden.estado === "Refacturada"
-                        ? styles.estadoRefacturada
-                        : orden.estado === "Refacturada-Recibida"
-                        ? styles.estadoRefacturadaRecibida
-                        : ""
+                      estadoClases[orden.estado?.nombre] || styles.estadoDefault
                     }
                   >
-                    <p className={styles.estadoBadge}>{orden.estado}</p>
+                    <p className={styles.estadoBadge}>
+                      {orden.estado?.nombre || "-"}
+                    </p>
                   </td>
                   <td data-label="Acción">
                     <button
@@ -253,7 +274,9 @@ const BuscadorOrdenes = forwardRef(({ onEditar, session }, ref) => {
                         onEditar({
                           ...orden,
                           fecha_entrega: orden.fecha_entrega
-                            ? new Date(orden.fecha_entrega).toISOString().split("T")[0]
+                            ? new Date(orden.fecha_entrega)
+                                .toISOString()
+                                .split("T")[0]
                             : "",
                         });
                       }}

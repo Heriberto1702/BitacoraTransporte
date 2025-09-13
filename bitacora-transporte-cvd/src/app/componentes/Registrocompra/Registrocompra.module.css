@@ -147,7 +147,12 @@
 .inputWithSymbol {
   position: relative;
 }
-
+.formRadioGroup{
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  flex-wrap: wrap;
+}
 .currencySymbol {
   position: absolute;
   left: 10px;

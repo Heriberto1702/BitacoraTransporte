@@ -108,23 +108,25 @@
   margin-top: 10px;
 }
 
-/* Estados de orden con badges */
 .estadoBadge {
-  display: inline-block;
-  font-weight: 600;
-  font-size: 0.85rem;
   padding: 4px 10px;
   border-radius: 12px;
+  font-weight: 600;
+  font-size: 0.9rem;
   color: white;
   text-align: center;
-  min-width: 100px;
+  display: inline-block;
 }
 
-/* Colores de estado */
-.estadoNueva { background-color: #ff9800; }
-.estadoRecibida { background-color: #4caf50; }
-.estadoRefacturada { background-color: #f57c00; }
-.estadoRefacturadaRecibida { background-color: #388e3c; }
+.estadoNueva { background-color: #3498db; }       /* azul */
+.estadoRefacturada { background-color: #f1c40f; } /* amarillo */
+.estadoPreparacion { background-color: #9b59b6; } /* morado */
+.estadoEnviado { background-color: #e67e22; }    /* naranja */
+.estadoEspera { background-color: #e67e22; }     /* gris claro */
+.estadoEntregada { background-color: #2ecc71; }  /* verde */
+.estadoAnulada { background-color: #e74c3c; }    /* rojo */
+
+.estadoDefault { background-color: #7f8c8d; }     /* gris por defecto */
 
 /* Paginación */
 .paginacionControls {
