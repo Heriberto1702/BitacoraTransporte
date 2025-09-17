@@ -319,6 +319,9 @@ function obtenerEstadosPermitidos(id_estado_actual) {
     if (rolUsuario === "vendedor") {
       return catalogos.estados.filter(e => e.id_estado === 1 || e.id_estado === 2);
     }
+     if (rolUsuario === "admin") {
+      return catalogos.estados.filter(e => e.id_estado === 1 || e.id_estado === 2 || e.id_estado === 3);
+    }
     if ( rolUsuario === "agente") {
       return catalogos.estados.filter(e => e.id_estado === 4 || e.id_estado === 5 || e.id_estado === 6);
     }
