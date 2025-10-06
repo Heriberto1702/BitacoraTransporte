@@ -88,81 +88,74 @@ export default function RegistrarOrden({
   const [error, setError] = useState("");
   const [activarDireccion, setActivarDireccion] = useState(false);
   const [activarTiendaSinsa, setActivarTiendaSinsa] = useState(false);
+  const [estadoTemporal, setEstadoTemporal] = useState("");
 
   const rolUsuario = session?.user?.rol || "usuario";
 
-useEffect(() => {
-  async function fetchCatalogos() {
-    try {
-      setLoading(true);
+  useEffect(() => {
+    async function fetchCatalogos() {
+      try {
+        setLoading(true);
 
-      const res = await fetch("/api/catalogos/todos");
-      if (!res.ok) throw new Error("Error al cargar catálogos");
+        const res = await fetch("/api/catalogos/todos");
+        if (!res.ok) throw new Error("Error al cargar catálogos");
 
-      const data = await res.json();
+        const data = await res.json();
 
-      setCatalogos({
-        tiendas: data.tiendas || [],
-        envios: data.envios || [],
-        origenes: data.origenes || [],
-        pagos: data.pagos || [],
-        tiendasinsa: data.tiendasinsa || [],
-        estados: data.estados || [],
-        transiciones: data.transiciones || [],
-      });
-    } catch (err) {
-      console.error(err);
-      setError("No se pudieron cargar los catálogos");
-    } finally {
-      setLoading(false);
+        setCatalogos({
+          tiendas: data.tiendas || [],
+          envios: data.envios || [],
+          origenes: data.origenes || [],
+          pagos: data.pagos || [],
+          tiendasinsa: data.tiendasinsa || [],
+          estados: data.estados || [],
+          transiciones: data.transiciones || [],
+        });
+      } catch (err) {
+        console.error(err);
+        setError("No se pudieron cargar los catálogos");
+      } finally {
+        setLoading(false);
+      }
     }
-  }
 
-  fetchCatalogos();
-}, []);
+    fetchCatalogos();
+  }, []);
 
+  useEffect(() => {
+    if (!ordenSeleccionada) {
+      setFormData(estadoInicial);
+      setEstadoTemporal(""); // ← reset temporal
+      return;
+    }
 
-
-
-useEffect(() => {
-  if (!ordenSeleccionada) {
-    // Si no hay orden seleccionada, restaurar estado inicial limpio
-    setFormData(estadoInicial);
-    return;
-  }
-
-  // Merge inicial (estadoInicial <- ordenSeleccionada)
-  const merged = {
-    ...estadoInicial,
-    ...ordenSeleccionada,
-    // mapeos específicos para inputs controlados
-    id_tipenvio: ordenSeleccionada.id_tipenvio?.toString() ?? "",
-    id_originventario: ordenSeleccionada.id_originventario?.toString() ?? "",
-    id_tienda: ordenSeleccionada.id_tienda?.toString() ?? "",
-    id_tipopago: ordenSeleccionada.id_tipopago?.toString() ?? "",
-    // si tu API devuelve objeto tiendasinsa, lo convertimos a nombre (para input text/datalist)
-    id_tiendasinsa: ordenSeleccionada.tiendasinsa?.nombre_tiendasinsa ?? "",
-    // fecha_entrega para input type=date (YYYY-MM-DD) o "" si no existe
-    fecha_entrega: ordenSeleccionada.fecha_entrega
-      ? new Date(ordenSeleccionada.fecha_entrega).toISOString().split("T")[0]
-      : "",
-    // monto_factura a string (evita null)
-    monto_factura:
-      ordenSeleccionada.monto_factura !== null &&
-      ordenSeleccionada.monto_factura !== undefined
-        ? String(ordenSeleccionada.monto_factura)
+    const merged = {
+      ...estadoInicial,
+      ...ordenSeleccionada,
+      id_tipenvio: ordenSeleccionada.id_tipenvio?.toString() ?? "",
+      id_originventario: ordenSeleccionada.id_originventario?.toString() ?? "",
+      id_tienda: ordenSeleccionada.id_tienda?.toString() ?? "",
+      id_tipopago: ordenSeleccionada.id_tipopago?.toString() ?? "",
+      id_tiendasinsa: ordenSeleccionada.tiendasinsa?.nombre_tiendasinsa ?? "",
+      fecha_entrega: ordenSeleccionada.fecha_entrega
+        ? new Date(ordenSeleccionada.fecha_entrega).toISOString().split("T")[0]
         : "",
-    tipo_identificacion: ordenSeleccionada.tipo_identificacion ?? "cedula",
-    id_estado: ordenSeleccionada.id_estado?.toString() ?? "",
-  };
+      monto_factura:
+        ordenSeleccionada.monto_factura !== null &&
+        ordenSeleccionada.monto_factura !== undefined
+          ? String(ordenSeleccionada.monto_factura)
+          : "",
+      tipo_identificacion: ordenSeleccionada.tipo_identificacion ?? "cedula",
+      id_estado: ordenSeleccionada.id_estado?.toString() ?? "",
+    };
 
-  // Reemplazar sólo null/undefined por "" para todas las claves
-  const limpio = Object.fromEntries(
-    Object.entries(merged).map(([k, v]) => [k, v ?? ""])
-  );
+    const limpio = Object.fromEntries(
+      Object.entries(merged).map(([k, v]) => [k, v ?? ""])
+    );
 
-  setFormData(limpio);
-}, [ordenSeleccionada]);
+    setFormData(limpio);
+    setEstadoTemporal(ordenSeleccionada.id_estado?.toString() ?? ""); // <--- nuevo
+  }, [ordenSeleccionada]);
 
   useEffect(() => {
     if (!ordenSeleccionada) {
@@ -263,20 +256,20 @@ useEffect(() => {
 
     const payload = {
       ...formData,
+      id_estado: estadoTemporal, // <--- ✅ usar el temporal al guardar
       num_ticket: parseInt(formData.num_ticket),
       flete: formData.flete ? parseInt(formData.flete) : null,
       monto_factura: parseFloat(formData.monto_factura),
       id_tiendasinsa,
     };
 
-const isActualizar = formData.id_registro != null && formData.id_registro !== "";
+    const isActualizar =
+      formData.id_registro != null && formData.id_registro !== "";
 
-const url = isActualizar
-  ? "/api/bitacora/actualizar"
-  : "/api/bitacora/crear";
-
-const method = isActualizar ? "PUT" : "POST";
-
+    const url = isActualizar
+      ? "/api/bitacora/actualizar"
+      : "/api/bitacora/crear";
+    const method = isActualizar ? "PUT" : "POST";
     try {
       const res = await fetch(url, {
         method,
@@ -307,37 +300,52 @@ const method = isActualizar ? "PUT" : "POST";
   if (error) return <p className={styles.errorMessage}>{error}</p>;
 
   const tieneDatos = Object.entries(formData).some(([key, value]) => {
-  // Excluir campos con valor inicial fijo
-  if (key === "estado" || key === "tipo_identificacion") return false;
+    // Excluir campos con valor inicial fijo
+    if (key === "estado" || key === "tipo_identificacion") return false;
 
-  // Considerar llenado solo si no está vacío
-  return value && value !== "";
-});
-function obtenerEstadosPermitidos(id_estado_actual) {
-  if (!id_estado_actual) {
-    // Si es creación o no hay estado aún, los vendedores solo pueden Nueva o Refacturada
-    if (rolUsuario === "vendedor") {
-      return catalogos.estados.filter(e => e.id_estado === 1 || e.id_estado === 2);
+    // Considerar llenado solo si no está vacío
+    return value && value !== "";
+  });
+  function obtenerEstadosPermitidos(id_estado_actual) {
+    if (!id_estado_actual) {
+      // Si es creación o no hay estado aún, los vendedores solo pueden Nueva o Refacturada
+      if (rolUsuario === "vendedor") {
+        return catalogos.estados.filter(
+          (e) => e.id_estado === 1 || e.id_estado === 2
+        );
+      }
+      if (rolUsuario === "admin") {
+        return catalogos.estados.filter(
+          (e) =>
+            e.id_estado === 1 ||
+            e.id_estado === 2 ||
+            e.id_estado === 3 ||
+            e.id_estado === 7
+        );
+      }
+      if (rolUsuario === "agente") {
+        return catalogos.estados.filter(
+          (e) => e.id_estado === 4 || e.id_estado === 5 || e.id_estado === 6
+        );
+      }
+      return catalogos.estados;
     }
-     if (rolUsuario === "admin") {
-      return catalogos.estados.filter(e => e.id_estado === 1 || e.id_estado === 2 || e.id_estado === 3);
-    }
-    if ( rolUsuario === "agente") {
-      return catalogos.estados.filter(e => e.id_estado === 4 || e.id_estado === 5 || e.id_estado === 6);
-    }
-    return catalogos.estados;
+
+    // Para edición: filtrar transiciones válidas según rol
+    const idsPermitidos = catalogos.transiciones
+      .filter(
+        (t) =>
+          t.estado_origen === Number(id_estado_actual) && t.rol === rolUsuario
+      )
+      .map((t) => t.estado_destino);
+
+    // Siempre incluir el estado actual
+    return catalogos.estados.filter(
+      (e) =>
+        e.id_estado === Number(id_estado_actual) ||
+        idsPermitidos.includes(e.id_estado)
+    );
   }
-
-  // Para edición: filtrar transiciones válidas según rol
-  const idsPermitidos = catalogos.transiciones
-    .filter(t => t.estado_origen === Number(id_estado_actual) && t.rol === rolUsuario)
-    .map(t => t.estado_destino);
-
-  // Siempre incluir el estado actual
-  return catalogos.estados.filter(
-    e => e.id_estado === Number(id_estado_actual) || idsPermitidos.includes(e.id_estado)
-  );
-}
   return (
     <form onSubmit={handleSubmit} className={styles.formContainer}>
       <h2 className={styles.title}>
@@ -619,26 +627,25 @@ function obtenerEstadosPermitidos(id_estado_actual) {
             />
           </div>
 
-{(rolUsuario !== "vendedor" || !formData.id_registro) && (
-  <div className={styles.formGroup}>
-    <label className={styles.label}>Estado:</label>
-    <select
-      name="id_estado"
-      value={formData.id_estado || ""}
-      onChange={handleChange}
-      className={styles.select}
-      required
-    >
-      <option value="">Seleccione un estado</option>
-      {obtenerEstadosPermitidos(formData.id_estado).map((e) => (
-        <option key={e.id_estado} value={e.id_estado}>
-          {e.nombre}
-        </option>
-      ))}
-    </select>
-  </div>
-)}
-
+          {(rolUsuario !== "vendedor" || !formData.id_registro) && (
+            <div className={styles.formGroup}>
+              <label className={styles.label}>Estado:</label>
+              <select
+                name="id_estado"
+                value={estadoTemporal || ""}
+                onChange={(e) => setEstadoTemporal(e.target.value)}
+                className={styles.select}
+                required
+              >
+                <option value="">Seleccione un estado</option>
+                {obtenerEstadosPermitidos(formData.id_estado).map((e) => (
+                  <option key={e.id_estado} value={e.id_estado}>
+                    {e.nombre}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
         </div>
         <div className={styles.formGroupFull}>
           <label className={styles.label}>Observaciones</label>
