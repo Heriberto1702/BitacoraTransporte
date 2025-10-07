@@ -91,7 +91,7 @@ export default function RegistrarOrden({
   const [estadoTemporal, setEstadoTemporal] = useState("");
 
   const rolUsuario = session?.user?.rol || "usuario";
-
+  const soloLectura = rolUsuario === "agente";
   useEffect(() => {
     async function fetchCatalogos() {
       try {
@@ -367,7 +367,9 @@ export default function RegistrarOrden({
             <select
               name="id_tienda"
               value={formData.id_tienda}
-              onChange={handleChange}
+              onChange={(e) => {
+            if (!soloLectura) handleChange(e);
+          }}
               className={styles.select}
               required
             >
@@ -389,6 +391,7 @@ export default function RegistrarOrden({
               name="num_ticket"
               value={formData.num_ticket}
               onChange={handleChange}
+               readOnly={soloLectura}
               className={styles.input}
               placeholder="Número de ticket"
               inputMode="numeric"
@@ -405,6 +408,7 @@ export default function RegistrarOrden({
               name="nombre_cliente"
               value={formData.nombre_cliente}
               onChange={handleChange}
+              readOnly={soloLectura}
               placeholder="Nombre completo"
               className={styles.input}
               required
@@ -425,6 +429,7 @@ export default function RegistrarOrden({
                     value="cedula"
                     checked={formData.tipo_identificacion === "cedula"}
                     onChange={handleChange}
+                    disabled={soloLectura}
                   />{" "}
                   Cédula
                 </label>{" "}
@@ -435,6 +440,7 @@ export default function RegistrarOrden({
                     value="ruc"
                     checked={formData.tipo_identificacion === "ruc"}
                     onChange={handleChange}
+                    disabled={soloLectura}
                   />{" "}
                   RUC
                 </label>{" "}
@@ -445,6 +451,7 @@ export default function RegistrarOrden({
                     value="otro"
                     checked={formData.tipo_identificacion === "otro"}
                     onChange={handleChange}
+                    disabled={soloLectura}
                   />{" "}
                   Otro
                 </label>
@@ -455,6 +462,7 @@ export default function RegistrarOrden({
               name="cedula"
               value={formData.cedula}
               onChange={handleChange}
+              readOnly={soloLectura}
               className={styles.input}
               required
               placeholder={
@@ -476,6 +484,7 @@ export default function RegistrarOrden({
               name="telefono"
               value={formData.telefono}
               onChange={handleChange}
+              readOnly={soloLectura}
               className={styles.input}
               required
               placeholder="Teléfono"
@@ -495,7 +504,9 @@ export default function RegistrarOrden({
             <select
               name="id_tipenvio"
               value={formData.id_tipenvio}
-              onChange={handleChange}
+              onChange={(e) => {
+            if (!soloLectura) handleChange(e);
+          }}
               className={styles.select}
               required
             >
@@ -515,7 +526,9 @@ export default function RegistrarOrden({
             <select
               name="id_originventario"
               value={formData.id_originventario}
-              onChange={handleChange}
+              onChange={(e) => {
+            if (!soloLectura) handleChange(e);
+          }}
               className={styles.select}
               required
             >
@@ -550,6 +563,7 @@ export default function RegistrarOrden({
               name="id_tiendasinsa"
               value={formData.id_tiendasinsa}
               onChange={handleChange}
+                readOnly={soloLectura}
               className={styles.select}
               placeholder="Seleccione tienda Sinsa"
               disabled={ordenSeleccionada ? false : !activarTiendaSinsa}
@@ -569,6 +583,7 @@ export default function RegistrarOrden({
               name="direccion_entrega"
               value={formData.direccion_entrega}
               onChange={handleChange}
+              readOnly={soloLectura}
               className={styles.input}
               placeholder="Dirección de entrega"
               disabled={ordenSeleccionada ? false : !activarDireccion}
@@ -588,6 +603,7 @@ export default function RegistrarOrden({
               name="flete"
               value={formData.flete}
               onChange={handleChange}
+              readOnly={soloLectura}
               className={styles.input}
               placeholder="Monto en córdobas"
             />
@@ -600,7 +616,9 @@ export default function RegistrarOrden({
             <select
               name="id_tipopago"
               value={formData.id_tipopago}
-              onChange={handleChange}
+              onChange={(e) => {
+            if (!soloLectura) handleChange(e);
+          }}
               className={styles.select}
               required
             >
@@ -621,6 +639,7 @@ export default function RegistrarOrden({
               name="monto_factura"
               value={formData.monto_factura}
               onChange={handleChange}
+              readOnly={soloLectura}
               className={styles.input}
               required
               placeholder="Monto en córdobas"

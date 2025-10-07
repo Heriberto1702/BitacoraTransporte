@@ -147,6 +147,11 @@
 .inputWithSymbol {
   position: relative;
 }
+.readOnly {
+  background-color: #f4f4f4;
+  cursor: not-allowed;
+  color: #666;
+}
 .formRadioGroup{
   display: flex;
   justify-content: space-between;
