@@ -258,10 +258,10 @@
   }
 }
 
-@media (max-width: 375px) {
+@media (max-width: 480px) {
   .formContainer {
-    width: 360px;
-    padding: 22px;
+    width: 100%;
+    
   }
 
   .title {

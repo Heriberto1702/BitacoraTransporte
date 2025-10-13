@@ -17,24 +17,25 @@ model Login {
   fecha_creacion    DateTime           @default(now())
   registros         RegistroBitacora[]
 }
-model Estado {
-  id_estado   Int                 @id @default(autoincrement())
-  nombre      String              @unique
-  codigo      String              @unique // Ej: "NUEVA", "REF", "PREP"
-  orden       Int?                // Opcional: para definir secuencia
-  fecha_creacion DateTime         @default(now())
-  registros   RegistroBitacora[]
-  origenes    TransicionEstado[]  @relation("OrigenEstado")
-  destinos    TransicionEstado[]  @relation("DestinoEstado")
-}
-model TransicionEstado {
-  id_transicion Int     @id @default(autoincrement())
-  estado_origen Int
-  estado_destino Int
-  rol            String // "vendedor", "admin", "agente"
 
-  origen Estado @relation("OrigenEstado", fields: [estado_origen], references: [id_estado])
-  destino Estado @relation("DestinoEstado", fields: [estado_destino], references: [id_estado])
+model Estado {
+  id_estado      Int                @id @default(autoincrement())
+  nombre         String             @unique
+  codigo         String             @unique
+  orden          Int?
+  fecha_creacion DateTime           @default(now())
+  registros      RegistroBitacora[]
+  destinos       TransicionEstado[] @relation("DestinoEstado")
+  origenes       TransicionEstado[] @relation("OrigenEstado")
+}
+
+model TransicionEstado {
+  id_transicion  Int    @id @default(autoincrement())
+  estado_origen  Int
+  estado_destino Int
+  rol            String
+  destino        Estado @relation("DestinoEstado", fields: [estado_destino], references: [id_estado])
+  origen         Estado @relation("OrigenEstado", fields: [estado_origen], references: [id_estado])
 }
 
 model Tienda {
@@ -87,20 +88,19 @@ model RegistroBitacora {
   id_tienda          Int
   id_tipopago        Int
   id_login           Int
-  id_estado          Int              // Nuevo campo
+  id_estado          Int
   fecha_entrega      DateTime
   observacion        String?
   monto_factura      Decimal          @db.Decimal(10, 2)
   cedula             String
   telefono           String
   hora_actualizacion DateTime         @updatedAt
-
+  historial_estados  Json?
+  estado             Estado           @relation(fields: [id_estado], references: [id_estado])
   login              Login            @relation(fields: [id_login], references: [id_login])
   origen_inventario  OrigenInventario @relation(fields: [id_originventario], references: [id_originventario])
   tienda             Tienda           @relation(fields: [id_tienda], references: [id_tienda])
   tiendasinsa        Tiendasinsa?     @relation(fields: [id_tiendasinsa], references: [id_tiendasinsa])
   tipoenvio          Tipo_Envio       @relation(fields: [id_tipenvio], references: [id_tipenvio])
   tipopago           TipoPago         @relation(fields: [id_tipopago], references: [id_tipopago])
-  estado             Estado           @relation(fields: [id_estado], references: [id_estado])
 }
-
