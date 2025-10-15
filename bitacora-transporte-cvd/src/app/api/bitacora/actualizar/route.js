@@ -101,15 +101,15 @@ export async function PUT(req) {
       return new Response(JSON.stringify(ordenActualizada), { status: 200 });
     }
 
-    // --- ADMIN o SUPERUSUARIO ---
+ // --- ADMIN o SUPERUSUARIO ---
     const dataToUpdate = {
-      num_ticket: parseInt(data.num_ticket),
+      num_ticket: data.num_ticket ? parseInt(data.num_ticket) : null,
       nombre_cliente: data.nombre_cliente,
       direccion_entrega: data.direccion_entrega || null,
       flete: data.flete ? parseInt(data.flete) : null,
-      fecha_entrega: data.fecha_entrega ? new Date(data.fecha_entrega + "T00:00:00") : null,
+      fecha_entrega: data.fecha_entrega ? new Date(`${data.fecha_entrega}T00:00:00`) : null,
       observacion: data.observacion || null,
-      monto_factura: parseFloat(data.monto_factura),
+      monto_factura: data.monto_factura ? parseFloat(data.monto_factura) : null,
       cedula: data.cedula,
       telefono: data.telefono,
       hora_actualizacion: ahoraUTC,
@@ -120,13 +120,12 @@ export async function PUT(req) {
       tiendasinsa: data.id_tiendasinsa
         ? { connect: { id_tiendasinsa: parseInt(data.id_tiendasinsa) } }
         : undefined,
-      agente:{ connect: {  id_agente_asignado: parseInt(data. id_agente_asignado) } },
     };
-  
-// 🔹 Asignar agente solo si el usuario es admin o superusuario
-if ((usuario.rol === "admin" || usuario.rol === "superusuario") && data.id_login) {
-  dataToUpdate.id_agente_asignado = parseInt(data.id_agente_asignado);
-}
+
+    // 🔹 Asignar agente solo si el usuario es admin o superusuario y hay un ID válido
+    if ((usuario.rol === "admin" || usuario.rol === "superusuario") && data.id_agente) {
+      dataToUpdate.agente = { connect: { id_agente: parseInt(data.id_agente) } };
+    }
     // Actualizar estado y historial solo si cambia
     if (nuevoEstadoId !== estadoActualId) {
       dataToUpdate.estado = { connect: { id_estado: nuevoEstadoId } };

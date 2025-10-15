@@ -17,6 +17,7 @@ const estadoInicial = {
   id_tiendasinsa: "",
   observacion: "",
   id_estado: "", // ahora es id_estado
+  id_agente: "", // agente asignado
   monto_factura: "",
   cedula: "",
   telefono: "",
@@ -81,7 +82,7 @@ export default function RegistrarOrden({
     origenes: [],
     pagos: [],
     tiendasinsa: [],
-    agentes: [],
+    agente: [],
     estados: [],
     transiciones: [],
   });
@@ -109,7 +110,7 @@ export default function RegistrarOrden({
           origenes: data.origenes || [],
           pagos: data.pagos || [],
           tiendasinsa: data.tiendasinsa || [],
-          agentes: data.agentes || [],
+          agente: data.agente || [],
           estados: data.estados || [],
           transiciones: data.transiciones || [],
         });
@@ -150,6 +151,7 @@ export default function RegistrarOrden({
       tipo_identificacion: ordenSeleccionada.tipo_identificacion ?? "cedula",
 
       id_estado: ordenSeleccionada.id_estado?.toString() ?? "",
+      id_agente: ordenSeleccionada.id_agente?.toString() ?? "",
     };
 
     const limpio = Object.fromEntries(
@@ -650,21 +652,21 @@ export default function RegistrarOrden({
           </div>
 {(rolUsuario === "admin" || rolUsuario === "agente") && (
   <div className={styles.formGroup}>
-    <label className={`${styles.label} ${styles.requiredLabel}`}>
+    <label className={`${styles.label}`}>
       Asignado a:
     </label>
     <select
-      name="id_login"
-      value={formData.id_login || ""}
+      name="id_agente"
+      value={formData.id_agente || ""}
       onChange={(e) => {
         if (!soloLectura) handleChange(e);
       }}
       className={styles.select}
     >
       <option value="">Seleccione agente</option>
-      {catalogos.agentes.map((a) => (
-        <option key={a.id_login} value={a.id_login}>
-          {a.nombre_vendedor}
+      {catalogos.agente.map((a) => (
+        <option key={a.id_agente} value={a.id_agente}>
+          {a.nombre_agente}
         </option>
       ))}
     </select>

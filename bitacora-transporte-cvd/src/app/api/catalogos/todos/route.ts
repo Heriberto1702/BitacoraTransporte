@@ -9,7 +9,7 @@ export async function GET() {
       origenes,
       pagos,
       tiendasinsa,
-      agentes,
+      agente,
       estados,
       transiciones,
     ] = await Promise.all([
@@ -18,14 +18,7 @@ export async function GET() {
       prisma.origenInventario.findMany(),
       prisma.tipoPago.findMany(),
       prisma.tiendasinsa.findMany(),
-      prisma.login.findMany({
-        where: { rol: "agente" },
-        select: {
-          id_login: true,
-          nombre_vendedor: true,
-          correo: true,
-        },
-      }),
+      prisma.agente.findMany(),
       prisma.estado.findMany(), // estados
       prisma.transicionEstado.findMany(), // transiciones
     ]);
@@ -36,7 +29,7 @@ export async function GET() {
       origenes,
       pagos,
       tiendasinsa,
-      agentes,
+      agente,
       estados,
       transiciones, // agregamos transiciones
     });
