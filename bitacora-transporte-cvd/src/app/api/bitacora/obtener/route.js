@@ -62,6 +62,7 @@ export async function GET(req) {
     origen_inventario: true,
     tipopago: true,
     login: true,
+    agente: true,
     estado:true
   };
 

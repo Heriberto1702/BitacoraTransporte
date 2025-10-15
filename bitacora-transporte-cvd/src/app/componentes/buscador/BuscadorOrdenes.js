@@ -69,6 +69,7 @@ const BuscadorOrdenes = forwardRef(({ onEditar, session }, ref) => {
         ?.toLowerCase()
         .includes(busqueda) ||
       orden.tipopago?.nombre_tipopago?.toLowerCase().includes(busqueda) ||
+      orden.agente?.nombre_agente?.toLowerCase().includes(busqueda) ||
       orden.tienda?.nombre_tienda?.toLowerCase().includes(busqueda) ||
       orden.tipoenvio?.nombre_Tipo?.toLowerCase().includes(busqueda)
     );
@@ -201,6 +202,9 @@ const BuscadorOrdenes = forwardRef(({ onEditar, session }, ref) => {
                 <th>Monto Factura</th>
                 <th>Fecha creación</th>
                 <th>Fecha entrega</th>
+                {(rolUsuario === "admin" || rolUsuario === "superusuario") && (
+                  <th>Agente</th>
+                )}
                 <th>Estado</th>
                 <th>Acción</th>
               </tr>
@@ -252,10 +256,16 @@ const BuscadorOrdenes = forwardRef(({ onEditar, session }, ref) => {
                   <td data-label="Fecha entrega">
                     {orden.fecha_entrega
                       ? new Date(orden.fecha_entrega).toLocaleDateString(
-                          "en-US"
-                        )
+                        "en-US"
+                      )
                       : "-"}
                   </td>
+                      {(rolUsuario === "admin" ||
+                        rolUsuario === "superusuario") && (
+                        <td data-label="Agente">
+                          {orden.agente?.nombre_agente || "-"}
+                        </td>
+                      )}
                   <td
                     data-label="Estado"
                     className={
