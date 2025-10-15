@@ -25,9 +25,11 @@ export async function GET(request) {
     const entregadas = await prisma.registroBitacora.count({
       where: { ...fechaFilter, id_estado: 6 },
     });
+    
     const pendientes = await prisma.registroBitacora.count({
       where: { ...fechaFilter, id_estado: { notIn: [6, 7] } },
     });
+
     const Anuladas = await prisma.registroBitacora.count({
       where: { ...fechaFilter, id_estado: 7 },
     });

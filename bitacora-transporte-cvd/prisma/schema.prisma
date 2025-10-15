@@ -16,6 +16,7 @@ model Login {
   apellido_vendedor String
   fecha_creacion    DateTime           @default(now())
   registros         RegistroBitacora[]
+  asignaciones      RegistroBitacora[] @relation("AgenteAsignado")
 }
 
 model Estado {
@@ -96,6 +97,8 @@ model RegistroBitacora {
   telefono           String
   hora_actualizacion DateTime         @updatedAt
   historial_estados  Json?
+  id_agente_asignado Int?
+  agente             Login?           @relation("AgenteAsignado", fields: [id_agente_asignado], references: [id_login])
   estado             Estado           @relation(fields: [id_estado], references: [id_estado])
   login              Login            @relation(fields: [id_login], references: [id_login])
   origen_inventario  OrigenInventario @relation(fields: [id_originventario], references: [id_originventario])

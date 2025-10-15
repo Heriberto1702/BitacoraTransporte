@@ -61,6 +61,7 @@ export async function POST(req) {
       });
     }
 
+    // 🔹 Crear orden incluyendo historial inicial
     const nuevaOrden = await prisma.registroBitacora.create({
       data: {
         num_ticket: numTicket,
@@ -87,6 +88,14 @@ export async function POST(req) {
         ...(data.id_tiendasinsa && {
           tiendasinsa: { connect: { id_tiendasinsa: parseInt(data.id_tiendasinsa) } },
         }),
+
+        // 🔹 Guardar estado inicial en el historial
+        historial_estados: [
+          {
+            estado: estadoInicial.nombre, // "Nueva" o "Refacturada"
+            fecha_cambio: new Date(),
+          },
+        ],
       },
       include: {
         estado: true,

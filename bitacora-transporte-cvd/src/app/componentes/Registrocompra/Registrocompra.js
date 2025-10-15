@@ -81,6 +81,7 @@ export default function RegistrarOrden({
     origenes: [],
     pagos: [],
     tiendasinsa: [],
+    agentes: [],
     estados: [],
     transiciones: [],
   });
@@ -108,6 +109,7 @@ export default function RegistrarOrden({
           origenes: data.origenes || [],
           pagos: data.pagos || [],
           tiendasinsa: data.tiendasinsa || [],
+          agentes: data.agentes || [],
           estados: data.estados || [],
           transiciones: data.transiciones || [],
         });
@@ -146,6 +148,7 @@ export default function RegistrarOrden({
           ? String(ordenSeleccionada.monto_factura)
           : "",
       tipo_identificacion: ordenSeleccionada.tipo_identificacion ?? "cedula",
+
       id_estado: ordenSeleccionada.id_estado?.toString() ?? "",
     };
 
@@ -159,7 +162,7 @@ export default function RegistrarOrden({
 
   useEffect(() => {
     if (!ordenSeleccionada) {
-      if (["1", "5", "6"].includes(formData.id_tipenvio)) {
+      if (["1", "5", "6", "7"].includes(formData.id_tipenvio)) {
         setActivarDireccion(true);
         setActivarTiendaSinsa(false);
       } else if (["4"].includes(formData.id_tipenvio)) {
@@ -368,8 +371,8 @@ export default function RegistrarOrden({
               name="id_tienda"
               value={formData.id_tienda}
               onChange={(e) => {
-            if (!soloLectura) handleChange(e);
-          }}
+                if (!soloLectura) handleChange(e);
+              }}
               className={styles.select}
               required
             >
@@ -391,7 +394,7 @@ export default function RegistrarOrden({
               name="num_ticket"
               value={formData.num_ticket}
               onChange={handleChange}
-               readOnly={soloLectura}
+              readOnly={soloLectura}
               className={styles.input}
               placeholder="Número de ticket"
               inputMode="numeric"
@@ -505,8 +508,8 @@ export default function RegistrarOrden({
               name="id_tipenvio"
               value={formData.id_tipenvio}
               onChange={(e) => {
-            if (!soloLectura) handleChange(e);
-          }}
+                if (!soloLectura) handleChange(e);
+              }}
               className={styles.select}
               required
             >
@@ -527,8 +530,8 @@ export default function RegistrarOrden({
               name="id_originventario"
               value={formData.id_originventario}
               onChange={(e) => {
-            if (!soloLectura) handleChange(e);
-          }}
+                if (!soloLectura) handleChange(e);
+              }}
               className={styles.select}
               required
             >
@@ -563,7 +566,7 @@ export default function RegistrarOrden({
               name="id_tiendasinsa"
               value={formData.id_tiendasinsa}
               onChange={handleChange}
-                readOnly={soloLectura}
+              readOnly={soloLectura}
               className={styles.select}
               placeholder="Seleccione tienda Sinsa"
               disabled={ordenSeleccionada ? false : !activarTiendaSinsa}
@@ -617,8 +620,8 @@ export default function RegistrarOrden({
               name="id_tipopago"
               value={formData.id_tipopago}
               onChange={(e) => {
-            if (!soloLectura) handleChange(e);
-          }}
+                if (!soloLectura) handleChange(e);
+              }}
               className={styles.select}
               required
             >
@@ -645,7 +648,29 @@ export default function RegistrarOrden({
               placeholder="Monto en córdobas"
             />
           </div>
-
+{(rolUsuario === "admin" || rolUsuario === "agente") && (
+  <div className={styles.formGroup}>
+    <label className={`${styles.label} ${styles.requiredLabel}`}>
+      Asignado a:
+    </label>
+    <select
+      name="id_login"
+      value={formData.id_login || ""}
+      onChange={(e) => {
+        if (!soloLectura) handleChange(e);
+      }}
+      className={styles.select}
+      required
+    >
+      <option value="">Seleccione agente</option>
+      {catalogos.agentes.map((a) => (
+        <option key={a.id_login} value={a.id_login}>
+          {a.nombre_vendedor}
+        </option>
+      ))}
+    </select>
+  </div>
+)}
           {(rolUsuario !== "vendedor" || !formData.id_registro) && (
             <div className={styles.formGroup}>
               <label className={styles.label}>Estado:</label>

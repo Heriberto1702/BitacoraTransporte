@@ -11,7 +11,7 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import ExportDashBoard from "../componentes/exportarAexcel/ExportDashBoard";
-
+import Productividad from "../componentes/Productividad/Productividad";
 export default function DashboardBitacora() {
   const [data, setData] = useState(null);
   const [fechaInicio, setFechaInicio] = useState("");
@@ -56,6 +56,7 @@ export default function DashboardBitacora() {
   const topOrigen = data.origenInventario ? data.origenInventario.slice(0, 5) : [];
 
   return (
+    <>
     <div style={{ padding: "20px", fontFamily: "Arial, sans-serif" }}>
       <h1 style={{ fontSize: "24px", fontWeight: "bold", color: "#333" }}>Panel de Bitácora</h1>
       <Link href="/">Inicio</Link>
@@ -94,6 +95,7 @@ export default function DashboardBitacora() {
         <Card titulo="Promedio de Flete" valor={`C$${Number(data.montoFlete || 0).toFixed(2)}`} />
       </div>
 
+        <Productividad />
       {/* Gráfico */}
       <div style={{ backgroundColor: "#fff", borderRadius: "10px", boxShadow: "0 2px 6px rgba(0,0,0,0.1)", padding: "20px", marginTop: "30px" }}>
         <h2 style={{ fontSize: "18px", color: "#444", marginBottom: "10px" }}>Órdenes por Estado</h2>
@@ -134,6 +136,7 @@ export default function DashboardBitacora() {
       {/* Exportar */}
       <ExportDashBoard data={data} />
     </div>
+    </>
   );
 }
 
