@@ -660,7 +660,6 @@ export default function RegistrarOrden({
         if (!soloLectura) handleChange(e);
       }}
       className={styles.select}
-      required
     >
       <option value="">Seleccione agente</option>
       {catalogos.agentes.map((a) => (

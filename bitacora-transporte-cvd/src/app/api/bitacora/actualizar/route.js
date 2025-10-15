@@ -120,7 +120,7 @@ export async function PUT(req) {
       tiendasinsa: data.id_tiendasinsa
         ? { connect: { id_tiendasinsa: parseInt(data.id_tiendasinsa) } }
         : undefined,
-        
+      agente:{ connect: {  id_agente_asignado: parseInt(data. id_agente_asignado) } },
     };
   
 // 🔹 Asignar agente solo si el usuario es admin o superusuario
