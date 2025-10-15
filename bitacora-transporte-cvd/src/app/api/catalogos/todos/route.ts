@@ -1,8 +1,12 @@
 import { NextResponse } from "next/server";
 import prisma from "../../../../lib/prisma";
 
+// 🕒 Cachear respuesta por 24 horas (86400 segundos)
+export const revalidate = 86400;
+
 export async function GET() {
   try {
+    // Ejecutamos todas las consultas en paralelo (eficiente)
     const [
       tiendas,
       envios,
@@ -19,10 +23,11 @@ export async function GET() {
       prisma.tipoPago.findMany(),
       prisma.tiendasinsa.findMany(),
       prisma.agente.findMany(),
-      prisma.estado.findMany(), // estados
-      prisma.transicionEstado.findMany(), // transiciones
+      prisma.estado.findMany(),
+      prisma.transicionEstado.findMany(),
     ]);
 
+    // Devolvemos el JSON consolidado
     return NextResponse.json({
       tiendas,
       envios,
@@ -31,10 +36,10 @@ export async function GET() {
       tiendasinsa,
       agente,
       estados,
-      transiciones, // agregamos transiciones
+      transiciones,
     });
   } catch (error) {
-    console.error("Error cargando catálogos:", error);
+    console.error("❌ Error cargando catálogos:", error);
     return NextResponse.json(
       { error: "Error cargando catálogos" },
       { status: 500 }
