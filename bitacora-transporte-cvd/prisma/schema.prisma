@@ -15,8 +15,8 @@ model Login {
   nombre_vendedor   String
   apellido_vendedor String
   fecha_creacion    DateTime           @default(now())
-  registros         RegistroBitacora[]
   asignaciones      RegistroBitacora[] @relation("AgenteAsignado")
+  registros         RegistroBitacora[]
 }
 
 model Estado {
