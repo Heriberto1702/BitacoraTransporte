@@ -245,7 +245,7 @@
 /* Responsive */
 @media (max-width: 768px) {
   .formContainer {
-    width: 760px;
+    width: 100%;
     padding: 30px;
   }
 

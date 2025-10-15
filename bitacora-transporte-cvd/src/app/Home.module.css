@@ -62,17 +62,7 @@
   box-shadow: 0 4px 8px rgba(0,0,0,0.3);
 }
 
-/* Contenido principal */
-.content {
-  max-width: 1800px;
-  margin: auto;
-  display: flex;
-  flex-direction: column;
-  flex-wrap: wrap;
-  align-content: center;
-  justify-content: center;
-  align-items: center;
-}
+
 
 .title {
   font-size: 30px;
@@ -102,14 +92,7 @@ margin:0;
   padding: 50px;
 }
 
-/* 📱 Responsive Design */
-/* Tablets y pantallas medianas */
-@media (max-width: 1024px) {
-  .contentMain > * {
-    flex: 1 1 100%;
-    min-width: unset;
-  }
-}
+
 
 /* Móviles grandes */
 @media (max-width: 768px) {
@@ -162,11 +145,5 @@ margin:0;
     font-size: 14px;
   }
 
-  .contentMain {
-    gap: 15px;
-  }
 
-  .contentMain > * {
-    border-radius: 8px;
-  }
 }

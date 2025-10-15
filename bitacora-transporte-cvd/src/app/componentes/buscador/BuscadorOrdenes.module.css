@@ -3,8 +3,8 @@
   background-color: #ffffff;
   border-radius: 25px;
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
-  width: 100%;
-  margin-bottom: 25px;
+  max-width: 1800px;
+margin: 0px auto 25px auto;
   font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
 }
 
@@ -41,7 +41,7 @@
 }
 
 .tableWrapper {
-  max-width: 1800px;
+ 
   border: 1px solid #e0e0e0;
   overflow-x: auto;
   border-radius: 8px;
@@ -50,7 +50,6 @@
 /* Tabla */
 .table {
   border-collapse: collapse;
-     /* ajusta según tus columnas */
   width: 100%;          /* ocupa todo el ancho posible dentro del wrapper */
 }
 
@@ -243,9 +242,7 @@
   .searchInput {
     width: 70%;
   }
-  .table {
-    min-width: 700px;
-  }
+
   .estadoBadge {
     font-size: 0.8rem;
     min-width: 90px;
@@ -254,6 +251,16 @@
 }
 
 @media (max-width: 768px) {
+
+  .tableWrapper{
+    
+    overflow-x: none;
+  }
+  .table th,
+.table td {
+  white-space: wrap;   /* evita que el texto se rompa */
+  padding: 8px 12px;
+}
   .searchInput {
     width: 90%;
   }
@@ -272,6 +279,8 @@
     justify-content: space-between;
     padding: 6px 0;
     border-bottom: none;
+    padding-left: 5%;
+    padding-right: 5%;
   }
   .table td::before {
     content: attr(data-label);
@@ -294,8 +303,8 @@
   width: 100%;
   }
   .table {
-    width: 1%;
-    min-width: 350px;
+    
+ 
     font-size: 14px;
     margin: 0 auto;
   }
