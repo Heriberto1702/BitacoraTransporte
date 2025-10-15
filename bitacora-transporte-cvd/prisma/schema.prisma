@@ -15,10 +15,6 @@ model Login {
   nombre_vendedor   String
   apellido_vendedor String
   fecha_creacion    DateTime           @default(now())
-<<<<<<< HEAD
-  asignaciones      RegistroBitacora[] @relation("AgenteAsignado")
-  registros         RegistroBitacora[]
-=======
   registros         RegistroBitacora[]
 }
 
@@ -27,7 +23,6 @@ model Agente {
   nombre_agente   String
   fecha_creacion  DateTime @default(now())
   registros       RegistroBitacora[]
->>>>>>> ares
 }
 
 model Estado {
