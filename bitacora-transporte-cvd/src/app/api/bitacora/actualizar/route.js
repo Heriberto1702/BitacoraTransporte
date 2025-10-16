@@ -37,7 +37,7 @@ export async function PUT(req) {
     const ahoraUTC = new Date();
 
     // 🔒 Bloquear edición si está ENTREGADA (6) o ANULADA (7), excepto superusuario
-    if ((estadoActualId === 6 || estadoActualId === 7) && usuario.rol !== "superusuario") {
+    if ((estadoActualId === 7 || estadoActualId === 8) && usuario.rol !== "superusuario") {
       return new Response(JSON.stringify({
         error: "No puedes modificar una orden entregada o anulada",
       }), { status: 403 });

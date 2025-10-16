@@ -103,8 +103,9 @@ const BuscadorOrdenes = forwardRef(({ onEditar, session }, ref) => {
   const estadoClases = {
     Nueva: styles.estadoNueva,
     Refacturada: styles.estadoRefacturada,
-    Preparacion: styles.estadoPreparacion,
-    "Enviado a Cliente": styles.estadoEnviado,
+    "En tránsito a cedis": styles.estadoEnTransito,
+    Preparación: styles.estadoPreparacion,
+    "Enviado al cliente": styles.estadoEnviado,
     "En espera cliente": styles.estadoEspera,
     Entregada: styles.estadoEntregada,
     Anulada: styles.estadoAnulada,
@@ -191,9 +192,9 @@ const BuscadorOrdenes = forwardRef(({ onEditar, session }, ref) => {
                 <th>Estado</th>
                 <th>Fecha creación</th>
                 <th>Fecha entrega</th>
-                {(rolUsuario === "admin" || rolUsuario === "superusuario"|| rolUsuario === "agente") && (
-                  <th>Agente</th>
-                )}
+                {(rolUsuario === "admin" ||
+                  rolUsuario === "superusuario" ||
+                  rolUsuario === "agente") && <th>Agente</th>}
                 <th>Cliente</th>
                 <th>Teléfono</th>
                 <th>Identificación</th>
@@ -221,24 +222,24 @@ const BuscadorOrdenes = forwardRef(({ onEditar, session }, ref) => {
                       : ""
                   }
                 >
-  <td data-label="Acción">
-    <button
-      className={styles.button}
-      onClick={() => {
-        setOrdenSeleccionadaId(orden.id_registro);
-        onEditar({
-          ...orden,
-          fecha_entrega: orden.fecha_entrega
-            ? new Date(orden.fecha_entrega)
-                .toISOString()
-                .split("T")[0]
-            : "",
-        });
-      }}
-    >
-      Editar
-    </button>
-  </td>
+                  <td data-label="Acción">
+                    <button
+                      className={styles.button}
+                      onClick={() => {
+                        setOrdenSeleccionadaId(orden.id_registro);
+                        onEditar({
+                          ...orden,
+                          fecha_entrega: orden.fecha_entrega
+                            ? new Date(orden.fecha_entrega)
+                                .toISOString()
+                                .split("T")[0]
+                            : "",
+                        });
+                      }}
+                    >
+                      Editar
+                    </button>
+                  </td>
                   <td data-label="N° Ticket">{orden.num_ticket}</td>
                   <td
                     data-label="Estado"
@@ -250,33 +251,34 @@ const BuscadorOrdenes = forwardRef(({ onEditar, session }, ref) => {
                       {orden.estado?.nombre || "-"}
                     </p>
                   </td>
-<td data-label="Fecha creación">
-  {new Date(orden.fecha_creacion).toLocaleString("en-US", {
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit",
-    second: "2-digit",
-    hour12: true, // cambiar a false si quieres formato 24h
-  })}
-</td>
-  <td data-label="Fecha entrega">
-    {orden.fecha_entrega
-      ? new Date(orden.fecha_entrega).toLocaleDateString(
-        "en-US"
-      )
-      : "-"}
-  </td>
-  {(rolUsuario === "admin" ||
-    rolUsuario === "superusuario" ||rolUsuario === "agente") && (
-    <td data-label="Agente">
-      {orden.agente?.nombre_agente || "-"}
-    </td>
-  )}
-                      <td data-label="Cliente">{orden.nombre_cliente}</td>
-                      <td data-label="Teléfono">{orden.telefono || "-"}</td>
-                      <td data-label="Identificación">{orden.cedula || "-"}</td>
+                  <td data-label="Fecha creación">
+                    {new Date(orden.fecha_creacion).toLocaleString("en-US", {
+                      year: "numeric",
+                      month: "2-digit",
+                      day: "2-digit",
+                      hour: "2-digit",
+                      minute: "2-digit",
+                      second: "2-digit",
+                      hour12: true, // cambiar a false si quieres formato 24h
+                    })}
+                  </td>
+                  <td data-label="Fecha entrega">
+                    {orden.fecha_entrega
+                      ? new Date(orden.fecha_entrega).toLocaleDateString(
+                          "en-US"
+                        )
+                      : "-"}
+                  </td>
+                  {(rolUsuario === "admin" ||
+                    rolUsuario === "superusuario" ||
+                    rolUsuario === "agente") && (
+                    <td data-label="Agente">
+                      {orden.agente?.nombre_agente || "-"}
+                    </td>
+                  )}
+                  <td data-label="Cliente">{orden.nombre_cliente}</td>
+                  <td data-label="Teléfono">{orden.telefono || "-"}</td>
+                  <td data-label="Identificación">{orden.cedula || "-"}</td>
                   {(rolUsuario === "admin" ||
                     rolUsuario === "superusuario") && (
                     <td data-label="Vendedor">
@@ -304,7 +306,9 @@ const BuscadorOrdenes = forwardRef(({ onEditar, session }, ref) => {
                   <td data-label="Monto Factura">
                     {orden.monto_factura ? `C$ ${orden.monto_factura}` : "-"}
                   </td>
-                  <td data-label="Dirección">{orden.direccion_entrega || "-"}</td>
+                  <td data-label="Dirección">
+                    {orden.direccion_entrega || "-"}
+                  </td>
                   <td data-label="Observación">{orden.observacion || "-"}</td>
                 </tr>
               ))}

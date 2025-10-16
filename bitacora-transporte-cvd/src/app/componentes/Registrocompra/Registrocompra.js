@@ -331,12 +331,14 @@ const limpio = Object.fromEntries(
             e.id_estado === 1 ||
             e.id_estado === 2 ||
             e.id_estado === 3 ||
-            e.id_estado === 7
+            e.id_estado === 4 ||
+            e.id_estado === 7 ||
+            e.id_estado === 8 
         );
       }
       if (rolUsuario === "agente") {
         return catalogos.estados.filter(
-          (e) => e.id_estado === 4 || e.id_estado === 5 || e.id_estado === 6
+          (e) => e.id_estado === 5 || e.id_estado === 6 || e.id_estado === 7
         );
       }
       return catalogos.estados;

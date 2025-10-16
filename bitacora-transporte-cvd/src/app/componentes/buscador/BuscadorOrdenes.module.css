@@ -132,6 +132,9 @@ margin: 0px auto 25px auto;
 .estadoRefacturada {
   background-color: #f1c40f;
 } /* amarillo */
+.estadoEnTransito {
+  background-color: #1abc9c;
+} /* turquesa */
 .estadoPreparacion {
   background-color: #9b59b6;
 } /* morado */
