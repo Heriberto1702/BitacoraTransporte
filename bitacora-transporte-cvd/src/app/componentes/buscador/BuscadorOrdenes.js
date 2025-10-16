@@ -3,6 +3,8 @@
 import { useEffect, useState, forwardRef, useImperativeHandle } from "react";
 import styles from "./BuscadorOrdenes.module.css";
 import ExportarExcel from "../exportarAexcel/ExportarExcel";
+import { supabase } from "../../../lib/supabaseClient";
+
 
 const BuscadorOrdenes = forwardRef(({ onEditar, session }, ref) => {
   const [ordenes, setOrdenes] = useState([]);
@@ -34,7 +36,26 @@ const BuscadorOrdenes = forwardRef(({ onEditar, session }, ref) => {
   }));
 
   useEffect(() => {
+    // 🔹 Cargar órdenes inicialmente
     fetchOrdenes();
+
+    // 🔹 Suscribirse a Realtime de Supabase
+    const canal = supabase
+      .channel("realtime-RegistroBitacora")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "RegistroBitacora" },
+        (payload) => {
+          console.log("🔔 Cambio detectado:", payload);
+          fetchOrdenes(); // recargar datos automáticamente
+        }
+      )
+      .subscribe();
+
+    // 🔹 Cleanup al desmontar el componente
+    return () => {
+      supabase.removeChannel(canal);
+    };
   }, []);
 
   // --- FILTRADO ---
