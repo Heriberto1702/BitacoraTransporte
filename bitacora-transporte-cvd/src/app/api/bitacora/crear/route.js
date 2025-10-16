@@ -24,7 +24,7 @@ export async function POST(req) {
     const data = await req.json();
     const numTicket = parseInt(data.num_ticket);
 
-    // 🔹 Validación: evitar tickets duplicados
+    // 🔹 Validar duplicado
     const existeTicket = await prisma.registroBitacora.findFirst({
       where: { num_ticket: numTicket },
     });
@@ -36,10 +36,15 @@ export async function POST(req) {
       );
     }
 
-    // 🔹 Ajuste de fecha
-    const fechaEntrega = new Date(data.fecha_entrega + "T00:00:00");
+    // 🔹 Ajuste de fecha (solo día, sin hora)
+    // Evitamos desfases de zona horaria
+ let fechaEntrega = null;
+if (data.fecha_entrega) {
+  const [year, month, day] = data.fecha_entrega.split("-").map(Number);
+  fechaEntrega = new Date(year, month - 1, day); // fecha local sin hora
+}
 
-    // 🔹 Validar estado inicial (Nueva o Refacturada)
+    // 🔹 Estado inicial (Nueva o Refacturada)
     let estadoInicial;
     if (data.id_estado) {
       estadoInicial = await prisma.estado.findFirst({
@@ -86,14 +91,16 @@ export async function POST(req) {
 
         // Relación opcional
         ...(data.id_tiendasinsa && {
-          tiendasinsa: { connect: { id_tiendasinsa: parseInt(data.id_tiendasinsa) } },
+          tiendasinsa: {
+            connect: { id_tiendasinsa: parseInt(data.id_tiendasinsa) },
+          },
         }),
 
-        // 🔹 Guardar estado inicial en el historial
+        // 🔹 Guardar estado inicial en historial (hora local)
         historial_estados: [
           {
-            estado: estadoInicial.nombre, // "Nueva" o "Refacturada"
-            fecha_cambio: new Date(),
+            estado: estadoInicial.nombre,
+            fecha_cambio: new Date(), // se guarda en hora local del servidor
           },
         ],
       },

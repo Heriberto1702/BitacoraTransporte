@@ -21,7 +21,7 @@ const estadoInicial = {
   monto_factura: "",
   cedula: "",
   telefono: "",
-  tipo_identificacion: "cedula", // nuevo campo
+  tipo_identificacion: "", // nuevo campo
 };
 
 // Función para formatear cédula automáticamente
@@ -116,7 +116,7 @@ export default function RegistrarOrden({
         });
       } catch (err) {
         console.error(err);
-        setError("No se pudieron cargar los catálogos");
+        setError("Estamos teniendo problemas para conectar con el servidor.");
       } finally {
         setLoading(false);
       }
@@ -148,15 +148,17 @@ export default function RegistrarOrden({
         ordenSeleccionada.monto_factura !== undefined
           ? String(ordenSeleccionada.monto_factura)
           : "",
-      tipo_identificacion: ordenSeleccionada.tipo_identificacion ?? "cedula",
+      tipo_identificacion: ordenSeleccionada.tipo_identificacion || estadoInicial.tipo_identificacion,
 
       id_estado: ordenSeleccionada.id_estado?.toString() ?? "",
       id_agente: ordenSeleccionada.id_agente?.toString() ?? "",
     };
 
-    const limpio = Object.fromEntries(
-      Object.entries(merged).map(([k, v]) => [k, v ?? ""])
-    );
+const limpio = Object.fromEntries(
+  Object.entries(merged).map(([k, v]) =>
+    k === "tipo_identificacion" ? [k, v] : [k, v ?? ""]
+  )
+);
 
     setFormData(limpio);
     setEstadoTemporal(ordenSeleccionada.id_estado?.toString() ?? ""); // <--- nuevo
@@ -180,7 +182,9 @@ export default function RegistrarOrden({
     }
   }, [formData.id_tipenvio, ordenSeleccionada]);
 
-  const hoy = new Date().toISOString().split("T")[0];
+  const hoy = new Date(Date.now() - new Date().getTimezoneOffset() * 60000)
+  .toISOString()
+  .split("T")[0];
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -467,7 +471,7 @@ export default function RegistrarOrden({
               name="cedula"
               value={formData.cedula}
               onChange={handleChange}
-              readOnly={soloLectura}
+              readOnly={soloLectura || !formData.tipo_identificacion}
               className={styles.input}
               required
               placeholder={
@@ -475,7 +479,9 @@ export default function RegistrarOrden({
                   ? "Ej: 123-456789-0123X"
                   : formData.tipo_identificacion === "ruc"
                   ? "Ej: J0310000003456"
-                  : "Número de pasaporte u otro"
+                  : formData.tipo_identificacion === "otro"
+                  ? "Ingrese otro tipo de identificación"
+                  : "Favor seleccione un tipo"
               }
             />
           </div>

@@ -191,7 +191,7 @@ const BuscadorOrdenes = forwardRef(({ onEditar, session }, ref) => {
                   <th>Vendedor</th>
                 )}
                 <th>Cliente</th>
-                <th>Cédula</th>
+                <th>Identificación</th>
                 <th>Dirección</th>
                 <th>Tienda Sinsa</th>
                 <th>Inventario</th>
@@ -227,7 +227,7 @@ const BuscadorOrdenes = forwardRef(({ onEditar, session }, ref) => {
                     </td>
                   )}
                   <td data-label="Cliente">{orden.nombre_cliente}</td>
-                  <td data-label="Cédula">{orden.cedula || "-"}</td>
+                  <td data-label="Identificación">{orden.cedula || "-"}</td>
                   <td data-label="Dirección">{orden.direccion_entrega}</td>
                   <td data-label="Tienda Sinsa">
                     {orden.tiendasinsa?.nombre_tiendasinsa || "-"}
