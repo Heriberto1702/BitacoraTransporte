@@ -1,6 +1,7 @@
 import { getServerSession } from "next-auth";
 import { authOptions } from "../../../../lib/authOptions";
 import prisma from "../../../../lib/prisma";
+import { supabase } from "@/lib/supabaseClient";
 
 export async function PUT(req) {
   try {
@@ -69,51 +70,62 @@ export async function PUT(req) {
       return new Response(JSON.stringify({ error: "No puedes editar órdenes con más de 24 horas" }), { status: 403 });
     }
 
-// --- AGENTE: solo puede modificar fecha_entrega, estado y observacion ---
-if (usuario.rol === "agente") {
-  const dataToUpdate = {};
+    // --- AGENTE: solo puede modificar fecha_entrega, estado y observacion ---
+    if (usuario.rol === "agente") {
+      const dataToUpdate = {};
 
-  // Fecha de entrega
-  if (data.fecha_entrega) {
-    dataToUpdate.fecha_entrega = new Date(data.fecha_entrega + "T00:00:00");
-  }
+      // Fecha de entrega
+      if (data.fecha_entrega) {
+        dataToUpdate.fecha_entrega = new Date(data.fecha_entrega + "T00:00:00");
+      }
 
-  // Estado
-  if (nuevoEstadoId !== estadoActualId) {
-    dataToUpdate.estado = { connect: { id_estado: nuevoEstadoId } };
+      // Estado
+      if (nuevoEstadoId !== estadoActualId) {
+        dataToUpdate.estado = { connect: { id_estado: nuevoEstadoId } };
 
-    let nuevoHistorial = orden.historial_estados || [];
-    const nombreEstado = await prisma.estado
-      .findUnique({ where: { id_estado: nuevoEstadoId } })
-      .then((e) => e.nombre);
+        let nuevoHistorial = orden.historial_estados || [];
+        const nombreEstado = await prisma.estado
+          .findUnique({ where: { id_estado: nuevoEstadoId } })
+          .then((e) => e.nombre);
 
-    nuevoHistorial.push({ estado: nombreEstado, fecha_cambio: ahoraUTC.toISOString() });
-    dataToUpdate.historial_estados = nuevoHistorial;
-  }
+        nuevoHistorial.push({ estado: nombreEstado, fecha_cambio: ahoraUTC.toISOString() });
+        dataToUpdate.historial_estados = nuevoHistorial;
+      }
 
-  // Observación
-  if (data.observacion !== undefined) {
-    dataToUpdate.observacion = data.observacion;
-  }
+      // Observación
+      if (data.observacion !== undefined) {
+        dataToUpdate.observacion = data.observacion;
+      }
 
-  const ordenActualizada = await prisma.registroBitacora.update({
-    where: { id_registro: parseInt(data.id_registro) },
-    data: dataToUpdate,
-    include: {
-      estado: true,
-      login: true,
-      tipopago: true,
-      tipoenvio: true,
-      tiendasinsa: true,
-      tienda: true,
-      origen_inventario: true,
-    },
-  });
+      const ordenActualizada = await prisma.registroBitacora.update({
+        where: { id_registro: parseInt(data.id_registro) },
+        data: dataToUpdate,
+        include: {
+          estado: true,
+          login: true,
+          tipopago: true,
+          tipoenvio: true,
+          tiendasinsa: true,
+          tienda: true,
+          origen_inventario: true,
+        },
+      });
 
-  return new Response(JSON.stringify(ordenActualizada), { status: 200 });
-}
+      // 🔹 Actualizar en Supabase para Realtime
+      await supabase
+        .from("Ordenes")
+        .update({
+          estado: ordenActualizada.estado?.nombre || null,
+          fecha_entrega: ordenActualizada.fecha_entrega || null,
+          observacion: ordenActualizada.observacion || null,
+          monto_factura: ordenActualizada.monto_factura || null,
+        })
+        .eq("id_registro", ordenActualizada.id_registro);
 
- // --- ADMIN o SUPERUSUARIO ---
+      return new Response(JSON.stringify(ordenActualizada), { status: 200 });
+    }
+
+    // --- ADMIN o SUPERUSUARIO ---
     const dataToUpdate = {
       num_ticket: data.num_ticket ? parseInt(data.num_ticket) : null,
       nombre_cliente: data.nombre_cliente,
@@ -138,6 +150,7 @@ if (usuario.rol === "agente") {
     if ((usuario.rol === "admin" || usuario.rol === "superusuario") && data.id_agente) {
       dataToUpdate.agente = { connect: { id_agente: parseInt(data.id_agente) } };
     }
+
     // Actualizar estado y historial solo si cambia
     if (nuevoEstadoId !== estadoActualId) {
       dataToUpdate.estado = { connect: { id_estado: nuevoEstadoId } };
@@ -161,6 +174,17 @@ if (usuario.rol === "agente") {
         agente: true,
       },
     });
+
+    // 🔹 Actualizar en Supabase para Realtime
+    await supabase
+      .from("Ordenes")
+      .update({
+        estado: ordenActualizada.estado?.nombre || null,
+        fecha_entrega: ordenActualizada.fecha_entrega || null,
+        observacion: ordenActualizada.observacion || null,
+        monto_factura: ordenActualizada.monto_factura || null,
+      })
+      .eq("id_registro", ordenActualizada.id_registro);
 
     return new Response(JSON.stringify(ordenActualizada), { status: 200 });
 
