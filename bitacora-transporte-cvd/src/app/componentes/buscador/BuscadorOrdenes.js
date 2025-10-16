@@ -35,32 +35,53 @@ const BuscadorOrdenes = forwardRef(({ onEditar, session }, ref) => {
     limpiarFilaSeleccionada: () => setOrdenSeleccionadaId(null),
   }));
 
-useEffect(() => {
-  // 🔹 Cargar órdenes inicialmente
-  fetchOrdenes();
+ useEffect(() => {
+    // 🔹 Cargar órdenes al montar
+    fetchOrdenes();
 
-  // 🔹 Suscribirse a Realtime de Supabase
-  const subscription = supabase
-    .channel("realtime-RegistroBitacora") // nombre del canal
-    .on(
-      "postgres_changes",
-      {
-        event: "*",       // puedes usar "INSERT", "UPDATE" o "DELETE" si quieres filtrar
-        schema: "public",
-        table: "registroBitacora", // nombre exacto de la tabla en minúsculas
-      },
-      (payload) => {
-        console.log("🔔 Cambio detectado:", payload);
-        fetchOrdenes(); // recargar datos automáticamente
-      }
-    )
-    .subscribe();
+    // 🔹 Suscribirse a Realtime de Supabase
+    const subscription = supabase
+      .channel("realtime-RegistroBitacora") 
+      .on(
+        "postgres_changes",
+        {
+          event: "*", // INSERT, UPDATE, DELETE
+          schema: "public",
+          table: "registroBitacora",
+        },
+        (payload) => {
+          console.log("🔔 Cambio detectado:", payload);
 
-  // 🔹 Cleanup al desmontar el componente
-  return () => {
-    supabase.removeSubscription(subscription);
-  };
-}, []);
+          // Actualizar estado local según tipo de evento
+          const { eventType, new: newRow, old: oldRow } = payload;
+
+          setOrdenes((prev) => {
+            let updated = [...prev];
+
+            if (eventType === "INSERT" && newRow) {
+              // ✅ Agregar nueva orden al inicio
+              updated = [newRow, ...updated];
+            } else if (eventType === "UPDATE" && newRow) {
+              // ✅ Actualizar orden existente
+              updated = updated.map((o) =>
+                o.id_registro === newRow.id_registro ? newRow : o
+              );
+            } else if (eventType === "DELETE" && oldRow) {
+              // ✅ Eliminar orden borrada
+              updated = updated.filter((o) => o.id_registro !== oldRow.id_registro);
+            }
+
+            return updated;
+          });
+        }
+      )
+      .subscribe();
+
+    // 🔹 Cleanup
+    return () => {
+      supabase.removeChannel(subscription);
+    };
+  }, []);
 
   // --- FILTRADO ---
   const ordenesFiltradas = ordenes.filter((orden) => {
