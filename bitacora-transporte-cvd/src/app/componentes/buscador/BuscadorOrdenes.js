@@ -35,28 +35,32 @@ const BuscadorOrdenes = forwardRef(({ onEditar, session }, ref) => {
     limpiarFilaSeleccionada: () => setOrdenSeleccionadaId(null),
   }));
 
-  useEffect(() => {
-    // 🔹 Cargar órdenes inicialmente
-    fetchOrdenes();
+useEffect(() => {
+  // 🔹 Cargar órdenes inicialmente
+  fetchOrdenes();
 
-    // 🔹 Suscribirse a Realtime de Supabase
-    const canal = supabase
-      .channel("realtime-RegistroBitacora")
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "RegistroBitacora" },
-        (payload) => {
-          console.log("🔔 Cambio detectado:", payload);
-          fetchOrdenes(); // recargar datos automáticamente
-        }
-      )
-      .subscribe();
+  // 🔹 Suscribirse a Realtime de Supabase
+  const subscription = supabase
+    .channel("realtime-RegistroBitacora") // nombre del canal
+    .on(
+      "postgres_changes",
+      {
+        event: "*",       // puedes usar "INSERT", "UPDATE" o "DELETE" si quieres filtrar
+        schema: "public",
+        table: "registroBitacora", // nombre exacto de la tabla en minúsculas
+      },
+      (payload) => {
+        console.log("🔔 Cambio detectado:", payload);
+        fetchOrdenes(); // recargar datos automáticamente
+      }
+    )
+    .subscribe();
 
-    // 🔹 Cleanup al desmontar el componente
-    return () => {
-      supabase.removeChannel(canal);
-    };
-  }, []);
+  // 🔹 Cleanup al desmontar el componente
+  return () => {
+    supabase.removeSubscription(subscription);
+  };
+}, []);
 
   // --- FILTRADO ---
   const ordenesFiltradas = ordenes.filter((orden) => {
