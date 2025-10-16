@@ -91,7 +91,7 @@ export default function RegistrarOrden({
   const [activarDireccion, setActivarDireccion] = useState(false);
   const [activarTiendaSinsa, setActivarTiendaSinsa] = useState(false);
   const [estadoTemporal, setEstadoTemporal] = useState("");
- const [abierto, setAbierto] = useState(false);
+  const [abierto, setAbierto] = useState(false);
   const rolUsuario = session?.user?.rol || "usuario";
   const soloLectura = rolUsuario === "agente";
   useEffect(() => {
@@ -148,17 +148,19 @@ export default function RegistrarOrden({
         ordenSeleccionada.monto_factura !== undefined
           ? String(ordenSeleccionada.monto_factura)
           : "",
-      tipo_identificacion: ordenSeleccionada.tipo_identificacion || estadoInicial.tipo_identificacion,
+      tipo_identificacion:
+        ordenSeleccionada.tipo_identificacion ||
+        estadoInicial.tipo_identificacion,
 
       id_estado: ordenSeleccionada.id_estado?.toString() ?? "",
       id_agente: ordenSeleccionada.id_agente?.toString() ?? "",
     };
 
-const limpio = Object.fromEntries(
-  Object.entries(merged).map(([k, v]) =>
-    k === "tipo_identificacion" ? [k, v] : [k, v ?? ""]
-  )
-);
+    const limpio = Object.fromEntries(
+      Object.entries(merged).map(([k, v]) =>
+        k === "tipo_identificacion" ? [k, v] : [k, v ?? ""]
+      )
+    );
 
     setFormData(limpio);
     setEstadoTemporal(ordenSeleccionada.id_estado?.toString() ?? ""); // <--- nuevo
@@ -185,8 +187,8 @@ const limpio = Object.fromEntries(
     setAbierto((prev) => !prev);
   };
   const hoy = new Date(Date.now() - new Date().getTimezoneOffset() * 60000)
-  .toISOString()
-  .split("T")[0];
+    .toISOString()
+    .split("T")[0];
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -333,7 +335,7 @@ const limpio = Object.fromEntries(
             e.id_estado === 3 ||
             e.id_estado === 4 ||
             e.id_estado === 7 ||
-            e.id_estado === 8 
+            e.id_estado === 8
         );
       }
       if (rolUsuario === "agente") {
@@ -365,388 +367,395 @@ const limpio = Object.fromEntries(
       <button
         type="button"
         onClick={handleToggle}
-       className={`${styles.accordionButton} ${abierto ? styles.abierto : ""}`}
+        className={`${styles.accordionButton} ${abierto ? styles.abierto : ""}`}
       >
-        {abierto ? "Ocultar Formulario" : "Mostrar Formulario"}{" "}
-  <span>+</span>
+        {abierto ? "Ocultar Formulario" : "Mostrar Formulario"} <span>+</span>
       </button>
 
       {/* Contenedor con animación tipo cortina */}
       <div
-  className={`${styles.accordionContent} ${abierto ? styles.abierto : ""}`}
->
+        className={`${styles.accordionContent} ${
+          abierto ? styles.abierto : ""
+        }`}
+      >
         {abierto && (
-    <form onSubmit={handleSubmit} className={styles.formContainer}>
-      <h2 className={styles.title}>
-        {formData.id_registro
-          ? "Editar Orden de Compra"
-          : "Registrar Orden de Compra"}
-      </h2>
+          <form onSubmit={handleSubmit} className={styles.formContainer}>
+            <h2 className={styles.title}>
+              {formData.id_registro
+                ? "Editar Orden de Compra"
+                : "Registrar Orden de Compra"}
+            </h2>
 
-      {error && <div className={styles.errorBanner}>{error}</div>}
+            {error && <div className={styles.errorBanner}>{error}</div>}
 
-      {/* Datos de la Orden */}
-      <fieldset className={styles.section}>
-        <legend>Datos de la Orden</legend>
-        <div className={styles.grid}>
-          <div className={styles.formGroup}>
-            <label className={`${styles.label} ${styles.requiredLabel}`}>
-              Tienda
-            </label>
-            <select
-              name="id_tienda"
-              value={formData.id_tienda}
-              onChange={(e) => {
-                if (!soloLectura) handleChange(e);
-              }}
-              className={styles.select}
-              required
-            >
-              <option value="">Seleccione una tienda</option>
-              {catalogos.tiendas.map((t) => (
-                <option key={t.id_tienda} value={t.id_tienda}>
-                  {t.nombre_tienda}
-                </option>
-              ))}
-            </select>
-          </div>
+            {/* Datos de la Orden */}
+            <fieldset className={styles.section}>
+              <legend>Datos de la Orden</legend>
+              <div className={styles.grid}>
+                <div className={styles.formGroup}>
+                  <label className={`${styles.label} ${styles.requiredLabel}`}>
+                    Tienda
+                  </label>
+                  <select
+                    name="id_tienda"
+                    value={formData.id_tienda}
+                    onChange={(e) => {
+                      if (!soloLectura) handleChange(e);
+                    }}
+                    className={styles.select}
+                    required
+                  >
+                    <option value="">Seleccione una tienda</option>
+                    {catalogos.tiendas.map((t) => (
+                      <option key={t.id_tienda} value={t.id_tienda}>
+                        {t.nombre_tienda}
+                      </option>
+                    ))}
+                  </select>
+                </div>
 
-          <div className={styles.formGroup}>
-            <label className={`${styles.label} ${styles.requiredLabel}`}>
-              Ticket
-            </label>
-            <input
-              type="text"
-              name="num_ticket"
-              value={formData.num_ticket}
-              onChange={handleChange}
-              readOnly={soloLectura}
-              className={styles.input}
-              placeholder="Número de ticket"
-              inputMode="numeric"
-              required
-            />
-          </div>
-
-          <div className={styles.formGroup}>
-            <label className={`${styles.label} ${styles.requiredLabel}`}>
-              Nombre Cliente
-            </label>
-            <input
-              type="text"
-              name="nombre_cliente"
-              value={formData.nombre_cliente}
-              onChange={handleChange}
-              readOnly={soloLectura}
-              placeholder="Nombre completo"
-              className={styles.input}
-              required
-            />
-          </div>
-
-          {/* Tipo Identificación */}
-          <div className={styles.formGroup}>
-            <div className={styles.formRadioGroup}>
-              <label className={`${styles.label} ${styles.requiredLabel}`}>
-                Identificación
-              </label>
-              <div>
-                <label>
+                <div className={styles.formGroup}>
+                  <label className={`${styles.label} ${styles.requiredLabel}`}>
+                    Ticket
+                  </label>
                   <input
-                    type="radio"
-                    name="tipo_identificacion"
-                    value="cedula"
-                    checked={formData.tipo_identificacion === "cedula"}
+                    type="text"
+                    name="num_ticket"
+                    value={formData.num_ticket}
                     onChange={handleChange}
-                    disabled={soloLectura}
-                  />{" "}
-                  Cédula
-                </label>{" "}
-                <label>
+                    readOnly={soloLectura}
+                    className={styles.input}
+                    placeholder="Número de ticket"
+                    inputMode="numeric"
+                    required
+                  />
+                </div>
+
+                <div className={styles.formGroup}>
+                  <label className={`${styles.label} ${styles.requiredLabel}`}>
+                    Nombre Cliente
+                  </label>
                   <input
-                    type="radio"
-                    name="tipo_identificacion"
-                    value="ruc"
-                    checked={formData.tipo_identificacion === "ruc"}
+                    type="text"
+                    name="nombre_cliente"
+                    value={formData.nombre_cliente}
                     onChange={handleChange}
-                    disabled={soloLectura}
-                  />{" "}
-                  RUC
-                </label>{" "}
-                <label>
+                    readOnly={soloLectura}
+                    placeholder="Nombre completo"
+                    className={styles.input}
+                    required
+                  />
+                </div>
+
+                {/* Tipo Identificación */}
+                <div className={styles.formGroup}>
+                  <div className={styles.formRadioGroup}>
+                    <label
+                      className={`${styles.label} ${styles.requiredLabel}`}
+                    >
+                      Identificación
+                    </label>
+                    <div>
+                      <label>
+                        <input
+                          type="radio"
+                          name="tipo_identificacion"
+                          value="cedula"
+                          checked={formData.tipo_identificacion === "cedula"}
+                          onChange={handleChange}
+                          disabled={soloLectura}
+                        />{" "}
+                        Cédula
+                      </label>{" "}
+                      <label>
+                        <input
+                          type="radio"
+                          name="tipo_identificacion"
+                          value="ruc"
+                          checked={formData.tipo_identificacion === "ruc"}
+                          onChange={handleChange}
+                          disabled={soloLectura}
+                        />{" "}
+                        RUC
+                      </label>{" "}
+                      <label>
+                        <input
+                          type="radio"
+                          name="tipo_identificacion"
+                          value="otro"
+                          checked={formData.tipo_identificacion === "otro"}
+                          onChange={handleChange}
+                          disabled={soloLectura}
+                        />{" "}
+                        Otro
+                      </label>
+                    </div>
+                  </div>
                   <input
-                    type="radio"
-                    name="tipo_identificacion"
-                    value="otro"
-                    checked={formData.tipo_identificacion === "otro"}
+                    type="text"
+                    name="cedula"
+                    value={formData.cedula}
                     onChange={handleChange}
-                    disabled={soloLectura}
-                  />{" "}
-                  Otro
-                </label>
+                    readOnly={soloLectura || !formData.tipo_identificacion}
+                    className={styles.input}
+                    required
+                    placeholder={
+                      formData.tipo_identificacion === "cedula"
+                        ? "Ej: 123-456789-0123X"
+                        : formData.tipo_identificacion === "ruc"
+                        ? "Ej: J0310000003456"
+                        : formData.tipo_identificacion === "otro"
+                        ? "Ingrese otro tipo de identificación"
+                        : "Favor seleccione un tipo"
+                    }
+                  />
+                </div>
+
+                <div className={styles.formGroup}>
+                  <label className={`${styles.label} ${styles.requiredLabel}`}>
+                    Teléfono
+                  </label>
+                  <input
+                    type="text"
+                    name="telefono"
+                    value={formData.telefono}
+                    onChange={handleChange}
+                    readOnly={soloLectura}
+                    className={styles.input}
+                    required
+                    placeholder="Teléfono"
+                  />
+                </div>
               </div>
+            </fieldset>
+
+            {/* Logística */}
+            <fieldset className={styles.section}>
+              <legend>Logística</legend>
+              <div className={styles.grid}>
+                <div className={styles.formGroup}>
+                  <label className={`${styles.label} ${styles.requiredLabel}`}>
+                    Tipo envío
+                  </label>
+                  <select
+                    name="id_tipenvio"
+                    value={formData.id_tipenvio}
+                    onChange={(e) => {
+                      if (!soloLectura) handleChange(e);
+                    }}
+                    className={styles.select}
+                    required
+                  >
+                    <option value="">Seleccione tipo envío</option>
+                    {catalogos.envios.map((e) => (
+                      <option key={e.id_tipenvio} value={e.id_tipenvio}>
+                        {e.nombre_Tipo}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className={styles.formGroup}>
+                  <label className={`${styles.label} ${styles.requiredLabel}`}>
+                    Origen inventario
+                  </label>
+                  <select
+                    name="id_originventario"
+                    value={formData.id_originventario}
+                    onChange={(e) => {
+                      if (!soloLectura) handleChange(e);
+                    }}
+                    className={styles.select}
+                    required
+                  >
+                    <option value="">Seleccione origen</option>
+                    {catalogos.origenes.map((o) => (
+                      <option
+                        key={o.id_originventario}
+                        value={o.id_originventario}
+                      >
+                        {o.nombre_origen}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className={styles.formGroup}>
+                  <label className={`${styles.label} ${styles.requiredLabel}`}>
+                    Fecha entrega
+                  </label>
+                  <input
+                    type="date"
+                    name="fecha_entrega"
+                    value={formData.fecha_entrega}
+                    onChange={handleChange}
+                    className={styles.input}
+                    required
+                    min={hoy}
+                  />
+                </div>
+
+                <div className={styles.formGroup}>
+                  <label className={styles.label}>Tienda Sinsa</label>
+                  <input
+                    list="tiendasinsa-options"
+                    name="id_tiendasinsa"
+                    value={formData.id_tiendasinsa}
+                    onChange={handleChange}
+                    readOnly={soloLectura}
+                    className={styles.select}
+                    placeholder="Seleccione tienda Sinsa"
+                    disabled={ordenSeleccionada ? false : !activarTiendaSinsa}
+                  />
+                  <datalist id="tiendasinsa-options">
+                    {catalogos.tiendasinsa.map((t) => (
+                      <option
+                        key={t.id_tiendasinsa}
+                        value={t.nombre_tiendasinsa}
+                      />
+                    ))}
+                  </datalist>
+                </div>
+              </div>
+              <div className={styles.grid}>
+                <div className={styles.formGroupFull}>
+                  <label className={styles.label}>Dirección</label>
+                  <input
+                    type="text"
+                    name="direccion_entrega"
+                    value={formData.direccion_entrega}
+                    onChange={handleChange}
+                    readOnly={soloLectura}
+                    className={styles.input}
+                    placeholder="Dirección de entrega"
+                    disabled={ordenSeleccionada ? false : !activarDireccion}
+                  />
+                </div>
+              </div>
+            </fieldset>
+
+            {/* Administración */}
+            <fieldset className={styles.section}>
+              <legend>Administración</legend>
+              <div className={styles.grid}>
+                <div className={styles.formGroup}>
+                  <label className={styles.label}>Flete</label>
+                  <input
+                    type="text"
+                    name="flete"
+                    value={formData.flete}
+                    onChange={handleChange}
+                    readOnly={soloLectura}
+                    className={styles.input}
+                    placeholder="Monto en córdobas"
+                  />
+                </div>
+
+                <div className={styles.formGroup}>
+                  <label className={`${styles.label} ${styles.requiredLabel}`}>
+                    Pago
+                  </label>
+                  <select
+                    name="id_tipopago"
+                    value={formData.id_tipopago}
+                    onChange={(e) => {
+                      if (!soloLectura) handleChange(e);
+                    }}
+                    className={styles.select}
+                    required
+                  >
+                    <option value="">Seleccione pago</option>
+                    {catalogos.pagos.map((p) => (
+                      <option key={p.id_tipopago} value={p.id_tipopago}>
+                        {p.nombre_tipopago}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div className={styles.formGroup}>
+                  <label className={`${styles.label} ${styles.requiredLabel}`}>
+                    Monto Factura
+                  </label>
+                  <input
+                    type="text"
+                    name="monto_factura"
+                    value={formData.monto_factura}
+                    onChange={handleChange}
+                    readOnly={soloLectura}
+                    className={styles.input}
+                    required
+                    placeholder="Monto en córdobas"
+                  />
+                </div>
+                {(rolUsuario === "admin" || rolUsuario === "agente") && (
+                  <div className={styles.formGroup}>
+                    <label className={`${styles.label}`}>Asignado a:</label>
+                    <select
+                      name="id_agente"
+                      value={formData.id_agente || ""}
+                      onChange={(e) => {
+                        if (!soloLectura) handleChange(e);
+                      }}
+                      className={styles.select}
+                    >
+                      <option value="">Seleccione agente</option>
+                      {catalogos.agente.map((a) => (
+                        <option key={a.id_agente} value={a.id_agente}>
+                          {a.nombre_agente}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                )}
+                {(rolUsuario !== "vendedor" || !formData.id_registro) && (
+                  <div className={styles.formGroup}>
+                    <label className={styles.label}>Estado:</label>
+                    <select
+                      name="id_estado"
+                      value={estadoTemporal || ""}
+                      onChange={(e) => setEstadoTemporal(e.target.value)}
+                      className={styles.select}
+                      required
+                    >
+                      <option value="">Seleccione un estado</option>
+                      {obtenerEstadosPermitidos(formData.id_estado).map((e) => (
+                        <option key={e.id_estado} value={e.id_estado}>
+                          {e.nombre}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                )}
+              </div>
+              <div className={styles.formGroupFull}>
+                <label className={styles.label}>Observaciones</label>
+                <textarea
+                  name="observacion"
+                  value={formData.observacion || ""}
+                  onChange={handleChange}
+                  className={styles.textarea}
+                  rows={3}
+                />
+              </div>
+            </fieldset>
+
+            {/* Botones */}
+            <div className={styles.buttonGroup}>
+              <button type="submit" className={styles.button}>
+                {formData.id_registro ? "Actualizar" : "Registrar"}
+              </button>
+              {tieneDatos && (
+                <button
+                  type="button"
+                  onClick={handleLimpiar}
+                  className={styles.limpiarButton}
+                >
+                  Limpiar
+                </button>
+              )}
             </div>
-            <input
-              type="text"
-              name="cedula"
-              value={formData.cedula}
-              onChange={handleChange}
-              readOnly={soloLectura || !formData.tipo_identificacion}
-              className={styles.input}
-              required
-              placeholder={
-                formData.tipo_identificacion === "cedula"
-                  ? "Ej: 123-456789-0123X"
-                  : formData.tipo_identificacion === "ruc"
-                  ? "Ej: J0310000003456"
-                  : formData.tipo_identificacion === "otro"
-                  ? "Ingrese otro tipo de identificación"
-                  : "Favor seleccione un tipo"
-              }
-            />
-          </div>
-
-          <div className={styles.formGroup}>
-            <label className={`${styles.label} ${styles.requiredLabel}`}>
-              Teléfono
-            </label>
-            <input
-              type="text"
-              name="telefono"
-              value={formData.telefono}
-              onChange={handleChange}
-              readOnly={soloLectura}
-              className={styles.input}
-              required
-              placeholder="Teléfono"
-            />
-          </div>
-        </div>
-      </fieldset>
-
-      {/* Logística */}
-      <fieldset className={styles.section}>
-        <legend>Logística</legend>
-        <div className={styles.grid}>
-          <div className={styles.formGroup}>
-            <label className={`${styles.label} ${styles.requiredLabel}`}>
-              Tipo envío
-            </label>
-            <select
-              name="id_tipenvio"
-              value={formData.id_tipenvio}
-              onChange={(e) => {
-                if (!soloLectura) handleChange(e);
-              }}
-              className={styles.select}
-              required
-            >
-              <option value="">Seleccione tipo envío</option>
-              {catalogos.envios.map((e) => (
-                <option key={e.id_tipenvio} value={e.id_tipenvio}>
-                  {e.nombre_Tipo}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div className={styles.formGroup}>
-            <label className={`${styles.label} ${styles.requiredLabel}`}>
-              Origen inventario
-            </label>
-            <select
-              name="id_originventario"
-              value={formData.id_originventario}
-              onChange={(e) => {
-                if (!soloLectura) handleChange(e);
-              }}
-              className={styles.select}
-              required
-            >
-              <option value="">Seleccione origen</option>
-              {catalogos.origenes.map((o) => (
-                <option key={o.id_originventario} value={o.id_originventario}>
-                  {o.nombre_origen}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div className={styles.formGroup}>
-            <label className={`${styles.label} ${styles.requiredLabel}`}>
-              Fecha entrega
-            </label>
-            <input
-              type="date"
-              name="fecha_entrega"
-              value={formData.fecha_entrega}
-              onChange={handleChange}
-              className={styles.input}
-              required
-              min={hoy}
-            />
-          </div>
-
-          <div className={styles.formGroup}>
-            <label className={styles.label}>Tienda Sinsa</label>
-            <input
-              list="tiendasinsa-options"
-              name="id_tiendasinsa"
-              value={formData.id_tiendasinsa}
-              onChange={handleChange}
-              readOnly={soloLectura}
-              className={styles.select}
-              placeholder="Seleccione tienda Sinsa"
-              disabled={ordenSeleccionada ? false : !activarTiendaSinsa}
-            />
-            <datalist id="tiendasinsa-options">
-              {catalogos.tiendasinsa.map((t) => (
-                <option key={t.id_tiendasinsa} value={t.nombre_tiendasinsa} />
-              ))}
-            </datalist>
-          </div>
-        </div>
-        <div className={styles.grid}>
-          <div className={styles.formGroupFull}>
-            <label className={styles.label}>Dirección</label>
-            <input
-              type="text"
-              name="direccion_entrega"
-              value={formData.direccion_entrega}
-              onChange={handleChange}
-              readOnly={soloLectura}
-              className={styles.input}
-              placeholder="Dirección de entrega"
-              disabled={ordenSeleccionada ? false : !activarDireccion}
-            />
-          </div>
-        </div>
-      </fieldset>
-
-      {/* Administración */}
-      <fieldset className={styles.section}>
-        <legend>Administración</legend>
-        <div className={styles.grid}>
-          <div className={styles.formGroup}>
-            <label className={styles.label}>Flete</label>
-            <input
-              type="text"
-              name="flete"
-              value={formData.flete}
-              onChange={handleChange}
-              readOnly={soloLectura}
-              className={styles.input}
-              placeholder="Monto en córdobas"
-            />
-          </div>
-
-          <div className={styles.formGroup}>
-            <label className={`${styles.label} ${styles.requiredLabel}`}>
-              Pago
-            </label>
-            <select
-              name="id_tipopago"
-              value={formData.id_tipopago}
-              onChange={(e) => {
-                if (!soloLectura) handleChange(e);
-              }}
-              className={styles.select}
-              required
-            >
-              <option value="">Seleccione pago</option>
-              {catalogos.pagos.map((p) => (
-                <option key={p.id_tipopago} value={p.id_tipopago}>
-                  {p.nombre_tipopago}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div className={styles.formGroup}>
-            <label className={`${styles.label} ${styles.requiredLabel}`}>
-              Monto Factura
-            </label>
-            <input
-              type="text"
-              name="monto_factura"
-              value={formData.monto_factura}
-              onChange={handleChange}
-              readOnly={soloLectura}
-              className={styles.input}
-              required
-              placeholder="Monto en córdobas"
-            />
-          </div>
-{(rolUsuario === "admin" || rolUsuario === "agente") && (
-  <div className={styles.formGroup}>
-    <label className={`${styles.label}`}>
-      Asignado a:
-    </label>
-    <select
-      name="id_agente"
-      value={formData.id_agente || ""}
-      onChange={(e) => {
-        if (!soloLectura) handleChange(e);
-      }}
-      className={styles.select}
-    >
-      <option value="">Seleccione agente</option>
-      {catalogos.agente.map((a) => (
-        <option key={a.id_agente} value={a.id_agente}>
-          {a.nombre_agente}
-        </option>
-      ))}
-    </select>
-  </div>
-)}
-          {(rolUsuario !== "vendedor" || !formData.id_registro) && (
-            <div className={styles.formGroup}>
-              <label className={styles.label}>Estado:</label>
-              <select
-                name="id_estado"
-                value={estadoTemporal || ""}
-                onChange={(e) => setEstadoTemporal(e.target.value)}
-                className={styles.select}
-                required
-              >
-                <option value="">Seleccione un estado</option>
-                {obtenerEstadosPermitidos(formData.id_estado).map((e) => (
-                  <option key={e.id_estado} value={e.id_estado}>
-                    {e.nombre}
-                  </option>
-                ))}
-              </select>
-            </div>
-          )}
-        </div>
-        <div className={styles.formGroupFull}>
-          <label className={styles.label}>Observaciones</label>
-          <textarea
-            name="observacion"
-            value={formData.observacion || ""}
-            onChange={handleChange}
-            className={styles.textarea}
-            rows={3}
-          />
-        </div>
-      </fieldset>
-
-      {/* Botones */}
-      <div className={styles.buttonGroup}>
-        <button type="submit" className={styles.button}>
-          {formData.id_registro ? "Actualizar" : "Registrar"}
-        </button>
-        {tieneDatos && (
-          <button
-            type="button"
-            onClick={handleLimpiar}
-            className={styles.limpiarButton}
-          >
-            Limpiar
-          </button>
+          </form>
         )}
-      </div>
-    </form>
-           )}
       </div>
     </div>
   );
