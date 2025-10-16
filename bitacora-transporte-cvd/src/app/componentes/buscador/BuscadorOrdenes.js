@@ -261,7 +261,7 @@ const BuscadorOrdenes = forwardRef(({ onEditar, session }, ref) => {
                       : "-"}
                   </td>
                       {(rolUsuario === "admin" ||
-                        rolUsuario === "superusuario") && (
+                        rolUsuario === "superusuario" ||rolUsuario === "agente") && (
                         <td data-label="Agente">
                           {orden.agente?.nombre_agente || "-"}
                         </td>
