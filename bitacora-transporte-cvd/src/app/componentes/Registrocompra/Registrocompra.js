@@ -91,7 +91,7 @@ export default function RegistrarOrden({
   const [activarDireccion, setActivarDireccion] = useState(false);
   const [activarTiendaSinsa, setActivarTiendaSinsa] = useState(false);
   const [estadoTemporal, setEstadoTemporal] = useState("");
-
+ const [abierto, setAbierto] = useState(false);
   const rolUsuario = session?.user?.rol || "usuario";
   const soloLectura = rolUsuario === "agente";
   useEffect(() => {
@@ -181,7 +181,9 @@ const limpio = Object.fromEntries(
       }
     }
   }, [formData.id_tipenvio, ordenSeleccionada]);
-
+  const handleToggle = () => {
+    setAbierto((prev) => !prev);
+  };
   const hoy = new Date(Date.now() - new Date().getTimezoneOffset() * 60000)
   .toISOString()
   .split("T")[0];
@@ -356,6 +358,22 @@ const limpio = Object.fromEntries(
     );
   }
   return (
+    <div className={styles.accordionContainer}>
+      {/* Botón para abrir/cerrar */}
+      <button
+        type="button"
+        onClick={handleToggle}
+       className={`${styles.accordionButton} ${abierto ? styles.abierto : ""}`}
+      >
+        {abierto ? "Ocultar Formulario" : "Mostrar Formulario"}{" "}
+  <span>+</span>
+      </button>
+
+      {/* Contenedor con animación tipo cortina */}
+      <div
+  className={`${styles.accordionContent} ${abierto ? styles.abierto : ""}`}
+>
+        {abierto && (
     <form onSubmit={handleSubmit} className={styles.formContainer}>
       <h2 className={styles.title}>
         {formData.id_registro
@@ -726,5 +744,8 @@ const limpio = Object.fromEntries(
         )}
       </div>
     </form>
+           )}
+      </div>
+    </div>
   );
 }

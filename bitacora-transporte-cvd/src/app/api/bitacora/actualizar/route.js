@@ -69,37 +69,49 @@ export async function PUT(req) {
       return new Response(JSON.stringify({ error: "No puedes editar órdenes con más de 24 horas" }), { status: 403 });
     }
 
-    // --- AGENTE: solo puede modificar fecha_entrega y estado ---
-    if (usuario.rol === "agente") {
-      const dataToUpdate = {};
-      if (data.fecha_entrega) {
-        dataToUpdate.fecha_entrega = new Date(data.fecha_entrega + "T00:00:00");
-      }
+// --- AGENTE: solo puede modificar fecha_entrega, estado y observacion ---
+if (usuario.rol === "agente") {
+  const dataToUpdate = {};
 
-      if (nuevoEstadoId !== estadoActualId) {
-        dataToUpdate.estado = { connect: { id_estado: nuevoEstadoId } };
-        let nuevoHistorial = orden.historial_estados || [];
-        const nombreEstado = await prisma.estado.findUnique({ where: { id_estado: nuevoEstadoId } }).then(e => e.nombre);
-        nuevoHistorial.push({ estado: nombreEstado, fecha_cambio: ahoraUTC.toISOString() });
-        dataToUpdate.historial_estados = nuevoHistorial;
-      }
+  // Fecha de entrega
+  if (data.fecha_entrega) {
+    dataToUpdate.fecha_entrega = new Date(data.fecha_entrega + "T00:00:00");
+  }
 
-      const ordenActualizada = await prisma.registroBitacora.update({
-        where: { id_registro: parseInt(data.id_registro) },
-        data: dataToUpdate,
-        include: {
-          estado: true,
-          login: true,
-          tipopago: true,
-          tipoenvio: true,
-          tiendasinsa: true,
-          tienda: true,
-          origen_inventario: true,
-        },
-      });
+  // Estado
+  if (nuevoEstadoId !== estadoActualId) {
+    dataToUpdate.estado = { connect: { id_estado: nuevoEstadoId } };
 
-      return new Response(JSON.stringify(ordenActualizada), { status: 200 });
-    }
+    let nuevoHistorial = orden.historial_estados || [];
+    const nombreEstado = await prisma.estado
+      .findUnique({ where: { id_estado: nuevoEstadoId } })
+      .then((e) => e.nombre);
+
+    nuevoHistorial.push({ estado: nombreEstado, fecha_cambio: ahoraUTC.toISOString() });
+    dataToUpdate.historial_estados = nuevoHistorial;
+  }
+
+  // Observación
+  if (data.observacion !== undefined) {
+    dataToUpdate.observacion = data.observacion;
+  }
+
+  const ordenActualizada = await prisma.registroBitacora.update({
+    where: { id_registro: parseInt(data.id_registro) },
+    data: dataToUpdate,
+    include: {
+      estado: true,
+      login: true,
+      tipopago: true,
+      tipoenvio: true,
+      tiendasinsa: true,
+      tienda: true,
+      origen_inventario: true,
+    },
+  });
+
+  return new Response(JSON.stringify(ordenActualizada), { status: 200 });
+}
 
  // --- ADMIN o SUPERUSUARIO ---
     const dataToUpdate = {

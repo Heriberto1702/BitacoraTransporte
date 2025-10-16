@@ -5,9 +5,72 @@
   padding: 25px;
   background: #ffffff;
   border-radius: 25px;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.06);
   font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
   transition: all 0.4s ease;
+}
+/* Contenedor general del acordeón */
+.accordionContainer {
+  
+  margin-bottom: 1rem;
+  
+
+  overflow: hidden;
+
+}
+
+/* Botón para mostrar/ocultar */
+.accordionButton {
+  
+  padding: 1rem 1.25rem;
+  font-weight: 600;
+  background-color: #0070f3;
+  color: white;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.accordionButton:hover {
+  background-color: #005bb5;
+}
+
+.accordionButton span {
+  font-size: 1.5rem;
+  transition: transform 0.3s ease;
+}
+
+.accordionButton.abierto span {
+  transform: rotate(45deg); /* el + se convierte en x */
+}
+
+/* Contenedor del contenido con animación suave */
+.accordionContent {
+  max-height: 0;
+  opacity: 0;
+  transform: translateY(-10px);
+  transition: max-height 0.5s cubic-bezier(0.4, 0, 0.2, 1),
+              opacity 0.4s ease,
+              transform 0.4s ease;
+  overflow: hidden;
+  
+}
+
+.accordionContent.abierto {
+  max-height: 3000px; /* suficiente para cualquier formulario largo */
+  opacity: 1;
+  transform: translateY(0);
+
+}
+
+/* Opcional: sombra interna para separar del botón */
+.accordionContent.abierto::before {
+  content: "";
+  display: block;
+  margin-bottom: 1rem;
 }
 
 /* Título */
@@ -243,6 +306,17 @@
 }
 
 /* Responsive */
+@media (max-width: 1800px) {
+  .formContainer {
+    width: 100%;
+    padding: 30px;
+  }
+
+
+  .buttonGroup {
+    justify-content: center;
+  }
+}
 @media (max-width: 768px) {
   .formContainer {
     width: 100%;

@@ -96,10 +96,11 @@ margin:0;
 
 /* Móviles grandes */
 @media (max-width: 768px) {
-.navbar {
+  .navbar {
+    width: 100%;
     flex-direction: column;
-    align-items: flex-start;
-    padding: 1rem;
+
+    align-items: center;
   }
   .usertitle {
     flex-direction: column;
@@ -130,6 +131,9 @@ margin:0;
 @media (max-width: 480px) {
   .navbar {
     width: 100%;
+    
+
+    align-items: center;
   }
 
   .logoutButton {

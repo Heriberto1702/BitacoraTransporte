@@ -186,13 +186,20 @@ const BuscadorOrdenes = forwardRef(({ onEditar, session }, ref) => {
           <table className={styles.table}>
             <thead>
               <tr>
+                <th>Acción</th>
                 <th>N° Ticket</th>
+                <th>Estado</th>
+                <th>Fecha creación</th>
+                <th>Fecha entrega</th>
+                {(rolUsuario === "admin" || rolUsuario === "superusuario"|| rolUsuario === "agente") && (
+                  <th>Agente</th>
+                )}
+                <th>Cliente</th>
+                <th>Teléfono</th>
+                <th>Identificación</th>
                 {(rolUsuario === "admin" || rolUsuario === "superusuario") && (
                   <th>Vendedor</th>
                 )}
-                <th>Cliente</th>
-                <th>Identificación</th>
-                <th>Dirección</th>
                 <th>Tienda Sinsa</th>
                 <th>Inventario</th>
                 <th>Tienda</th>
@@ -200,13 +207,8 @@ const BuscadorOrdenes = forwardRef(({ onEditar, session }, ref) => {
                 <th>Tipo Pago</th>
                 <th>Flete</th>
                 <th>Monto Factura</th>
-                <th>Fecha creación</th>
-                <th>Fecha entrega</th>
-                {(rolUsuario === "admin" || rolUsuario === "superusuario") && (
-                  <th>Agente</th>
-                )}
-                <th>Estado</th>
-                <th>Acción</th>
+                <th>Dirección</th>
+                <th>Observación</th>
               </tr>
             </thead>
             <tbody>
@@ -219,16 +221,68 @@ const BuscadorOrdenes = forwardRef(({ onEditar, session }, ref) => {
                       : ""
                   }
                 >
+  <td data-label="Acción">
+    <button
+      className={styles.button}
+      onClick={() => {
+        setOrdenSeleccionadaId(orden.id_registro);
+        onEditar({
+          ...orden,
+          fecha_entrega: orden.fecha_entrega
+            ? new Date(orden.fecha_entrega)
+                .toISOString()
+                .split("T")[0]
+            : "",
+        });
+      }}
+    >
+      Editar
+    </button>
+  </td>
                   <td data-label="N° Ticket">{orden.num_ticket}</td>
+                  <td
+                    data-label="Estado"
+                    className={
+                      estadoClases[orden.estado?.nombre] || styles.estadoDefault
+                    }
+                  >
+                    <p className={styles.estadoBadge}>
+                      {orden.estado?.nombre || "-"}
+                    </p>
+                  </td>
+<td data-label="Fecha creación">
+  {new Date(orden.fecha_creacion).toLocaleString("en-US", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: true, // cambiar a false si quieres formato 24h
+  })}
+</td>
+  <td data-label="Fecha entrega">
+    {orden.fecha_entrega
+      ? new Date(orden.fecha_entrega).toLocaleDateString(
+        "en-US"
+      )
+      : "-"}
+  </td>
+  {(rolUsuario === "admin" ||
+    rolUsuario === "superusuario" ||rolUsuario === "agente") && (
+    <td data-label="Agente">
+      {orden.agente?.nombre_agente || "-"}
+    </td>
+  )}
+                      <td data-label="Cliente">{orden.nombre_cliente}</td>
+                      <td data-label="Teléfono">{orden.telefono || "-"}</td>
+                      <td data-label="Identificación">{orden.cedula || "-"}</td>
                   {(rolUsuario === "admin" ||
                     rolUsuario === "superusuario") && (
                     <td data-label="Vendedor">
                       {orden.login?.nombre_vendedor || "-"}
                     </td>
                   )}
-                  <td data-label="Cliente">{orden.nombre_cliente}</td>
-                  <td data-label="Identificación">{orden.cedula || "-"}</td>
-                  <td data-label="Dirección">{orden.direccion_entrega}</td>
                   <td data-label="Tienda Sinsa">
                     {orden.tiendasinsa?.nombre_tiendasinsa || "-"}
                   </td>
@@ -250,50 +304,8 @@ const BuscadorOrdenes = forwardRef(({ onEditar, session }, ref) => {
                   <td data-label="Monto Factura">
                     {orden.monto_factura ? `C$ ${orden.monto_factura}` : "-"}
                   </td>
-                  <td data-label="Fecha creación">
-                    {new Date(orden.fecha_creacion).toLocaleDateString("en-US")}
-                  </td>
-                  <td data-label="Fecha entrega">
-                    {orden.fecha_entrega
-                      ? new Date(orden.fecha_entrega).toLocaleDateString(
-                        "en-US"
-                      )
-                      : "-"}
-                  </td>
-                      {(rolUsuario === "admin" ||
-                        rolUsuario === "superusuario" ||rolUsuario === "agente") && (
-                        <td data-label="Agente">
-                          {orden.agente?.nombre_agente || "-"}
-                        </td>
-                      )}
-                  <td
-                    data-label="Estado"
-                    className={
-                      estadoClases[orden.estado?.nombre] || styles.estadoDefault
-                    }
-                  >
-                    <p className={styles.estadoBadge}>
-                      {orden.estado?.nombre || "-"}
-                    </p>
-                  </td>
-                  <td data-label="Acción">
-                    <button
-                      className={styles.button}
-                      onClick={() => {
-                        setOrdenSeleccionadaId(orden.id_registro);
-                        onEditar({
-                          ...orden,
-                          fecha_entrega: orden.fecha_entrega
-                            ? new Date(orden.fecha_entrega)
-                                .toISOString()
-                                .split("T")[0]
-                            : "",
-                        });
-                      }}
-                    >
-                      Editar
-                    </button>
-                  </td>
+                  <td data-label="Dirección">{orden.direccion_entrega || "-"}</td>
+                  <td data-label="Observación">{orden.observacion || "-"}</td>
                 </tr>
               ))}
             </tbody>
