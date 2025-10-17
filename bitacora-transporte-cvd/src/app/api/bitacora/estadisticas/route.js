@@ -23,15 +23,15 @@ export async function GET(request) {
     // 🔹 Totales
     const total = await prisma.registroBitacora.count({ where: fechaFilter });
     const entregadas = await prisma.registroBitacora.count({
-      where: { ...fechaFilter, id_estado: 6 },
+      where: { ...fechaFilter, id_estado: 7 },
     });
     
     const pendientes = await prisma.registroBitacora.count({
-      where: { ...fechaFilter, id_estado: { notIn: [6, 7] } },
+      where: { ...fechaFilter, id_estado: { notIn: [7, 8] } },
     });
 
     const Anuladas = await prisma.registroBitacora.count({
-      where: { ...fechaFilter, id_estado: 7 },
+      where: { ...fechaFilter, id_estado: 8 },
     });
 
     const montoTotal = await prisma.registroBitacora.aggregate({
@@ -41,7 +41,7 @@ export async function GET(request) {
 
     const montoTotalAnuladas = await prisma.registroBitacora.aggregate({
       _sum: { monto_factura: true },
-      where: { ...fechaFilter, id_estado: 7 },
+      where: { ...fechaFilter, id_estado: 8 },
     });
 
     const montoFlete = await prisma.registroBitacora.aggregate({

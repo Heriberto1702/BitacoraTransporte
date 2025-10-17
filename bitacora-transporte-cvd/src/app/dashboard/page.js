@@ -92,7 +92,7 @@ export default function DashboardBitacora() {
         <Card titulo="Monto total facturado (bruto)" valor={`C$${Number(data.montoTotal || 0).toFixed(2)}`} />
         <Card titulo="Monto total Anuladas" valor={`C$${Number(data.montoTotalAnuladas || 0).toFixed(2)}`} color="#ef4444" />
         <Card titulo="Monto facturado (neto)" valor={`C$${Number(data.montoFacturado || 0).toFixed(2)}`} color="#22c55e" />
-        <Card titulo="Promedio de Flete" valor={`C$${Number(data.montoFlete || 0).toFixed(2)}`} />
+        <Card titulo="Monto Flete" valor={`C$${Number(data.montoFlete || 0).toFixed(2)}`} />
       </div>
 
         <Productividad />
