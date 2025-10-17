@@ -76,8 +76,8 @@ export async function PUT(req) {
 
       // Fecha de entrega
 if (data.fecha_entrega) {
-  const [year, month, day] = data.fecha_entrega.split("-").map(Number);
-  dataToUpdate.fecha_entrega = new Date(Date.UTC(year, month - 1, day));
+const [year, month, day] = data.fecha_entrega.split("-").map(Number);
+dataToUpdate.fecha_entrega = new Date(Date.UTC(year, month - 1, day, 12));
 }
 
       // Estado
@@ -135,7 +135,7 @@ if (data.fecha_entrega) {
        fecha_entrega: data.fecha_entrega
     ? (() => {
         const [year, month, day] = data.fecha_entrega.split("-").map(Number);
-        return new Date(Date.UTC(year, month - 1, day));
+        return new Date(Date.UTC(year, month - 1, day,12));
       })()
     : null,
       observacion: data.observacion || null,

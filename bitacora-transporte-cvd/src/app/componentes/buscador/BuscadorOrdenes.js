@@ -293,10 +293,7 @@ const BuscadorOrdenes = forwardRef(({ onEditar, session }, ref) => {
                   </td>
 <td data-label="Fecha entrega">
   {orden.fecha_entrega
-    ? new Date(
-        new Date(orden.fecha_entrega).getTime() +
-          new Date(orden.fecha_entrega).getTimezoneOffset() * 60000
-      ).toLocaleDateString("en-US")
+    ? new Date(orden.fecha_entrega).toLocaleDateString("en-US")
     : "-"}
 </td>
                   {(rolUsuario === "admin" ||

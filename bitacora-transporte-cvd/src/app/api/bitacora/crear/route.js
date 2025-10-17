@@ -38,10 +38,11 @@ export async function POST(req) {
 
     // 🔹 Ajuste de fecha (solo día, sin hora)
     // Evitamos desfases de zona horaria
- let fechaEntrega = null;
+let fechaEntrega = null;
 if (data.fecha_entrega) {
   const [year, month, day] = data.fecha_entrega.split("-").map(Number);
-  fechaEntrega = new Date(year, month - 1, day); // fecha local sin hora
+  // Forzamos a UTC sin desfase
+  fechaEntrega = new Date(Date.UTC(year, month - 1, day, 12)); // 12:00 UTC evita el -6
 }
 
     // 🔹 Estado inicial (Nueva o Refacturada)
