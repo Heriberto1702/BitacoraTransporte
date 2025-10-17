@@ -1,7 +1,7 @@
 import { getServerSession } from "next-auth";
 import { authOptions } from "../../../../lib/authOptions";
 import prisma from "../../../../lib/prisma";
-import { supabase } from "@/lib/supabaseClient";
+import { supabase } from "../../../../lib/supabaseClient";
 
 export async function PUT(req) {
   try {
@@ -75,9 +75,10 @@ export async function PUT(req) {
       const dataToUpdate = {};
 
       // Fecha de entrega
-      if (data.fecha_entrega) {
-        dataToUpdate.fecha_entrega = new Date(data.fecha_entrega + "T00:00:00");
-      }
+if (data.fecha_entrega) {
+  const [year, month, day] = data.fecha_entrega.split("-").map(Number);
+  dataToUpdate.fecha_entrega = new Date(Date.UTC(year, month - 1, day));
+}
 
       // Estado
       if (nuevoEstadoId !== estadoActualId) {
@@ -131,7 +132,12 @@ export async function PUT(req) {
       nombre_cliente: data.nombre_cliente,
       direccion_entrega: data.direccion_entrega || null,
       flete: data.flete ? parseInt(data.flete) : null,
-      fecha_entrega: data.fecha_entrega ? new Date(`${data.fecha_entrega}T00:00:00`) : null,
+       fecha_entrega: data.fecha_entrega
+    ? (() => {
+        const [year, month, day] = data.fecha_entrega.split("-").map(Number);
+        return new Date(Date.UTC(year, month - 1, day));
+      })()
+    : null,
       observacion: data.observacion || null,
       monto_factura: data.monto_factura ? parseFloat(data.monto_factura) : null,
       cedula: data.cedula,

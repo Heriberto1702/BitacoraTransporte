@@ -36,52 +36,35 @@ const BuscadorOrdenes = forwardRef(({ onEditar, session }, ref) => {
   }));
 
  useEffect(() => {
-    // 🔹 Cargar órdenes al montar
-    fetchOrdenes();
+  // 🔹 Cargar órdenes al montar
+  fetchOrdenes();
 
-    // 🔹 Suscribirse a Realtime de Supabase
-    const subscription = supabase
-      .channel("realtime-RegistroBitacora") 
-      .on(
-        "postgres_changes",
-        {
-          event: "*", // INSERT, UPDATE, DELETE
-          schema: "public",
-          table: "registroBitacora",
-        },
-        (payload) => {
-          console.log("🔔 Cambio detectado:", payload);
+  // 🔹 Suscribirse a Realtime de Supabase
+  const subscription = supabase
+    .channel("realtime-RegistroBitacora")
+    .on(
+      "postgres_changes",
+      {
+        event: "*", // INSERT, UPDATE, DELETE
+        schema: "public",
+        table: "RegistroBitacora",
+      },
+      (payload) => {
+        console.log("🔔 Cambio detectado:", payload);
 
-          // Actualizar estado local según tipo de evento
-          const { eventType, new: newRow, old: oldRow } = payload;
+        // 🔹 En lugar de modificar solo el estado local,
+        // volvemos a llamar a la API GET para traer relaciones completas
+        fetchOrdenes();
+      }
+    )
+    .subscribe();
 
-          setOrdenes((prev) => {
-            let updated = [...prev];
+  // 🔹 Cleanup
+  return () => {
+    supabase.removeChannel(subscription);
+  };
+}, []);
 
-            if (eventType === "INSERT" && newRow) {
-              // ✅ Agregar nueva orden al inicio
-              updated = [newRow, ...updated];
-            } else if (eventType === "UPDATE" && newRow) {
-              // ✅ Actualizar orden existente
-              updated = updated.map((o) =>
-                o.id_registro === newRow.id_registro ? newRow : o
-              );
-            } else if (eventType === "DELETE" && oldRow) {
-              // ✅ Eliminar orden borrada
-              updated = updated.filter((o) => o.id_registro !== oldRow.id_registro);
-            }
-
-            return updated;
-          });
-        }
-      )
-      .subscribe();
-
-    // 🔹 Cleanup
-    return () => {
-      supabase.removeChannel(subscription);
-    };
-  }, []);
 
   // --- FILTRADO ---
   const ordenesFiltradas = ordenes.filter((orden) => {
@@ -308,13 +291,14 @@ const BuscadorOrdenes = forwardRef(({ onEditar, session }, ref) => {
                       hour12: true, // cambiar a false si quieres formato 24h
                     })}
                   </td>
-                  <td data-label="Fecha entrega">
-                    {orden.fecha_entrega
-                      ? new Date(orden.fecha_entrega).toLocaleDateString(
-                          "en-US"
-                        )
-                      : "-"}
-                  </td>
+<td data-label="Fecha entrega">
+  {orden.fecha_entrega
+    ? new Date(
+        new Date(orden.fecha_entrega).getTime() +
+          new Date(orden.fecha_entrega).getTimezoneOffset() * 60000
+      ).toLocaleDateString("en-US")
+    : "-"}
+</td>
                   {(rolUsuario === "admin" ||
                     rolUsuario === "superusuario" ||
                     rolUsuario === "agente") && (
