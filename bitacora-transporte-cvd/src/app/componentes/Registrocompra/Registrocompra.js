@@ -140,9 +140,10 @@ export default function RegistrarOrden({
       id_tienda: ordenSeleccionada.id_tienda?.toString() ?? "",
       id_tipopago: ordenSeleccionada.id_tipopago?.toString() ?? "",
       id_tiendasinsa: ordenSeleccionada.tiendasinsa?.nombre_tiendasinsa ?? "",
-      fecha_entrega: ordenSeleccionada.fecha_entrega
-        ? new Date(ordenSeleccionada.fecha_entrega).toISOString().split("T")[0]
-        : "",
+fecha_entrega: ordenSeleccionada.fecha_entrega
+  ? new Date(ordenSeleccionada.fecha_entrega)
+      .toLocaleDateString("en-CA") // formato YYYY-MM-DD compatible con <input type="date">
+  : "",
       monto_factura:
         ordenSeleccionada.monto_factura !== null &&
         ordenSeleccionada.monto_factura !== undefined
