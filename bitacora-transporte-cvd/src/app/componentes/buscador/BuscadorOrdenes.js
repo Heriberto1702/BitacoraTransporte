@@ -3,8 +3,6 @@
 import { useEffect, useState, forwardRef, useImperativeHandle } from "react";
 import styles from "./BuscadorOrdenes.module.css";
 import ExportarExcel from "../exportarAexcel/ExportarExcel";
-import { supabase } from "../../../lib/supabaseClient";
-
 
 const BuscadorOrdenes = forwardRef(({ onEditar, session }, ref) => {
   const [ordenes, setOrdenes] = useState([]);
@@ -35,36 +33,10 @@ const BuscadorOrdenes = forwardRef(({ onEditar, session }, ref) => {
     limpiarFilaSeleccionada: () => setOrdenSeleccionadaId(null),
   }));
 
- useEffect(() => {
-  // 🔹 Cargar órdenes al montar
-  fetchOrdenes();
-
-  // 🔹 Suscribirse a Realtime de Supabase
-  const subscription = supabase
-    .channel("realtime-RegistroBitacora")
-    .on(
-      "postgres_changes",
-      {
-        event: "*", // INSERT, UPDATE, DELETE
-        schema: "public",
-        table: "RegistroBitacora",
-      },
-      (payload) => {
-        console.log("🔔 Cambio detectado:", payload);
-
-        // 🔹 En lugar de modificar solo el estado local,
-        // volvemos a llamar a la API GET para traer relaciones completas
-        fetchOrdenes();
-      }
-    )
-    .subscribe();
-
-  // 🔹 Cleanup
-  return () => {
-    supabase.removeChannel(subscription);
-  };
-}, []);
-
+  useEffect(() => {
+    // 🔹 Cargar órdenes al montar
+    fetchOrdenes();
+  }, []);
 
   // --- FILTRADO ---
   const ordenesFiltradas = ordenes.filter((orden) => {
@@ -291,15 +263,13 @@ const BuscadorOrdenes = forwardRef(({ onEditar, session }, ref) => {
                       hour12: true, // cambiar a false si quieres formato 24h
                     })}
                   </td>
-<td data-label="Fecha entrega">
-  {orden.fecha_entrega
-    ? new Date(orden.fecha_entrega).toLocaleDateString("en-US", {
-        year: "numeric",
-        month: "2-digit",
-        day: "2-digit",
-      })
-    : "-"}
-</td>
+                  <td data-label="Fecha entrega">
+                    {orden.fecha_entrega
+                      ? new Date(orden.fecha_entrega).toLocaleDateString(
+                          "en-US"
+                        ) // o "es-ES"
+                      : "-"}
+                  </td>
                   {(rolUsuario === "admin" ||
                     rolUsuario === "superusuario" ||
                     rolUsuario === "agente") && (

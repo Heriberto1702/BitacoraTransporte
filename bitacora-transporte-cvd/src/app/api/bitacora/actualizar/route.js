@@ -1,7 +1,6 @@
 import { getServerSession } from "next-auth";
 import { authOptions } from "../../../../lib/authOptions";
 import prisma from "../../../../lib/prisma";
-import { supabase } from "../../../../lib/supabaseClient";
 
 export async function PUT(req) {
   try {
@@ -34,7 +33,6 @@ export async function PUT(req) {
 
     const estadoActualId = orden.id_estado;
     const nuevoEstadoId = data.id_estado ? parseInt(data.id_estado) : estadoActualId;
-
     const ahoraUTC = new Date();
 
     // 🔒 Bloquear edición si está ENTREGADA (6) o ANULADA (7), excepto superusuario
@@ -47,10 +45,7 @@ export async function PUT(req) {
     // 🔒 Validar transiciones de estado según rol
     if (nuevoEstadoId !== estadoActualId) {
       const transicionesValidas = await prisma.transicionEstado.findMany({
-        where: {
-          estado_origen: estadoActualId,
-          rol: usuario.rol,
-        },
+        where: { estado_origen: estadoActualId, rol: usuario.rol },
         select: { estado_destino: true },
       });
 
@@ -62,10 +57,9 @@ export async function PUT(req) {
       }
     }
 
+    // Restricción por rol: vendedor solo 24 horas
     const creadaUTC = new Date(orden.fecha_creacion);
     const diffHoras = (ahoraUTC.getTime() - creadaUTC.getTime()) / (1000 * 60 * 60);
-
-    // Restricción por rol: vendedor solo 24 horas
     if (usuario.rol === "vendedor" && diffHoras > 24) {
       return new Response(JSON.stringify({ error: "No puedes editar órdenes con más de 24 horas" }), { status: 403 });
     }
@@ -74,26 +68,19 @@ export async function PUT(req) {
     if (usuario.rol === "agente") {
       const dataToUpdate = {};
 
-      // Fecha de entrega
-if (data.fecha_entrega) {
-const [year, month, day] = data.fecha_entrega.split("-").map(Number);
-dataToUpdate.fecha_entrega = new Date(Date.UTC(year, month - 1, day, 12));
-}
+      if (data.fecha_entrega) {
+        const [year, month, day] = data.fecha_entrega.split("-").map(Number);
+        dataToUpdate.fecha_entrega = new Date(Date.UTC(year, month - 1, day, 12));
+      }
 
-      // Estado
       if (nuevoEstadoId !== estadoActualId) {
         dataToUpdate.estado = { connect: { id_estado: nuevoEstadoId } };
-
         let nuevoHistorial = orden.historial_estados || [];
-        const nombreEstado = await prisma.estado
-          .findUnique({ where: { id_estado: nuevoEstadoId } })
-          .then((e) => e.nombre);
-
+        const nombreEstado = await prisma.estado.findUnique({ where: { id_estado: nuevoEstadoId } }).then(e => e.nombre);
         nuevoHistorial.push({ estado: nombreEstado, fecha_cambio: ahoraUTC.toISOString() });
         dataToUpdate.historial_estados = nuevoHistorial;
       }
 
-      // Observación
       if (data.observacion !== undefined) {
         dataToUpdate.observacion = data.observacion;
       }
@@ -112,17 +99,6 @@ dataToUpdate.fecha_entrega = new Date(Date.UTC(year, month - 1, day, 12));
         },
       });
 
-      // 🔹 Actualizar en Supabase para Realtime
-      await supabase
-        .from("Ordenes")
-        .update({
-          estado: ordenActualizada.estado?.nombre || null,
-          fecha_entrega: ordenActualizada.fecha_entrega || null,
-          observacion: ordenActualizada.observacion || null,
-          monto_factura: ordenActualizada.monto_factura || null,
-        })
-        .eq("id_registro", ordenActualizada.id_registro);
-
       return new Response(JSON.stringify(ordenActualizada), { status: 200 });
     }
 
@@ -132,12 +108,12 @@ dataToUpdate.fecha_entrega = new Date(Date.UTC(year, month - 1, day, 12));
       nombre_cliente: data.nombre_cliente,
       direccion_entrega: data.direccion_entrega || null,
       flete: data.flete ? parseInt(data.flete) : null,
-       fecha_entrega: data.fecha_entrega
-    ? (() => {
-        const [year, month, day] = data.fecha_entrega.split("-").map(Number);
-        return new Date(Date.UTC(year, month - 1, day,12));
-      })()
-    : null,
+      fecha_entrega: data.fecha_entrega
+        ? (() => {
+            const [year, month, day] = data.fecha_entrega.split("-").map(Number);
+            return new Date(Date.UTC(year, month - 1, day, 12));
+          })()
+        : null,
       observacion: data.observacion || null,
       monto_factura: data.monto_factura ? parseFloat(data.monto_factura) : null,
       cedula: data.cedula,
@@ -147,17 +123,13 @@ dataToUpdate.fecha_entrega = new Date(Date.UTC(year, month - 1, day, 12));
       tipopago: { connect: { id_tipopago: parseInt(data.id_tipopago) } },
       origen_inventario: { connect: { id_originventario: parseInt(data.id_originventario) } },
       tienda: { connect: { id_tienda: parseInt(data.id_tienda) } },
-      tiendasinsa: data.id_tiendasinsa
-        ? { connect: { id_tiendasinsa: parseInt(data.id_tiendasinsa) } }
-        : undefined,
+      tiendasinsa: data.id_tiendasinsa ? { connect: { id_tiendasinsa: parseInt(data.id_tiendasinsa) } } : undefined,
     };
 
-    // 🔹 Asignar agente solo si el usuario es admin o superusuario y hay un ID válido
     if ((usuario.rol === "admin" || usuario.rol === "superusuario") && data.id_agente) {
       dataToUpdate.agente = { connect: { id_agente: parseInt(data.id_agente) } };
     }
 
-    // Actualizar estado y historial solo si cambia
     if (nuevoEstadoId !== estadoActualId) {
       dataToUpdate.estado = { connect: { id_estado: nuevoEstadoId } };
       let nuevoHistorial = orden.historial_estados || [];
@@ -180,17 +152,6 @@ dataToUpdate.fecha_entrega = new Date(Date.UTC(year, month - 1, day, 12));
         agente: true,
       },
     });
-
-    // 🔹 Actualizar en Supabase para Realtime
-    await supabase
-      .from("Ordenes")
-      .update({
-        estado: ordenActualizada.estado?.nombre || null,
-        fecha_entrega: ordenActualizada.fecha_entrega || null,
-        observacion: ordenActualizada.observacion || null,
-        monto_factura: ordenActualizada.monto_factura || null,
-      })
-      .eq("id_registro", ordenActualizada.id_registro);
 
     return new Response(JSON.stringify(ordenActualizada), { status: 200 });
 
