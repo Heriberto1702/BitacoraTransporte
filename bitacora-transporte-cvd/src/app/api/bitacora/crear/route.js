@@ -40,8 +40,9 @@ export async function POST(req) {
     // Evitamos desfases de zona horaria
 let fechaEntrega = null;
 if (data.fecha_entrega) {
-  // Esto crea la fecha en la zona horaria del servidor, sin ajustes manuales
-  fechaEntrega = new Date(data.fecha_entrega);
+  const [year, month, day] = data.fecha_entrega.split("-").map(Number);
+  // Creamos la fecha en UTC, fijando la hora a 12 para evitar desfases
+  fechaEntrega = new Date(Date.UTC(year, month - 1, day, 12));
 }
 
     // 🔹 Estado inicial (Nueva o Refacturada)
