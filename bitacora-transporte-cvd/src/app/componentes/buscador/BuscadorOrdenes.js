@@ -131,54 +131,86 @@ const BuscadorOrdenes = forwardRef(({ onEditar, session }, ref) => {
 
       {/* --- PAGINACIÓN CONTROLS --- */}
       <div className={styles.paginacionControls}>
-        <label>
-          Mostrar{" "}
-          <select
-            value={filasPorPagina}
-            onChange={(e) => {
-              setFilasPorPagina(
-                e.target.value === "Todas" ? "Todas" : Number(e.target.value)
-              );
-              setPaginaActual(1);
-            }}
-          >
-            {[5, 10, 25, 50, 100, "Todas"].map((n) => (
-              <option key={n} value={n}>
-                {n}
-              </option>
-            ))}
-          </select>{" "}
-          filas
-        </label>
+  <label>
+    Mostrar{" "}
+    <select
+      value={filasPorPagina}
+      onChange={(e) => {
+        setFilasPorPagina(
+          e.target.value === "Todas" ? "Todas" : Number(e.target.value)
+        );
+        setPaginaActual(1);
+      }}
+    >
+      {[5, 10, 25, 50, 100, "Todas"].map((n) => (
+        <option key={n} value={n}>
+          {n}
+        </option>
+      ))}
+    </select>{" "}
+    filas
+  </label>
 
-        {filasPorPagina !== "Todas" && (
-          <div className={styles.botonesPagina}>
+  {filasPorPagina !== "Todas" && (
+    <div className={styles.botonesPagina}>
+      {/* Ir a primera página */}
+      <button onClick={() => manejarCambioPagina(1)} disabled={paginaActual === 1}>
+        {"<<"}
+      </button>
+
+      {/* Página anterior */}
+      <button onClick={() => manejarCambioPagina(paginaActual - 1)} disabled={paginaActual === 1}>
+        {"<"}
+      </button>
+
+      {/* Generar números de página dinámicos */}
+      {(() => {
+        const maxVisible = 4; // Máximo de páginas visibles
+        let start = Math.max(paginaActual - 1, 1);
+        let end = start + maxVisible - 1;
+
+        if (end > totalPaginas) {
+          end = totalPaginas;
+          start = Math.max(end - maxVisible + 1, 1);
+        }
+
+        const botones = [];
+        if (start > 1) {
+          botones.push(<span key="inicio">...</span>);
+        }
+
+        for (let i = start; i <= end; i++) {
+          botones.push(
             <button
-              onClick={() => manejarCambioPagina(paginaActual - 1)}
-              disabled={paginaActual === 1}
+              key={i}
+              onClick={() => manejarCambioPagina(i)}
+              className={paginaActual === i ? styles.activo : ""}
             >
-              <span>«</span>
+              {i}
             </button>
+          );
+        }
 
-            {Array.from({ length: totalPaginas }, (_, i) => (
-              <button
-                key={i + 1}
-                onClick={() => manejarCambioPagina(i + 1)}
-                className={paginaActual === i + 1 ? styles.activo : ""}
-              >
-                {i + 1}
-              </button>
-            ))}
+        if (end < totalPaginas) {
+          botones.push(<span key="fin">...</span>);
+        }
 
-            <button
-              onClick={() => manejarCambioPagina(paginaActual + 1)}
-              disabled={paginaActual === totalPaginas}
-            >
-              <span>»</span>
-            </button>
-          </div>
-        )}
-      </div>
+        return botones;
+      })()}
+
+      {/* Página siguiente */}
+      <button onClick={() => manejarCambioPagina(paginaActual + 1)} disabled={paginaActual === totalPaginas}>
+        {">"}
+      </button>
+
+      {/* Ir a última página */}
+      <button onClick={() => manejarCambioPagina(totalPaginas)} disabled={paginaActual === totalPaginas}>
+        {">>"}
+      </button>
+    </div>
+  )}
+</div>
+
 
       {/* --- TABLA CON SCROLL --- */}
       <div className={styles.tableWrapper}>
