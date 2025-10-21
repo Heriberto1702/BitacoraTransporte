@@ -35,7 +35,7 @@ export default function Productividad() {
             );
 
             return (
-              <tr key={orden.num_ticket}>
+              <tr key={orden.id_registro}>
                 <td>{orden.num_ticket}</td>
                 <td>{orden.cliente}</td>
                 <td>{tiempos["Nueva"] || 0}</td>

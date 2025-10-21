@@ -7,7 +7,9 @@ export async function PUT(req) {
     const session = await getServerSession(authOptions);
 
     if (!session || !session.user?.email) {
-      return new Response(JSON.stringify({ error: "No autorizado" }), { status: 401 });
+      return new Response(JSON.stringify({ error: "No autorizado" }), {
+        status: 401,
+      });
     }
 
     const usuario = await prisma.login.findUnique({
@@ -15,12 +17,16 @@ export async function PUT(req) {
     });
 
     if (!usuario) {
-      return new Response(JSON.stringify({ error: "Usuario no encontrado" }), { status: 404 });
+      return new Response(JSON.stringify({ error: "Usuario no encontrado" }), {
+        status: 404,
+      });
     }
 
     const data = await req.json();
     if (!data.id_registro) {
-      return new Response(JSON.stringify({ error: "ID de orden requerido" }), { status: 400 });
+      return new Response(JSON.stringify({ error: "ID de orden requerido" }), {
+        status: 400,
+      });
     }
 
     const orden = await prisma.registroBitacora.findUnique({
@@ -28,18 +34,28 @@ export async function PUT(req) {
     });
 
     if (!orden) {
-      return new Response(JSON.stringify({ error: "Orden no encontrada" }), { status: 404 });
+      return new Response(JSON.stringify({ error: "Orden no encontrada" }), {
+        status: 404,
+      });
     }
 
     const estadoActualId = orden.id_estado;
-    const nuevoEstadoId = data.id_estado ? parseInt(data.id_estado) : estadoActualId;
+    const nuevoEstadoId = data.id_estado
+      ? parseInt(data.id_estado)
+      : estadoActualId;
     const ahoraUTC = new Date();
 
     // 🔒 Bloquear edición si está ENTREGADA (6) o ANULADA (7), excepto superusuario
-    if ((estadoActualId === 7 || estadoActualId === 8) && usuario.rol !== "superusuario") {
-      return new Response(JSON.stringify({
-        error: "No puedes modificar una orden entregada o anulada",
-      }), { status: 403 });
+    if (
+      (estadoActualId === 7 || estadoActualId === 8) &&
+      usuario.rol !== "superusuario"
+    ) {
+      return new Response(
+        JSON.stringify({
+          error: "No puedes modificar una orden entregada o anulada",
+        }),
+        { status: 403 }
+      );
     }
 
     // 🔒 Validar transiciones de estado según rol
@@ -49,19 +65,30 @@ export async function PUT(req) {
         select: { estado_destino: true },
       });
 
-      const estadosPermitidos = transicionesValidas.map(t => t.estado_destino);
+      const estadosPermitidos = transicionesValidas.map(
+        (t) => t.estado_destino
+      );
       if (!estadosPermitidos.includes(nuevoEstadoId)) {
-        return new Response(JSON.stringify({
-          error: "No tienes permiso para mover la orden a este estado",
-        }), { status: 403 });
+        return new Response(
+          JSON.stringify({
+            error: "No tienes permiso para mover la orden a este estado",
+          }),
+          { status: 403 }
+        );
       }
     }
 
     // Restricción por rol: vendedor solo 24 horas
     const creadaUTC = new Date(orden.fecha_creacion);
-    const diffHoras = (ahoraUTC.getTime() - creadaUTC.getTime()) / (1000 * 60 * 60);
+    const diffHoras =
+      (ahoraUTC.getTime() - creadaUTC.getTime()) / (1000 * 60 * 60);
     if (usuario.rol === "vendedor" && diffHoras > 24) {
-      return new Response(JSON.stringify({ error: "No puedes editar órdenes con más de 24 horas" }), { status: 403 });
+      return new Response(
+        JSON.stringify({
+          error: "No puedes editar órdenes con más de 24 horas",
+        }),
+        { status: 403 }
+      );
     }
 
     // --- AGENTE: solo puede modificar fecha_entrega, estado y observacion ---
@@ -70,14 +97,21 @@ export async function PUT(req) {
 
       if (data.fecha_entrega) {
         const [year, month, day] = data.fecha_entrega.split("-").map(Number);
-        dataToUpdate.fecha_entrega = new Date(Date.UTC(year, month - 1, day, 12));
+        dataToUpdate.fecha_entrega = new Date(
+          Date.UTC(year, month - 1, day, 12)
+        );
       }
 
       if (nuevoEstadoId !== estadoActualId) {
         dataToUpdate.estado = { connect: { id_estado: nuevoEstadoId } };
         let nuevoHistorial = orden.historial_estados || [];
-        const nombreEstado = await prisma.estado.findUnique({ where: { id_estado: nuevoEstadoId } }).then(e => e.nombre);
-        nuevoHistorial.push({ estado: nombreEstado, fecha_cambio: ahoraUTC.toISOString() });
+        const nombreEstado = await prisma.estado
+          .findUnique({ where: { id_estado: nuevoEstadoId } })
+          .then((e) => e.nombre);
+        nuevoHistorial.push({
+          estado: nombreEstado,
+          fecha_cambio: ahoraUTC.toISOString(),
+        });
         dataToUpdate.historial_estados = nuevoHistorial;
       }
 
@@ -110,31 +144,52 @@ export async function PUT(req) {
       flete: data.flete ? parseInt(data.flete) : null,
       fecha_entrega: data.fecha_entrega
         ? (() => {
-            const [year, month, day] = data.fecha_entrega.split("-").map(Number);
+            const [year, month, day] = data.fecha_entrega
+              .split("-")
+              .map(Number);
             return new Date(Date.UTC(year, month - 1, day, 12));
           })()
         : null,
       observacion: data.observacion || null,
-      monto_factura: data.monto_factura ? parseFloat(data.monto_factura) : null,
+      monto_factura:
+        data.monto_factura === "" ||
+        data.monto_factura === null ||
+        data.monto_factura === undefined
+          ? null
+          : parseFloat(data.monto_factura),
       cedula: data.cedula,
       telefono: data.telefono,
       hora_actualizacion: ahoraUTC,
       tipoenvio: { connect: { id_tipenvio: parseInt(data.id_tipenvio) } },
       tipopago: { connect: { id_tipopago: parseInt(data.id_tipopago) } },
-      origen_inventario: { connect: { id_originventario: parseInt(data.id_originventario) } },
+      origen_inventario: {
+        connect: { id_originventario: parseInt(data.id_originventario) },
+      },
       tienda: { connect: { id_tienda: parseInt(data.id_tienda) } },
-      tiendasinsa: data.id_tiendasinsa ? { connect: { id_tiendasinsa: parseInt(data.id_tiendasinsa) } } : undefined,
+      tiendasinsa: data.id_tiendasinsa
+        ? { connect: { id_tiendasinsa: parseInt(data.id_tiendasinsa) } }
+        : undefined,
     };
 
-    if ((usuario.rol === "admin" || usuario.rol === "superusuario") && data.id_agente) {
-      dataToUpdate.agente = { connect: { id_agente: parseInt(data.id_agente) } };
+    if (
+      (usuario.rol === "admin" || usuario.rol === "superusuario") &&
+      data.id_agente
+    ) {
+      dataToUpdate.agente = {
+        connect: { id_agente: parseInt(data.id_agente) },
+      };
     }
 
     if (nuevoEstadoId !== estadoActualId) {
       dataToUpdate.estado = { connect: { id_estado: nuevoEstadoId } };
       let nuevoHistorial = orden.historial_estados || [];
-      const nombreEstado = await prisma.estado.findUnique({ where: { id_estado: nuevoEstadoId } }).then(e => e.nombre);
-      nuevoHistorial.push({ estado: nombreEstado, fecha_cambio: ahoraUTC.toISOString() });
+      const nombreEstado = await prisma.estado
+        .findUnique({ where: { id_estado: nuevoEstadoId } })
+        .then((e) => e.nombre);
+      nuevoHistorial.push({
+        estado: nombreEstado,
+        fecha_cambio: ahoraUTC.toISOString(),
+      });
       dataToUpdate.historial_estados = nuevoHistorial;
     }
 
@@ -154,9 +209,10 @@ export async function PUT(req) {
     });
 
     return new Response(JSON.stringify(ordenActualizada), { status: 200 });
-
   } catch (error) {
     console.error("Error actualizando orden:", error);
-    return new Response(JSON.stringify({ error: "Error interno" }), { status: 500 });
+    return new Response(JSON.stringify({ error: "Error interno" }), {
+      status: 500,
+    });
   }
 }

@@ -23,7 +23,7 @@ export async function GET() {
 
       if (historial.length === 0) {
         return {
-          num_ticket: orden.num_ticket,
+          id_registro: orden.id_registro,
           cliente: orden.nombre_cliente,
           historial_estados: [],
         };
@@ -63,7 +63,7 @@ export async function GET() {
       });
 
       return {
-        num_ticket: orden.num_ticket,
+        id_registro: orden.id_registro,
         cliente: orden.nombre_cliente,
         historial_estados: tiempos,
       };
