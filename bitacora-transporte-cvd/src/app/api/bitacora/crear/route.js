@@ -22,7 +22,7 @@ export async function POST(req) {
     }
 
     const data = await req.json();
-    // const numTicket = parseInt(data.num_ticket);
+    const numTicket = parseInt(data.num_ticket);
 
     // // 🔹 Validar duplicado
     // const existeTicket = await prisma.registroBitacora.findFirst({
