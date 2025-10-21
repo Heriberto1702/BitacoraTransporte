@@ -129,31 +129,38 @@ margin: 0px auto 25px auto;
 .estadoNueva {
   background-color: #3498db;
 } /* azul */
+
 .estadoRefacturada {
   background-color: #f1c40f;
 } /* amarillo */
+
 .estadoEnTransito {
-  background-color: #1abc9c;
-} /* turquesa */
+  background-color: #00b894;
+} /* verde menta */
+
 .estadoPreparacion {
-  background-color: #9b59b6;
-} /* morado */
+  background-color: #8e44ad;
+} /* morado elegante */
+
 .estadoEnviado {
-  background-color: #e67e22;
-} /* naranja */
+  background-color: #fd9644;
+} /* naranja suave */
+
 .estadoEspera {
-  background-color: #e67e22;
-} /* gris claro */
+  background-color: #a0b469;
+} /* gris neutro */
+
 .estadoEntregada {
   background-color: #2ecc71;
 } /* verde */
+
 .estadoAnulada {
   background-color: #e74c3c;
 } /* rojo */
 
 .estadoDefault {
-  background-color: #7f8c8d;
-} /* gris por defecto */
+  background-color: #bdc3c7;
+} /* gris claro por defecto */
 
 /* Paginación */
 .paginacionControls {
