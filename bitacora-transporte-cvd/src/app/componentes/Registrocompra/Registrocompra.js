@@ -186,9 +186,6 @@ export default function RegistrarOrden({
   const handleToggle = () => {
     setAbierto((prev) => !prev);
   };
-  const hoy = new Date(Date.now() - new Date().getTimezoneOffset() * 60000)
-    .toISOString()
-    .split("T")[0];
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -591,7 +588,7 @@ export default function RegistrarOrden({
                     onChange={handleChange}
                     className={styles.input}
                     required
-                    min={hoy}
+                  
                   />
                 </div>
 
