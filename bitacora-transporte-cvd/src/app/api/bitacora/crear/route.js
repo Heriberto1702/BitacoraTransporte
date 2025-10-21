@@ -22,19 +22,19 @@ export async function POST(req) {
     }
 
     const data = await req.json();
-    const numTicket = parseInt(data.num_ticket);
+    // const numTicket = parseInt(data.num_ticket);
 
-    // 🔹 Validar duplicado
-    const existeTicket = await prisma.registroBitacora.findFirst({
-      where: { num_ticket: numTicket },
-    });
+    // // 🔹 Validar duplicado
+    // const existeTicket = await prisma.registroBitacora.findFirst({
+    //   where: { num_ticket: numTicket },
+    // });
 
-    if (existeTicket) {
-      return new Response(
-        JSON.stringify({ error: "El número de ticket ya existe" }),
-        { status: 400 }
-      );
-    }
+    // if (existeTicket) {
+    //   return new Response(
+    //     JSON.stringify({ error: "El número de ticket ya existe" }),
+    //     { status: 400 }
+    //   );
+    // }
 
     // 🔹 Ajuste de fecha (solo día, sin hora)
     // Evitamos desfases de zona horaria
