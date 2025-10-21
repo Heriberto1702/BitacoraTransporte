@@ -127,7 +127,7 @@ margin: 0px auto 25px auto;
 }
 
 .estadoNueva {
-  background-color: #3498db;
+  background-color: #2980b9;
 } /* azul */
 
 .estadoRefacturada {
@@ -135,7 +135,7 @@ margin: 0px auto 25px auto;
 } /* amarillo */
 
 .estadoEnTransito {
-  background-color: #00b894;
+  background-color: #1abc9c;
 } /* verde menta */
 
 .estadoPreparacion {
@@ -143,19 +143,19 @@ margin: 0px auto 25px auto;
 } /* morado elegante */
 
 .estadoEnviado {
-  background-color: #fd9644;
+  background-color: #e67e22;
 } /* naranja suave */
 
 .estadoEspera {
-  background-color: #a0b469;
+  background-color: #c58ebe;
 } /* gris neutro */
 
 .estadoEntregada {
-  background-color: #2ecc71;
+  background-color: #27ae60;
 } /* verde */
 
 .estadoAnulada {
-  background-color: #e74c3c;
+  background-color: #c0392b;
 } /* rojo */
 
 .estadoDefault {
