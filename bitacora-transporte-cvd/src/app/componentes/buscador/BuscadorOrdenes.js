@@ -104,7 +104,7 @@ const BuscadorOrdenes = forwardRef(({ onEditar, session }, ref) => {
   const estadoClases = {
     Nueva: styles.estadoNueva,
     Refacturada: styles.estadoRefacturada,
-    "En tránsito a cedis": styles.estadoEnTransito,
+    "Enviado a cedis": styles.estadoEnviadoCedis,
     Preparación: styles.estadoPreparacion,
     "Enviado al cliente": styles.estadoEnviado,
     "En espera cliente": styles.estadoEspera,
@@ -116,7 +116,7 @@ const BuscadorOrdenes = forwardRef(({ onEditar, session }, ref) => {
       <div className={styles.header}>
         <input
           type="text"
-          placeholder="Buscar orden por ticket, cliente, vendedor, tienda, tipo envío, estado, cédula, flete o monto..."
+          placeholder="¿Que estas buscando?"
           value={filtro}
           onChange={(e) => {
             setFiltro(e.target.value);
