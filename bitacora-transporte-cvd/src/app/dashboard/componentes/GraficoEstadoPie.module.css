@@ -1,0 +1,43 @@
+.container {
+  margin-top: 32px;
+}
+
+.title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #1f2937;
+  margin-bottom: 16px;
+  text-align: center;
+}
+
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-top: 16px;
+}
+
+.legendItem {
+  display: flex;
+  align-items: center;
+  margin: 0 12px 8px 12px;
+}
+
+.legendColor {
+  width: 16px;
+  height: 16px;
+  border-radius: 2px;
+  margin-right: 8px;
+}
+
+.legendText {
+  font-size: 14px;
+  font-weight: 500;
+  color: #374151;
+}
+
+.label {
+  font-size: 12px;
+  font-weight: 600;
+  fill: #333333;
+}

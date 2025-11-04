@@ -1,0 +1,16 @@
+.container {
+  margin-top: 40px;
+}
+
+.title {
+  color: #1f2937; /* gris oscuro */
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 16px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+}

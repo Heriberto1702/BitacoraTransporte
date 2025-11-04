@@ -7,141 +7,178 @@ export async function GET(request) {
     const inicioParam = searchParams.get("inicio");
     const finParam = searchParams.get("fin");
 
-    // 🔹 Construir filtro por fecha si existen parámetros
-    let fechaFilter = {};
+    // 🔹 Filtro por fecha
+    const fechaFilter = {};
     if (inicioParam || finParam) {
       fechaFilter.fecha_creacion = {};
       if (inicioParam) fechaFilter.fecha_creacion.gte = new Date(inicioParam);
       if (finParam) {
-        // Para incluir todo el día final, ponemos 23:59:59
         const finDate = new Date(finParam);
         finDate.setHours(23, 59, 59, 999);
         fechaFilter.fecha_creacion.lte = finDate;
       }
     }
 
-    // 🔹 Totales
-    const total = await prisma.registroBitacora.count({ where: fechaFilter });
-    const entregadas = await prisma.registroBitacora.count({
-      where: { ...fechaFilter, id_estado: 7 },
-    });
-    
-    const pendientes = await prisma.registroBitacora.count({
-      where: { ...fechaFilter, id_estado: { notIn: [7, 8] } },
-    });
+    // 🔹 Ejecutar consultas en paralelo
+    const [
+      estadosGroup,
+      montos,
+      tipoEnvioGroup,
+      tiendaSinsaGroup,
+      origenInventarioGroup,
+      registros
+    ] = await Promise.all([
+      // Agrupación por estado (una sola query para todos los count)
+      prisma.registroBitacora.groupBy({
+        by: ["id_estado"],
+        _count: { id_estado: true },
+        _sum: { monto_factura: true, flete: true },
+        where: fechaFilter,
+      }),
 
-    const Anuladas = await prisma.registroBitacora.count({
-      where: { ...fechaFilter, id_estado: 8 },
-    });
+      // Totales globales
+      prisma.registroBitacora.aggregate({
+        _sum: { monto_factura: true, flete: true },
+        where: fechaFilter,
+      }),
 
-    const montoTotal = await prisma.registroBitacora.aggregate({
-      _sum: { monto_factura: true },
-      where: fechaFilter,
-    });
+      // Agrupación por tipo de envío
+      prisma.registroBitacora.groupBy({
+        by: ["id_tipenvio"],
+        _count: { id_tipenvio: true },
+        _sum: { monto_factura: true, flete: true },
+        where: fechaFilter,
+      }),
 
-    const montoTotalAnuladas = await prisma.registroBitacora.aggregate({
-      _sum: { monto_factura: true },
-      where: { ...fechaFilter, id_estado: 8 },
-    });
+      // Agrupación por tienda SINSA
+      prisma.registroBitacora.groupBy({
+        by: ["id_tiendasinsa"],
+        _count: { id_tiendasinsa: true },
+        _sum: { monto_factura: true },
+        where: { ...fechaFilter, id_tiendasinsa: { not: null } },
+      }),
 
-    const montoFlete = await prisma.registroBitacora.aggregate({
-      _sum: { flete: true },
-      where: fechaFilter,
-    });
+      // Agrupación por origen inventario
+      prisma.registroBitacora.groupBy({
+        by: ["id_originventario"],
+        _count: { id_originventario: true },
+        _sum: { monto_factura: true },
+        where: fechaFilter,
+      }),
 
-    const montoFacturado =
-      (montoTotal._sum.monto_factura || 0) -
-      (montoTotalAnuladas._sum.monto_factura || 0);
+      // Solo una lectura para origenFacturas
+      prisma.registroBitacora.findMany({
+        select: { monto_factura: true, historial_estados: true },
+        where: fechaFilter,
+      }),
+    ]);
+
+    // 🔹 Mapear resultados por estado
+    const estadoMap = Object.fromEntries(
+      estadosGroup.map((e) => [e.id_estado, e._count.id_estado])
+    );
+
+    const total = estadosGroup.reduce((acc, e) => acc + e._count.id_estado, 0);
+    const entregadas = estadoMap[7] || 0;
+    const nuevas = estadoMap[1] || 0;
+    const refacturadas = estadoMap[2] || 0;
+    const enviadasACedis = estadoMap[3] || 0;
+    const preparacion = estadoMap[4] || 0;
+    const enviadoACliente = estadoMap[5] || 0;
+    const esperaCaliente = estadoMap[6] || 0;
+    const Anuladas = estadoMap[8] || 0;
+    const pendientes = total - (entregadas + Anuladas);
+
+    // 🔹 Totales de montos
+    const montoTotal = montos._sum.monto_factura || 0;
+    const montoFlete = montos._sum.flete || 0;
+    const montoTotalAnuladas =
+      estadosGroup.find((e) => e.id_estado === 8)?._sum.monto_factura || 0;
+    const montoFacturado = montoTotal - montoTotalAnuladas;
 
     // 🔹 Tipo de envío
-    const tipoEnvioConNombre = await prisma.registroBitacora.groupBy({
-      by: ["id_tipenvio"],
-      _count: { id_tipenvio: true },
-      _sum: { monto_factura: true, flete: true },
-      orderBy: { _count: { id_tipenvio: "desc" } },
-      where: fechaFilter,
-    });
-
-    const tiposEnvioIds = tipoEnvioConNombre.map((t) => t.id_tipenvio);
+    const tiposEnvioIds = tipoEnvioGroup.map((t) => t.id_tipenvio);
     const tiposEnvio = await prisma.tipo_Envio.findMany({
       where: { id_tipenvio: { in: tiposEnvioIds } },
     });
+    const tipoEnvioFinal = tipoEnvioGroup.map((t) => ({
+      id_tipenvio: t.id_tipenvio,
+      nombre:
+        tiposEnvio.find((x) => x.id_tipenvio === t.id_tipenvio)?.nombre_Tipo ||
+        "Desconocido",
+      cantidad: t._count.id_tipenvio,
+      monto: t._sum.monto_factura || 0,
+      totalFlete: t._sum.flete || 0,
+    }));
 
-    const tipoEnvioFinal = tipoEnvioConNombre.map((t) => {
-      const tipo = tiposEnvio.find((x) => x.id_tipenvio === t.id_tipenvio);
-      return {
-        id_tipenvio: t.id_tipenvio,
-        nombre: tipo?.nombre_Tipo || "Desconocido",
-        cantidad: t._count.id_tipenvio,
-        monto: t._sum.monto_factura || 0,
-        totalFlete: t._sum.flete || 0,
-      };
-    });
-
-    // 🔹 Tiendas Sinsa
-    const tiendaSinsaStats = await prisma.registroBitacora.groupBy({
-      by: ["id_tiendasinsa"],
-      _count: { id_tiendasinsa: true },
-      _sum: { monto_factura: true },
-      orderBy: { _count: { id_tiendasinsa: "desc" } },
-      where: { ...fechaFilter, id_tiendasinsa: { not: null } },
-    });
-
-    const tiendaIds = tiendaSinsaStats.map((t) => t.id_tiendasinsa);
+    // 🔹 Tienda Sinsa
+    const tiendaIds = tiendaSinsaGroup.map((t) => t.id_tiendasinsa);
     const tiendasSinsa = await prisma.tiendasinsa.findMany({
       where: { id_tiendasinsa: { in: tiendaIds } },
     });
-
-    const tiendaSinsaFinal = tiendaSinsaStats.map((t) => {
-      const tienda = tiendasSinsa.find(
-        (x) => x.id_tiendasinsa === t.id_tiendasinsa
-      );
-      return {
-        id_tiendasinsa: t.id_tiendasinsa,
-        nombre: tienda?.nombre_tiendasinsa || "Desconocida",
-        cantidad: t._count.id_tiendasinsa,
-        monto: t._sum.monto_factura || 0,
-      };
-    });
+    const tiendaSinsaFinal = tiendaSinsaGroup.map((t) => ({
+      id_tiendasinsa: t.id_tiendasinsa,
+      nombre:
+        tiendasSinsa.find((x) => x.id_tiendasinsa === t.id_tiendasinsa)
+          ?.nombre_tiendasinsa || "Desconocida",
+      cantidad: t._count.id_tiendasinsa,
+      monto: t._sum.monto_factura || 0,
+    }));
 
     // 🔹 Origen Inventario
-    const origenStats = await prisma.registroBitacora.groupBy({
-      by: ["id_originventario"],
-      _count: { id_originventario: true },
-      _sum: { monto_factura: true },
-      orderBy: { _count: { id_originventario: "desc" } },
-      where: fechaFilter,
-    });
-
-    const origenIds = origenStats.map((o) => o.id_originventario);
+    const origenIds = origenInventarioGroup.map((o) => o.id_originventario);
     const origenes = await prisma.origenInventario.findMany({
       where: { id_originventario: { in: origenIds } },
     });
+    const origenFinal = origenInventarioGroup.map((o) => ({
+      id_originventario: o.id_originventario,
+      nombre:
+        origenes.find((x) => x.id_originventario === o.id_originventario)
+          ?.nombre_origen || "Desconocido",
+      cantidad: o._count.id_originventario,
+      monto: o._sum.monto_factura || 0,
+    }));
 
-    const origenFinal = origenStats.map((o) => {
-      const origen = origenes.find(
-        (x) => x.id_originventario === o.id_originventario
-      );
-      return {
-        id_originventario: o.id_originventario,
-        nombre: origen?.nombre_origen || "Desconocido",
-        cantidad: o._count.id_originventario,
-        monto: o._sum.monto_factura || 0,
-      };
+    // 🔹 Origen de facturas
+    const origenFacturas = {
+      nueva: { cantidad: 0, monto: 0 },
+      refacturada: { cantidad: 0, monto: 0 },
+      totalMonto: 0,
+    };
+
+    registros.forEach((reg) => {
+      const primerEstado = reg.historial_estados?.[0]?.estado?.toLowerCase();
+      if (primerEstado === "nueva") {
+        origenFacturas.nueva.cantidad++;
+        origenFacturas.nueva.monto += reg.monto_factura || 0;
+      } else if (primerEstado === "refacturada") {
+        origenFacturas.refacturada.cantidad++;
+        origenFacturas.refacturada.monto += reg.monto_factura || 0;
+      }
     });
+    origenFacturas.totalMonto =
+      origenFacturas.nueva.monto + origenFacturas.refacturada.monto;
 
+    // ✅ Respuesta final
     return NextResponse.json({
       total,
+      nuevas,
+      refacturadas,
+      enviadasACedis,
+      preparacion,
+      enviadoACliente,
+      esperaCaliente,
       entregadas,
       pendientes,
       Anuladas,
-      montoTotal: montoTotal._sum.monto_factura || 0,
-      montoTotalAnuladas: montoTotalAnuladas._sum.monto_factura || 0,
+      montoTotal,
+      montoTotalAnuladas,
       montoFacturado,
-      montoFlete: montoFlete._sum.flete || 0,
+      montoFlete,
       tipoEnvio: tipoEnvioFinal,
       tiendaSinsa: tiendaSinsaFinal,
       origenInventario: origenFinal,
+      origenFacturas,
     });
   } catch (error) {
     console.error("Error en estadísticas:", error);

@@ -20,7 +20,10 @@ export default function ExportarExcel({ data, fileName = "ordenes.xlsx" }) {
       "Tipo Envío": orden.tipoenvio?.nombre_Tipo || "-",
       "Tipo Pago": orden.tipopago?.nombre_tipopago || "-",
       "Fecha creación": new Date(orden.fecha_creacion).toLocaleDateString("es-ES"),
-  
+      "Estado": orden.estado?.nombre || "-",
+      "Monto Flete": orden.flete,
+      "Monto Facturación": orden.monto_factura,
+
     }));
 
     // 1. Convertir JSON a hoja Excel

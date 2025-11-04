@@ -1,0 +1,21 @@
+.card {
+  display: flex;
+  align-items: center;
+  gap: 8px; /* espacio entre elementos */
+  padding: 10px;
+  background-color: #fff;
+  border-radius: 6px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+.cardTitulo {
+  font-size: 14px;
+  color: #6b7280; /* gris */
+  margin: 0;
+}
+
+.cardValor {
+  font-weight: bold;
+  font-size: 14px;
+  margin: 0;
+}

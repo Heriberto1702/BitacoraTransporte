@@ -1,0 +1,16 @@
+.container{
+display: flex;
+flex-direction: column;
+}
+.title {
+  color: #1f2937; /* gris oscuro */
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.subcontainer {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 16px;
+  margin-top: 24px;
+}
