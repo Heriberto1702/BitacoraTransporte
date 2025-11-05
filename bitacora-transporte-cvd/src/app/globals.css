@@ -1,7 +1,5 @@
 /* Variables globales para colores y estilos base */
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+
 :root {
   --primary: #0052cc;
   --secondary: #172b4d;
