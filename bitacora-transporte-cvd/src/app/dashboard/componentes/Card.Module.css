@@ -1,7 +1,7 @@
 .card {
   display: flex;
   align-items: center;
-  gap: 8px; /* espacio entre elementos */
+  gap: 5px; /* espacio entre elementos */
   padding: 10px;
   background-color: #fff;
   border-radius: 6px;
