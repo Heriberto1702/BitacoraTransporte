@@ -7,6 +7,7 @@ import GraficoEstado from "../dashboard/componentes/GraficoEstado";
 import TopTipoEnvio from "../dashboard/componentes/TopTipoEnvio";
 import TopTiendas from "../dashboard/componentes/TopTiendas";
 import TopOrigenInventario from "../dashboard/componentes/TopOrigenInventario";
+import VendedoresResumen from "../dashboard/componentes/VendedoresResumen";
 import FiltroFechas from "../dashboard/componentes/FiltrosFechas";
 import ExportDashBoard from "../componentes/exportarAexcel/ExportDashBoard";
 import Link from "next/link";
@@ -25,12 +26,7 @@ export default function DashboardBitacora() {
 
   const [vendedor, setVendedor] = useState("");
 
-  if (!data)
-    return (
-      <div className="loading">
-        Cargando estadísticas...
-      </div>
-    );
+  if (!data) return <div className="loading">Cargando estadísticas...</div>;
 
   return (
     <div className="dashboard-container">
@@ -61,7 +57,9 @@ export default function DashboardBitacora() {
           </div>
 
           <div className="botones">
-            <button onClick={() => handleFiltrar(vendedor)}>Aplicar filtros</button>
+            <button onClick={() => handleFiltrar(vendedor)}>
+              Aplicar filtros
+            </button>
             <button onClick={handleResetMesActual}>Resetear</button>
           </div>
         </div>
@@ -76,7 +74,11 @@ export default function DashboardBitacora() {
       {/* Contenido principal */}
       <main className="main-content">
         <header>
-          {vendedor && <span>Mostrando datos de: <b>{vendedor}</b></span>}
+          {vendedor && (
+            <span>
+              Mostrando datos de: <b>{vendedor}</b>
+            </span>
+          )}
         </header>
 
         <section className="cards-resumen">
@@ -89,6 +91,12 @@ export default function DashboardBitacora() {
 
         <section className="graficos">
           <GraficoEstado data={data} />
+        </section>
+
+        <section className="graficos">
+          <div>
+            <VendedoresResumen vendedores={data.vendedores} />
+          </div>
           <TopTipoEnvio data={data} />
         </section>
 

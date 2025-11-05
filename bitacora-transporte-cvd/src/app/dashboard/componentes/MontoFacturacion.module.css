@@ -1,16 +1,68 @@
-.container{
-display: flex;
-flex-direction: column;
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  background: #fff;
+  padding: 1.5rem;
+  border-radius: 1rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 }
+
 .title {
-  color: #1f2937; /* gris oscuro */
-  font-size: 18px;
+  font-size: 1.25rem;
   font-weight: 600;
+  color: #1f2937;
+  text-align: center;
+}
+
+.botones {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.toggleButton {
+  background-color: #4f46e5;
+  color: white;
+  border: none;
+  padding: 0.6rem 1.2rem;
+  border-radius: 9999px;
+  cursor: pointer;
+  font-size: 0.95rem;
+  font-weight: 500;
+  transition: all 0.25s ease-in-out;
+  box-shadow: 0 2px 8px rgba(79, 70, 229, 0.25);
+}
+
+.toggleButton:hover {
+  background-color: #4338ca;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 10px rgba(79, 70, 229, 0.3);
+}
+
+.toggleButton:active {
+  transform: scale(0.98);
 }
 
 .subcontainer {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 16px;
-  margin-top: 24px;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1rem;
+}
+
+/* 🔹 Responsive */
+@media (max-width: 600px) {
+  .container {
+    padding: 1rem;
+  }
+
+  .title {
+    font-size: 1.1rem;
+  }
+
+  .toggleButton {
+    padding: 0.5rem 1rem;
+    font-size: 0.9rem;
+  }
 }

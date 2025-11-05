@@ -192,12 +192,15 @@ export async function GET(request) {
       where: { id_login: { in: vendedorIds } },
       select: { id_login: true, nombre_vendedor: true },
     });
-    const vendedoresFinal = vendedoresGroup.map((v) => ({
-      id: v.id_login,
-      nombre: vendedoresInfo.find((x) => x.id === v.id_login)?.nombre_vendedor || "Desconocido",
-      cantidad: v._count.id_login,
-      monto: v._sum.monto_factura || 0,
-    }));
+    const vendedoresFinal = vendedoresGroup.map((v) => {
+  const vendedor = vendedoresInfo.find((x) => x.id_login === v.id_login);
+  return {
+    id: v.id_login,
+    nombre: vendedor?.nombre_vendedor || "Desconocido",
+    cantidad: v._count.id_login,
+    monto: v._sum.monto_factura || 0,
+  };
+});
     // ✅ Respuesta final
     return NextResponse.json({
       total,
