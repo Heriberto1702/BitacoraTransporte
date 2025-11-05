@@ -23,6 +23,7 @@ export default function ExportarExcel({ data, fileName = "ordenes.xlsx" }) {
       "Estado": orden.estado?.nombre || "-",
       "Monto Flete": orden.flete,
       "Monto Facturación": orden.monto_factura,
+      "Monto Devolución": orden.monto_devolucion,
 
     }));
 

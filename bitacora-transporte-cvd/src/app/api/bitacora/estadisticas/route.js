@@ -26,7 +26,10 @@ export async function GET(request) {
       tipoEnvioGroup,
       tiendaSinsaGroup,
       origenInventarioGroup,
-      registros
+      registros,
+       vendedoresGroup,
+      refacturadasData,
+      devolucionesData
     ] = await Promise.all([
       // Agrupación por estado (una sola query para todos los count)
       prisma.registroBitacora.groupBy({
@@ -49,7 +52,7 @@ export async function GET(request) {
         _sum: { monto_factura: true, flete: true },
         where: fechaFilter,
       }),
-
+      
       // Agrupación por tienda SINSA
       prisma.registroBitacora.groupBy({
         by: ["id_tiendasinsa"],
@@ -66,14 +69,35 @@ export async function GET(request) {
         where: fechaFilter,
       }),
 
-      // Solo una lectura para origenFacturas
+
+      // Solo lectura de registros
       prisma.registroBitacora.findMany({
-        select: { monto_factura: true, historial_estados: true },
+        select: { monto_factura: true, monto_devolucion: true, historial_estados: true },
+        where: fechaFilter,
+      }),
+
+            // 🔹 Órdenes por vendedor
+      prisma.registroBitacora.groupBy({
+        by: ["id_login"],
+        _count: { id_login: true },
+        _sum: { monto_factura: true },
+        where: fechaFilter,
+      }),
+
+      // 🔹 Monto de órdenes refacturadas
+      prisma.registroBitacora.aggregate({
+        _sum: { monto_factura: true },
+        where: { ...fechaFilter, id_estado: 2 }, // 2 = Refacturada
+      }),
+
+      // 🔹 Monto de devoluciones
+      prisma.registroBitacora.aggregate({
+        _sum: { monto_devolucion: true },
         where: fechaFilter,
       }),
     ]);
 
-    // 🔹 Mapear resultados por estado
+   // 🔹 Mapear resultados por estado
     const estadoMap = Object.fromEntries(
       estadosGroup.map((e) => [e.id_estado, e._count.id_estado])
     );
@@ -90,7 +114,10 @@ export async function GET(request) {
     const pendientes = total - (entregadas + Anuladas);
 
     // 🔹 Totales de montos
+    const montoDevolucion = devolucionesData._sum.monto_devolucion || 0;
+    const montoRefacturadas = refacturadasData._sum.monto_factura || 0;
     const montoTotal = montos._sum.monto_factura || 0;
+    const montoTotalTotal = montoTotal + montoDevolucion - montoRefacturadas; 
     const montoFlete = montos._sum.flete || 0;
     const montoTotalAnuladas =
       estadosGroup.find((e) => e.id_estado === 8)?._sum.monto_factura || 0;
@@ -159,6 +186,18 @@ export async function GET(request) {
     origenFacturas.totalMonto =
       origenFacturas.nueva.monto + origenFacturas.refacturada.monto;
 
+    // 🔹 Vendedores
+    const vendedorIds = vendedoresGroup.map((v) => v.id_login);
+    const vendedoresInfo = await prisma.login.findMany({
+      where: { id_login: { in: vendedorIds } },
+      select: { id_login: true, nombre_vendedor: true },
+    });
+    const vendedoresFinal = vendedoresGroup.map((v) => ({
+      id: v.id_login,
+      nombre: vendedoresInfo.find((x) => x.id === v.id_login)?.nombre_vendedor || "Desconocido",
+      cantidad: v._count.id_login,
+      monto: v._sum.monto_factura || 0,
+    }));
     // ✅ Respuesta final
     return NextResponse.json({
       total,
@@ -171,7 +210,7 @@ export async function GET(request) {
       entregadas,
       pendientes,
       Anuladas,
-      montoTotal,
+      montoTotalTotal,
       montoTotalAnuladas,
       montoFacturado,
       montoFlete,
@@ -179,6 +218,9 @@ export async function GET(request) {
       tiendaSinsa: tiendaSinsaFinal,
       origenInventario: origenFinal,
       origenFacturas,
+            vendedores: vendedoresFinal,         // ✅ Nuevos
+      montoRefacturadas: refacturadasData._sum.monto_factura || 0, // ✅ Nuevo
+      montoDevolucion: devolucionesData._sum.monto_devolucion || 0, // ✅ Nuevo
     });
   } catch (error) {
     console.error("Error en estadísticas:", error);

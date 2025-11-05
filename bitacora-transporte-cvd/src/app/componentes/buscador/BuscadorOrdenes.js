@@ -3,6 +3,7 @@
 import { useEffect, useState, forwardRef, useImperativeHandle } from "react";
 import styles from "./BuscadorOrdenes.module.css";
 import ExportarExcel from "../exportarAexcel/ExportarExcel";
+import FiltroFechas from "../filtroFechas/FiltroFechas";
 
 const BuscadorOrdenes = forwardRef(({ onEditar, session }, ref) => {
   const [ordenes, setOrdenes] = useState([]);
@@ -13,11 +14,16 @@ const BuscadorOrdenes = forwardRef(({ onEditar, session }, ref) => {
   const [ordenSeleccionadaId, setOrdenSeleccionadaId] = useState(null);
 
   const rolUsuario = session?.user?.rol;
+  // 🔹 Calcular fechas del mes actual por defecto
 
-  async function fetchOrdenes() {
+async function fetchOrdenes(inicio, fin) {
     try {
       setLoading(true);
-      const res = await fetch("/api/bitacora/obtener");
+      let url = "/api/bitacora/obtener";
+      if (inicio && fin) {
+        url += `?inicio=${inicio}&fin=${fin}`;
+      }
+      const res = await fetch(url);
       if (!res.ok) throw new Error("Error cargando órdenes");
       const data = await res.json();
       setOrdenes(data.ordenes || []);
@@ -32,10 +38,18 @@ const BuscadorOrdenes = forwardRef(({ onEditar, session }, ref) => {
     recargarOrdenes: fetchOrdenes,
     limpiarFilaSeleccionada: () => setOrdenSeleccionadaId(null),
   }));
-
+ 
+   // 🔹 Cargar órdenes del mes actual al montar
   useEffect(() => {
-    // 🔹 Cargar órdenes al montar
-    fetchOrdenes();
+    const ahora = new Date();
+    const inicioMes = new Date(ahora.getFullYear(), ahora.getMonth(), 1)
+      .toISOString()
+      .split("T")[0];
+    const finMes = new Date(ahora.getFullYear(), ahora.getMonth() + 1, 0)
+      .toISOString()
+      .split("T")[0];
+
+    fetchOrdenes(inicioMes, finMes);
   }, []);
 
   // --- FILTRADO ---
@@ -114,6 +128,8 @@ const BuscadorOrdenes = forwardRef(({ onEditar, session }, ref) => {
   return (
     <div className={styles.container}>
       <div className={styles.header}>
+<FiltroFechas onBuscar={(inicio, fin) => fetchOrdenes(inicio, fin)} />
+
         <input
           type="text"
           placeholder="¿Que estas buscando?"
@@ -252,6 +268,7 @@ const BuscadorOrdenes = forwardRef(({ onEditar, session }, ref) => {
                 <th>Tipo Pago</th>
                 <th>Flete</th>
                 <th>Monto Factura</th>
+                <th>Monto Devolución</th>
                 <th>Dirección</th>
                 <th>Observación</th>
               </tr>
@@ -349,6 +366,11 @@ const BuscadorOrdenes = forwardRef(({ onEditar, session }, ref) => {
                   </td>
                   <td data-label="Monto Factura">
                     {orden.monto_factura ? `C$ ${orden.monto_factura}` : "-"}
+                  </td>
+                  <td data-label="Monto Devolución">
+                    {orden.monto_devolucion
+                      ? `C$ ${orden.monto_devolucion}`
+                      : "-"}
                   </td>
                   <td data-label="Dirección">
                     {orden.direccion_entrega || "-"}

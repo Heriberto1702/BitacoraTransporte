@@ -19,10 +19,10 @@ model Login {
 }
 
 model Agente {
-  id_agente       Int      @id @default(autoincrement())
-  nombre_agente   String
-  fecha_creacion  DateTime @default(now())
-  registros       RegistroBitacora[]
+  id_agente      Int                @id @default(autoincrement())
+  nombre_agente  String
+  fecha_creacion DateTime           @default(now())
+  registros      RegistroBitacora[]
 }
 
 model Estado {
@@ -99,12 +99,13 @@ model RegistroBitacora {
   fecha_entrega      DateTime
   observacion        String?
   monto_factura      Decimal          @db.Decimal(10, 2)
+  monto_devolucion      Decimal?          @db.Decimal(10, 2)
   cedula             String
   telefono           String
   hora_actualizacion DateTime         @updatedAt
   historial_estados  Json?
-  id_agente        Int?
-  agente           Agente?  @relation(fields: [id_agente], references: [id_agente])
+  id_agente          Int?
+  agente             Agente?          @relation(fields: [id_agente], references: [id_agente])
   estado             Estado           @relation(fields: [id_estado], references: [id_estado])
   login              Login            @relation(fields: [id_login], references: [id_login])
   origen_inventario  OrigenInventario @relation(fields: [id_originventario], references: [id_originventario])

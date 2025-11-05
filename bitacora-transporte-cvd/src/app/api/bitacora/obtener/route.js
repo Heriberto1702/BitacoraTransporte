@@ -11,20 +11,21 @@ export async function GET(req) {
   }
 
   const { searchParams } = new URL(req.url);
-  const search = searchParams.get("q")?.trim(); // búsqueda general
-  const fecha = searchParams.get("fecha"); // fecha exacta opcional
+  const search = searchParams.get("q")?.trim();
+  const inicio = searchParams.get("inicio");
+  const fin = searchParams.get("fin");
 
   const userId = session.user.id;
   const userRol = session.user.rol;
 
   let where = {};
 
-  // Vendedor solo ve sus órdenes
+  // 🔹 Si es vendedor, solo ve sus órdenes
   if (userRol === "vendedor") {
     where.id_login = userId;
   }
 
-  // Filtro de búsqueda general
+  // 🔹 Filtro de búsqueda general
   if (search) {
     const busqueda = search.toLowerCase();
     where.OR = [
@@ -34,7 +35,6 @@ export async function GET(req) {
       { estado: { contains: busqueda, mode: "insensitive" } },
       { direccion_entrega: { contains: busqueda, mode: "insensitive" } },
       { login: { nombre_vendedor: { contains: busqueda, mode: "insensitive" } } },
-      // Relacionados
       { tiendasinsa: { nombre_tiendasinsa: { contains: busqueda, mode: "insensitive" } } },
       { origen_inventario: { nombre_origen: { contains: busqueda, mode: "insensitive" } } },
       { tipopago: { nombre_tipopago: { contains: busqueda, mode: "insensitive" } } },
@@ -43,17 +43,17 @@ export async function GET(req) {
     ];
   }
 
-  // Filtro de fecha exacta (fecha_creacion)
-  if (fecha) {
-    const fechaInicio = new Date(fecha);
-    const fechaFin = new Date(fecha);
-    fechaFin.setHours(23, 59, 59, 999);
+  // 🔹 Filtro de rango de fechas (si existe)
+if (inicio && fin) {
+  // 🔹 Interpretar las fechas como locales (evita desfase)
+  const fechaInicio = new Date(`${inicio}T00:00:00`);
+  const fechaFin = new Date(`${fin}T23:59:59`);
 
-    where.fecha_creacion = {
-      gte: fechaInicio,
-      lte: fechaFin,
-    };
-  }
+  where.fecha_creacion = {
+    gte: fechaInicio,
+    lte: fechaFin,
+  };
+}
 
   const includeRelations = {
     tiendasinsa: true,
@@ -63,15 +63,13 @@ export async function GET(req) {
     tipopago: true,
     login: true,
     agente: true,
-    estado:true
+    estado: true,
   };
 
   const ordenes = await prisma.registroBitacora.findMany({
     where,
     include: includeRelations,
-    orderBy: {
-      fecha_creacion: "desc", // 👈 Orden descendente
-    },
+    orderBy: { fecha_creacion: "desc" },
   });
 
   return NextResponse.json({ ordenes });

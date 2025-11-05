@@ -17,6 +17,19 @@ margin: 0px auto 25px auto;
   padding: 20px;
   gap: 10px;
 }
+.buscarBtn {
+  background-color: #4f46e5;
+  color: white;
+  border: none;
+  padding: 6px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.buscarBtn:hover {
+  background-color: #3730a3;
+}
 
 /* Wrapper para la tabla con scroll */
 

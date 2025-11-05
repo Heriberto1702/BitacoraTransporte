@@ -157,6 +157,12 @@ export async function PUT(req) {
         data.monto_factura === undefined
           ? null
           : parseFloat(data.monto_factura),
+          monto_devolucion:
+        data.monto_factura === "" ||
+        data.monto_factura === null ||
+        data.monto_factura === undefined
+          ? null
+          : parseFloat(data.monto_devolucion),
       cedula: data.cedula,
       telefono: data.telefono,
       hora_actualizacion: ahoraUTC,

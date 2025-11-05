@@ -77,6 +77,7 @@ if (data.fecha_entrega) {
         fecha_entrega: fechaEntrega,
         observacion: data.observacion || null,
         monto_factura: parseFloat(data.monto_factura),
+        monto_devolucion: parseFloat(data.monto_devolucion) || null,
         cedula: data.cedula,
         telefono: data.telefono,
 

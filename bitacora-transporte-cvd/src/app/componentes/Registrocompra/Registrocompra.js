@@ -19,6 +19,7 @@ const estadoInicial = {
   id_estado: "", // ahora es id_estado
   id_agente: "", // agente asignado
   monto_factura: "",
+  monto_devolucion: "",
   cedula: "",
   telefono: "",
   tipo_identificacion: "", // nuevo campo
@@ -148,6 +149,11 @@ export default function RegistrarOrden({
         ordenSeleccionada.monto_factura !== undefined
           ? String(ordenSeleccionada.monto_factura)
           : "",
+      monto_devolucion:
+        ordenSeleccionada.monto_devolucion !== null &&
+        ordenSeleccionada.monto_devolucion !== undefined
+          ? String(ordenSeleccionada.monto_devolucion)
+          : "",
       tipo_identificacion:
         ordenSeleccionada.tipo_identificacion ||
         estadoInicial.tipo_identificacion,
@@ -196,7 +202,7 @@ export default function RegistrarOrden({
       return;
     }
 
-    if (["monto_factura", "flete"].includes(name)) {
+    if (["monto_devolucion", "monto_factura", "flete"].includes(name)) {
       let soloNumerosYDecimal = value.replace(/[^0-9.]/g, "");
       const partes = soloNumerosYDecimal.split(".");
       if (partes.length > 2) {
@@ -270,6 +276,7 @@ export default function RegistrarOrden({
       num_ticket: parseInt(formData.num_ticket),
       flete: formData.flete ? parseInt(formData.flete) : null,
       monto_factura: parseFloat(formData.monto_factura),
+      monto_devolucion: parseFloat(formData.monto_devolucion),
       id_tiendasinsa,
     };
 
@@ -588,7 +595,6 @@ export default function RegistrarOrden({
                     onChange={handleChange}
                     className={styles.input}
                     required
-                  
                   />
                 </div>
 
@@ -681,6 +687,20 @@ export default function RegistrarOrden({
                     readOnly={soloLectura}
                     className={styles.input}
                     required
+                    placeholder="Monto en córdobas"
+                  />
+                </div>
+                <div className={styles.formGroup}>
+                  <label className={styles.label}>
+                    Monto Devolución
+                  </label>
+                  <input
+                    type="text"
+                    name="monto_devolucion"
+                    value={formData.monto_devolucion}
+                    onChange={handleChange}
+                    readOnly={soloLectura}
+                    className={styles.input}
                     placeholder="Monto en córdobas"
                   />
                 </div>
