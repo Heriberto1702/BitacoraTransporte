@@ -1,4 +1,4 @@
-import styles from "./Card.module.css";
+import styles from "./Card.Module.css";
 
 export default function Card({ titulo, valor, color = "#4f46e5" }) {
   return (
