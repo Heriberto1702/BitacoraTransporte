@@ -51,7 +51,7 @@ export default function VendedoresResumen({ vendedores = [], tipoCambio = 36.62 
             className={`${styles.button} ${enDolares ? styles.activeToggle : ""}`}
             onClick={() => setEnDolares(!enDolares)}
           >
-            {enDolares ? "Ver en Córdobas" : "Ver en Dólares"}
+            {enDolares ? "Dolares" : "Córdobas"}
           </button>
 
           {/* 🧾 Mostrar sin IVA */}
@@ -59,7 +59,7 @@ export default function VendedoresResumen({ vendedores = [], tipoCambio = 36.62 
             className={`${styles.button} ${sinIva ? styles.activeToggle : ""}`}
             onClick={() => setSinIva(!sinIva)}
           >
-            {sinIva ? "Con IVA" : "Sin IVA"}
+            {sinIva ? "Sin IVA" : "Con IVA"}
           </button>
         </div>
       </div>

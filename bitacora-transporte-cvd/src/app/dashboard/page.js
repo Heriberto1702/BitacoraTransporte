@@ -93,16 +93,18 @@ export default function DashboardBitacora() {
           <GraficoEstado data={data} />
         </section>
 
-        <section className="graficos">
-          <div>
-            <VendedoresResumen vendedores={data.vendedores} />
-          </div>
+        <section className="otros-tops">
+          <VendedoresResumen vendedores={data.vendedores} />
+          <section className="otros-tops-column">
           <TopTipoEnvio data={data} />
+          <TopTiendas data={data} />
+          <TopOrigenInventario data={data} />
+          </section>
+          
         </section>
 
         <section className="otros-tops">
-          <TopTiendas data={data} />
-          <TopOrigenInventario data={data} />
+          
         </section>
       </main>
     </div>

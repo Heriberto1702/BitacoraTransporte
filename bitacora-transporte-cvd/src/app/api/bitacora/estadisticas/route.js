@@ -114,14 +114,16 @@ export async function GET(request) {
     const pendientes = total - (entregadas + Anuladas);
 
     // 🔹 Totales de montos
-    const montoDevolucion = devolucionesData._sum.monto_devolucion || 0;
-    const montoRefacturadas = refacturadasData._sum.monto_factura || 0;
-    const montoTotal = montos._sum.monto_factura || 0;
-    const montoTotalTotal = montoTotal + montoDevolucion - montoRefacturadas; 
-    const montoFlete = montos._sum.flete || 0;
-    const montoTotalAnuladas =
-      estadosGroup.find((e) => e.id_estado === 8)?._sum.monto_factura || 0;
-    const montoFacturado = montoTotal - montoTotalAnuladas;
+const montoDevolucion = Number(devolucionesData?._sum?.monto_devolucion ?? 0);
+const montoRefacturadas = Number(refacturadasData?._sum?.monto_factura ?? 0);
+const montoTotal = Number(montos?._sum?.monto_factura ?? 0);
+const montoFlete = Number(montos?._sum?.flete ?? 0);
+
+const montoTotalAnuladas =
+estadosGroup.find((e) => e.id_estado === 8)?._sum.monto_factura || 0;
+const montoTotalTotal = montoTotal - montoDevolucion - montoRefacturadas- montoTotalAnuladas;
+
+    const montoFacturado = montoTotalTotal + montoRefacturadas;
 
     // 🔹 Tipo de envío
     const tiposEnvioIds = tipoEnvioGroup.map((t) => t.id_tipenvio);

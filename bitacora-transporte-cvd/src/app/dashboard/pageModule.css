@@ -95,7 +95,10 @@ header {
   gap: 20px;
   margin-bottom: 20px;
 }
-
+.otros-tops-column{
+  display:flex;
+  flex-direction: column;
+}
 .cards-resumen {
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
 }
