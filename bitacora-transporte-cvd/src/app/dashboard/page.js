@@ -43,18 +43,14 @@ export default function DashboardBitacora() {
             handleReset={handleResetMesActual}
           />
 
-          <div className="vendedor">
-            <label>Vendedor</label>
-            <select
-              value={vendedor}
-              onChange={(e) => setVendedor(e.target.value)}
-            >
-              <option value="">Todos</option>
-              <option value="oscar.mojica">Oscar Mojica</option>
-              <option value="maria.lopez">María López</option>
-              <option value="juan.perez">Juan Pérez</option>
-            </select>
-          </div>
+<select value={vendedor} onChange={(e) => setVendedor(e.target.value)}>
+  <option value="">Todos</option>
+  {(data.vendedores || []).map((v) => (
+    <option key={v.id_login} value={v.id_login}>
+      {v.nombre}
+    </option>
+  ))}
+</select>
 
           <div className="botones">
             <button onClick={() => handleFiltrar(vendedor)}>

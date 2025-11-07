@@ -6,11 +6,13 @@ export default function useBitacoraData() {
   const [fechaInicio, setFechaInicio] = useState("");
   const [fechaFin, setFechaFin] = useState("");
 
-  const fetchData = async (inicio, fin) => {
+  // Función para traer datos de la API
+  const fetchData = async (inicio, fin, vendedor = "") => {
     try {
       const query = [];
       if (inicio) query.push(`inicio=${inicio}T00:00:00`);
       if (fin) query.push(`fin=${fin}T23:59:59`);
+      if (vendedor) query.push(`vendedor=${vendedor}`);
       const url =
         "/api/bitacora/estadisticas" + (query.length ? `?${query.join("&")}` : "");
       const res = await fetch(url);
@@ -21,14 +23,37 @@ export default function useBitacoraData() {
     }
   };
 
-  useEffect(() => {
-    fetchData(fechaInicio, fechaFin);
-  }, [fechaInicio, fechaFin]);
+  // Calcular primer y último día del mes actual
+  const calcularMesActual = () => {
+    const now = new Date();
+    const primerDia = new Date(now.getFullYear(), now.getMonth(), 1)
+      .toISOString()
+      .split("T")[0];
+    const ultimoDia = new Date(now.getFullYear(), now.getMonth() + 1, 0)
+      .toISOString()
+      .split("T")[0];
+    return { primerDia, ultimoDia };
+  };
 
-  const handleReset = () => {
-    setFechaInicio("");
-    setFechaFin("");
-    fetchData("", "");
+  // Cargar datos al montar el componente (mes actual)
+  useEffect(() => {
+    const { primerDia, ultimoDia } = calcularMesActual();
+    setFechaInicio(primerDia);
+    setFechaFin(ultimoDia);
+    fetchData(primerDia, ultimoDia);
+  }, []);
+
+  // Filtrar por fechas y/o vendedor
+  const handleFiltrar = (vendedor = "") => {
+    fetchData(fechaInicio, fechaFin, vendedor);
+  };
+
+  // Resetear al mes actual
+  const handleResetMesActual = () => {
+    const { primerDia, ultimoDia } = calcularMesActual();
+    setFechaInicio(primerDia);
+    setFechaFin(ultimoDia);
+    fetchData(primerDia, ultimoDia);
   };
 
   return {
@@ -38,6 +63,7 @@ export default function useBitacoraData() {
     setFechaInicio,
     setFechaFin,
     fetchData,
-    handleReset,
+    handleFiltrar,
+    handleResetMesActual,
   };
 }

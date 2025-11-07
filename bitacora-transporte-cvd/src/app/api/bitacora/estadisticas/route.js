@@ -6,7 +6,7 @@ export async function GET(request) {
     const { searchParams } = new URL(request.url);
     const inicioParam = searchParams.get("inicio");
     const finParam = searchParams.get("fin");
-
+    let vendedorParam = searchParams.get("vendedor"); // <-- cambiar a let
     // 🔹 Filtro por fecha
     const fechaFilter = {};
     if (inicioParam || finParam) {
@@ -19,19 +19,24 @@ export async function GET(request) {
       }
     }
 
-    // 🔹 Ejecutar consultas en paralelo
+if (vendedorParam) {
+  // Convertir a número si id_login es integer en la DB
+  vendedorParam = Number(vendedorParam);
+  fechaFilter.id_login = vendedorParam;
+}
+    // 🔹 Consultas agrupadas
     const [
       estadosGroup,
-      montos,
+      montosGlobales,
       tipoEnvioGroup,
       tiendaSinsaGroup,
       origenInventarioGroup,
-      registros,
-       vendedoresGroup,
+      registrosHistorial,
+      vendedoresGroup,
       refacturadasData,
-      devolucionesData
+      devolucionesData,
     ] = await Promise.all([
-      // Agrupación por estado (una sola query para todos los count)
+      // Agrupación por estado con sumatoria
       prisma.registroBitacora.groupBy({
         by: ["id_estado"],
         _count: { id_estado: true },
@@ -52,7 +57,7 @@ export async function GET(request) {
         _sum: { monto_factura: true, flete: true },
         where: fechaFilter,
       }),
-      
+
       // Agrupación por tienda SINSA
       prisma.registroBitacora.groupBy({
         by: ["id_tiendasinsa"],
@@ -69,14 +74,16 @@ export async function GET(request) {
         where: fechaFilter,
       }),
 
-
-      // Solo lectura de registros
+      // Solo campos necesarios para origenFacturas
       prisma.registroBitacora.findMany({
-        select: { monto_factura: true, monto_devolucion: true, historial_estados: true },
+        select: {
+          monto_factura: true,
+          historial_estados: true,
+        },
         where: fechaFilter,
       }),
 
-            // 🔹 Órdenes por vendedor
+      // Órdenes por vendedor
       prisma.registroBitacora.groupBy({
         by: ["id_login"],
         _count: { id_login: true },
@@ -84,48 +91,49 @@ export async function GET(request) {
         where: fechaFilter,
       }),
 
-      // 🔹 Monto de órdenes refacturadas
+      // Órdenes refacturadas
       prisma.registroBitacora.aggregate({
         _sum: { monto_factura: true },
-        where: { ...fechaFilter, id_estado: 2 }, // 2 = Refacturada
+        where: { ...fechaFilter, id_estado: 2 },
       }),
 
-      // 🔹 Monto de devoluciones
+      // Órdenes devueltas
       prisma.registroBitacora.aggregate({
         _sum: { monto_devolucion: true },
         where: fechaFilter,
       }),
     ]);
 
-   // 🔹 Mapear resultados por estado
-    const estadoMap = Object.fromEntries(
-      estadosGroup.map((e) => [e.id_estado, e._count.id_estado])
-    );
+    // 🔹 Mapa rápido de estados
+    const estadoMap = {};
+    estadosGroup.forEach((e) => {
+      estadoMap[e.id_estado] = {
+        count: e._count.id_estado,
+        monto: e._sum.monto_factura || 0,
+      };
+    });
 
-    const total = estadosGroup.reduce((acc, e) => acc + e._count.id_estado, 0);
-    const entregadas = estadoMap[7] || 0;
-    const nuevas = estadoMap[1] || 0;
-    const refacturadas = estadoMap[2] || 0;
-    const enviadasACedis = estadoMap[3] || 0;
-    const preparacion = estadoMap[4] || 0;
-    const enviadoACliente = estadoMap[5] || 0;
-    const esperaCaliente = estadoMap[6] || 0;
-    const Anuladas = estadoMap[8] || 0;
+    const total = Object.values(estadoMap).reduce((acc, e) => acc + e.count, 0);
+    const entregadas = estadoMap[7]?.count || 0;
+    const nuevas = estadoMap[1]?.count || 0;
+    const refacturadas = estadoMap[2]?.count || 0;
+    const enviadasACedis = estadoMap[3]?.count || 0;
+    const preparacion = estadoMap[4]?.count || 0;
+    const enviadoACliente = estadoMap[5]?.count || 0;
+    const esperaCaliente = estadoMap[6]?.count || 0;
+    const Anuladas = estadoMap[8]?.count || 0;
     const pendientes = total - (entregadas + Anuladas);
 
-    // 🔹 Totales de montos
-const montoDevolucion = Number(devolucionesData?._sum?.monto_devolucion ?? 0);
-const montoRefacturadas = Number(refacturadasData?._sum?.monto_factura ?? 0);
-const montoTotal = Number(montos?._sum?.monto_factura ?? 0);
-const montoFlete = Number(montos?._sum?.flete ?? 0);
-
-const montoTotalAnuladas =
-estadosGroup.find((e) => e.id_estado === 8)?._sum.monto_factura || 0;
-const montoTotalTotal = montoTotal - montoDevolucion - montoRefacturadas- montoTotalAnuladas;
-
+    const montoDevolucion = Number(devolucionesData._sum.monto_devolucion || 0);
+    const montoRefacturadas = Number(refacturadasData._sum.monto_factura || 0);
+    const montoTotal = Number(montosGlobales._sum.monto_factura || 0);
+    const montoFlete = Number(montosGlobales._sum.flete || 0);
+    const montoTotalAnuladas = estadoMap[8]?.monto || 0;
+    const montoTotalTotal =
+      montoTotal - montoDevolucion - montoRefacturadas - montoTotalAnuladas;
     const montoFacturado = montoTotalTotal + montoRefacturadas;
 
-    // 🔹 Tipo de envío
+    // 🔹 Optimizar tipo de envío
     const tiposEnvioIds = tipoEnvioGroup.map((t) => t.id_tipenvio);
     const tiposEnvio = await prisma.tipo_Envio.findMany({
       where: { id_tipenvio: { in: tiposEnvioIds } },
@@ -140,7 +148,7 @@ const montoTotalTotal = montoTotal - montoDevolucion - montoRefacturadas- montoT
       totalFlete: t._sum.flete || 0,
     }));
 
-    // 🔹 Tienda Sinsa
+    // 🔹 Optimizar tienda Sinsa
     const tiendaIds = tiendaSinsaGroup.map((t) => t.id_tiendasinsa);
     const tiendasSinsa = await prisma.tiendasinsa.findMany({
       where: { id_tiendasinsa: { in: tiendaIds } },
@@ -154,7 +162,7 @@ const montoTotalTotal = montoTotal - montoDevolucion - montoRefacturadas- montoT
       monto: t._sum.monto_factura || 0,
     }));
 
-    // 🔹 Origen Inventario
+    // 🔹 Optimizar origen inventario
     const origenIds = origenInventarioGroup.map((o) => o.id_originventario);
     const origenes = await prisma.origenInventario.findMany({
       where: { id_originventario: { in: origenIds } },
@@ -168,14 +176,13 @@ const montoTotalTotal = montoTotal - montoDevolucion - montoRefacturadas- montoT
       monto: o._sum.monto_factura || 0,
     }));
 
-    // 🔹 Origen de facturas
+    // 🔹 Optimizar origenFacturas
     const origenFacturas = {
       nueva: { cantidad: 0, monto: 0 },
       refacturada: { cantidad: 0, monto: 0 },
       totalMonto: 0,
     };
-
-    registros.forEach((reg) => {
+    registrosHistorial.forEach((reg) => {
       const primerEstado = reg.historial_estados?.[0]?.estado?.toLowerCase();
       if (primerEstado === "nueva") {
         origenFacturas.nueva.cantidad++;
@@ -188,21 +195,24 @@ const montoTotalTotal = montoTotal - montoDevolucion - montoRefacturadas- montoT
     origenFacturas.totalMonto =
       origenFacturas.nueva.monto + origenFacturas.refacturada.monto;
 
-    // 🔹 Vendedores
-    const vendedorIds = vendedoresGroup.map((v) => v.id_login);
-    const vendedoresInfo = await prisma.login.findMany({
-      where: { id_login: { in: vendedorIds } },
-      select: { id_login: true, nombre_vendedor: true },
-    });
-    const vendedoresFinal = vendedoresGroup.map((v) => {
-  const vendedor = vendedoresInfo.find((x) => x.id_login === v.id_login);
+// Vendedores desde los registros
+const vendedorIds = vendedoresGroup.map((v) => v.id_login || 0);
+const vendedoresInfo = await prisma.login.findMany({
+  where: { id_login: { in: vendedorIds.length ? vendedorIds : [0] } },
+  select: { id_login: true, nombre_vendedor: true },
+});
+
+// Mapear usando siempre id_login
+const vendedoresFinal = vendedoresGroup.map((v) => {
+  const vendedor = vendedoresInfo.find(x => x.id_login === v.id_login);
   return {
-    id: v.id_login,
+    id_login: v.id_login,              // <-- mantener id_login original
     nombre: vendedor?.nombre_vendedor || "Desconocido",
     cantidad: v._count.id_login,
     monto: v._sum.monto_factura || 0,
   };
 });
+
     // ✅ Respuesta final
     return NextResponse.json({
       total,
@@ -223,9 +233,9 @@ const montoTotalTotal = montoTotal - montoDevolucion - montoRefacturadas- montoT
       tiendaSinsa: tiendaSinsaFinal,
       origenInventario: origenFinal,
       origenFacturas,
-            vendedores: vendedoresFinal,         // ✅ Nuevos
-      montoRefacturadas: refacturadasData._sum.monto_factura || 0, // ✅ Nuevo
-      montoDevolucion: devolucionesData._sum.monto_devolucion || 0, // ✅ Nuevo
+      vendedores: vendedoresFinal,
+      montoRefacturadas,
+      montoDevolucion,
     });
   } catch (error) {
     console.error("Error en estadísticas:", error);
