@@ -1,12 +1,31 @@
 import { NextResponse } from "next/server";
 import prisma from "../../../../lib/prisma";
 
+// 🧠 Caché simple en memoria
+const cache = new Map();
+const CACHE_DURATION = 3 * 60 * 1000; // 3 minutos
+
 export async function GET(request) {
   try {
     const { searchParams } = new URL(request.url);
     const inicioParam = searchParams.get("inicio");
     const finParam = searchParams.get("fin");
-    let vendedorParam = searchParams.get("vendedor"); // <-- cambiar a let
+    let vendedorParam = searchParams.get("vendedor");
+    const forceRefresh = searchParams.get("refresh") === "true"; // 🔄 Forzar actualización manual
+
+    // 🔹 Clave única para este conjunto de parámetros
+    const cacheKey = `${inicioParam || "null"}-${finParam || "null"}-${vendedorParam || "null"}`;
+    const now = Date.now();
+
+    // ✅ Revisar si hay datos recientes en caché
+    if (!forceRefresh && cache.has(cacheKey)) {
+      const { data, timestamp } = cache.get(cacheKey);
+      if (now - timestamp < CACHE_DURATION) {
+        console.log("🟢 Sirviendo datos desde caché");
+        return NextResponse.json({ ...data, cached: true });
+      }
+    }
+
     // 🔹 Filtro por fecha
     const fechaFilter = {};
     if (inicioParam || finParam) {
@@ -18,93 +37,68 @@ export async function GET(request) {
         fechaFilter.fecha_creacion.lte = finDate;
       }
     }
+    if (vendedorParam) {
+      vendedorParam = Number(vendedorParam);
+      fechaFilter.id_login = vendedorParam;
+    }
 
-if (vendedorParam) {
-  // Convertir a número si id_login es integer en la DB
-  vendedorParam = Number(vendedorParam);
-  fechaFilter.id_login = vendedorParam;
-}
-    // 🔹 Consultas agrupadas
-    const [
-      estadosGroup,
-      montosGlobales,
-      tipoEnvioGroup,
-      tiendaSinsaGroup,
-      origenInventarioGroup,
-      registrosHistorial,
-      vendedoresGroup,
-      refacturadasData,
-      devolucionesData,
-    ] = await Promise.all([
-      // Agrupación por estado con sumatoria
-      prisma.registroBitacora.groupBy({
-        by: ["id_estado"],
-        _count: { id_estado: true },
-        _sum: { monto_factura: true, flete: true },
-        where: fechaFilter,
-      }),
+    // 🔹 Consultas secuenciales
+    const estadosGroup = await prisma.registroBitacora.groupBy({
+      by: ["id_estado"],
+      _count: { id_estado: true },
+      _sum: { monto_factura: true, flete: true },
+      where: fechaFilter,
+    });
 
-      // Totales globales
-      prisma.registroBitacora.aggregate({
-        _sum: { monto_factura: true, flete: true },
-        where: fechaFilter,
-      }),
+    const montosGlobales = await prisma.registroBitacora.aggregate({
+      _sum: { monto_factura: true, flete: true },
+      where: fechaFilter,
+    });
 
-      // Agrupación por tipo de envío
-      prisma.registroBitacora.groupBy({
-        by: ["id_tipenvio"],
-        _count: { id_tipenvio: true },
-        _sum: { monto_factura: true, flete: true },
-        where: fechaFilter,
-      }),
+    const tipoEnvioGroup = await prisma.registroBitacora.groupBy({
+      by: ["id_tipenvio"],
+      _count: { id_tipenvio: true },
+      _sum: { monto_factura: true, flete: true },
+      where: fechaFilter,
+    });
 
-      // Agrupación por tienda SINSA
-      prisma.registroBitacora.groupBy({
-        by: ["id_tiendasinsa"],
-        _count: { id_tiendasinsa: true },
-        _sum: { monto_factura: true },
-        where: { ...fechaFilter, id_tiendasinsa: { not: null } },
-      }),
+    const tiendaSinsaGroup = await prisma.registroBitacora.groupBy({
+      by: ["id_tiendasinsa"],
+      _count: { id_tiendasinsa: true },
+      _sum: { monto_factura: true },
+      where: { ...fechaFilter, id_tiendasinsa: { not: null } },
+    });
 
-      // Agrupación por origen inventario
-      prisma.registroBitacora.groupBy({
-        by: ["id_originventario"],
-        _count: { id_originventario: true },
-        _sum: { monto_factura: true },
-        where: fechaFilter,
-      }),
+    const origenInventarioGroup = await prisma.registroBitacora.groupBy({
+      by: ["id_originventario"],
+      _count: { id_originventario: true },
+      _sum: { monto_factura: true },
+      where: fechaFilter,
+    });
 
-      // Solo campos necesarios para origenFacturas
-      prisma.registroBitacora.findMany({
-        select: {
-          monto_factura: true,
-          historial_estados: true,
-        },
-        where: fechaFilter,
-      }),
+    const registrosHistorial = await prisma.registroBitacora.findMany({
+      select: { monto_factura: true, historial_estados: true },
+      where: fechaFilter,
+    });
 
-      // Órdenes por vendedor
-      prisma.registroBitacora.groupBy({
-        by: ["id_login"],
-        _count: { id_login: true },
-        _sum: { monto_factura: true },
-        where: fechaFilter,
-      }),
+    const vendedoresGroup = await prisma.registroBitacora.groupBy({
+      by: ["id_login"],
+      _count: { id_login: true },
+      _sum: { monto_factura: true },
+      where: fechaFilter,
+    });
 
-      // Órdenes refacturadas
-      prisma.registroBitacora.aggregate({
-        _sum: { monto_factura: true },
-        where: { ...fechaFilter, id_estado: 2 },
-      }),
+    const refacturadasData = await prisma.registroBitacora.aggregate({
+      _sum: { monto_factura: true },
+      where: { ...fechaFilter, id_estado: 2 },
+    });
 
-      // Órdenes devueltas
-      prisma.registroBitacora.aggregate({
-        _sum: { monto_devolucion: true },
-        where: fechaFilter,
-      }),
-    ]);
+    const devolucionesData = await prisma.registroBitacora.aggregate({
+      _sum: { monto_devolucion: true },
+      where: fechaFilter,
+    });
 
-    // 🔹 Mapa rápido de estados
+    // 🔹 Procesamiento de resultados
     const estadoMap = {};
     estadosGroup.forEach((e) => {
       estadoMap[e.id_estado] = {
@@ -133,7 +127,7 @@ if (vendedorParam) {
       montoTotal - montoDevolucion - montoRefacturadas - montoTotalAnuladas;
     const montoFacturado = montoTotalTotal + montoRefacturadas;
 
-    // 🔹 Optimizar tipo de envío
+    // 🔹 Tipos de envío
     const tiposEnvioIds = tipoEnvioGroup.map((t) => t.id_tipenvio);
     const tiposEnvio = await prisma.tipo_Envio.findMany({
       where: { id_tipenvio: { in: tiposEnvioIds } },
@@ -148,7 +142,7 @@ if (vendedorParam) {
       totalFlete: t._sum.flete || 0,
     }));
 
-    // 🔹 Optimizar tienda Sinsa
+    // 🔹 Tiendas SINSA
     const tiendaIds = tiendaSinsaGroup.map((t) => t.id_tiendasinsa);
     const tiendasSinsa = await prisma.tiendasinsa.findMany({
       where: { id_tiendasinsa: { in: tiendaIds } },
@@ -162,7 +156,7 @@ if (vendedorParam) {
       monto: t._sum.monto_factura || 0,
     }));
 
-    // 🔹 Optimizar origen inventario
+    // 🔹 Origen inventario
     const origenIds = origenInventarioGroup.map((o) => o.id_originventario);
     const origenes = await prisma.origenInventario.findMany({
       where: { id_originventario: { in: origenIds } },
@@ -176,7 +170,7 @@ if (vendedorParam) {
       monto: o._sum.monto_factura || 0,
     }));
 
-    // 🔹 Optimizar origenFacturas
+    // 🔹 Origen Facturas
     const origenFacturas = {
       nueva: { cantidad: 0, monto: 0 },
       refacturada: { cantidad: 0, monto: 0 },
@@ -195,26 +189,24 @@ if (vendedorParam) {
     origenFacturas.totalMonto =
       origenFacturas.nueva.monto + origenFacturas.refacturada.monto;
 
-// Vendedores desde los registros
-const vendedorIds = vendedoresGroup.map((v) => v.id_login || 0);
-const vendedoresInfo = await prisma.login.findMany({
-  where: { id_login: { in: vendedorIds.length ? vendedorIds : [0] } },
-  select: { id_login: true, nombre_vendedor: true },
-});
+    // 🔹 Vendedores
+    const vendedorIds = vendedoresGroup.map((v) => v.id_login || 0);
+    const vendedoresInfo = await prisma.login.findMany({
+      where: { id_login: { in: vendedorIds.length ? vendedorIds : [0] } },
+      select: { id_login: true, nombre_vendedor: true },
+    });
+    const vendedoresFinal = vendedoresGroup.map((v) => {
+      const vendedor = vendedoresInfo.find((x) => x.id_login === v.id_login);
+      return {
+        id_login: v.id_login,
+        nombre: vendedor?.nombre_vendedor || "Desconocido",
+        cantidad: v._count.id_login,
+        monto: v._sum.monto_factura || 0,
+      };
+    });
 
-// Mapear usando siempre id_login
-const vendedoresFinal = vendedoresGroup.map((v) => {
-  const vendedor = vendedoresInfo.find(x => x.id_login === v.id_login);
-  return {
-    id_login: v.id_login,              // <-- mantener id_login original
-    nombre: vendedor?.nombre_vendedor || "Desconocido",
-    cantidad: v._count.id_login,
-    monto: v._sum.monto_factura || 0,
-  };
-});
-
-    // ✅ Respuesta final
-    return NextResponse.json({
+    // ✅ Armar respuesta final
+    const data = {
       total,
       nuevas,
       refacturadas,
@@ -236,12 +228,16 @@ const vendedoresFinal = vendedoresGroup.map((v) => {
       vendedores: vendedoresFinal,
       montoRefacturadas,
       montoDevolucion,
-    });
+    };
+
+    // 🧠 Guardar o actualizar caché
+    cache.set(cacheKey, { data, timestamp: now });
+
+    console.log(forceRefresh ? "🔁 Caché actualizada manualmente" : "🟡 Datos guardados en caché");
+    return NextResponse.json({ ...data, cached: false });
+
   } catch (error) {
-    console.error("Error en estadísticas:", error);
-    return NextResponse.json(
-      { error: "Error al obtener estadísticas" },
-      { status: 500 }
-    );
+    console.error("❌ Error en estadísticas:", error);
+    return NextResponse.json({ error: "Error al obtener estadísticas" }, { status: 500 });
   }
 }
