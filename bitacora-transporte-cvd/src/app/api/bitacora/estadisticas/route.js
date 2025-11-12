@@ -9,7 +9,7 @@ const CACHE_DURATION = 3 * 60 * 1000; // 3 minutos
 function ajustarZonaHoraria(fechaISO) {
   const date = new Date(fechaISO);
   // Restamos 6 horas para llevar de UTC a GMT-6 (ajusta si es necesario)
-  date.setHours(date.getHours() - 6);
+  date.setHours(date.getHours() + 6);
   return date;
 }
 
