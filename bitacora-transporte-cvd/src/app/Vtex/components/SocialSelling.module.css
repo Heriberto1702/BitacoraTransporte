@@ -1,0 +1,77 @@
+/* SocialSelling.module.css */
+
+.container {
+  padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.titulo {
+  font-size: 24px;
+  font-weight: bold;
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.resumen {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  margin-bottom: 30px;
+}
+
+.card {
+  flex: 1 1 200px;
+  border: 1px solid #ccc;
+  border-radius: 15px;
+  padding: 15px;
+  background-color: #fff;
+  text-align: center;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+}
+
+.cardTitulo {
+  font-weight: bold;
+  margin-bottom: 10px;
+  font-size: 14px;
+  color: #555;
+}
+
+.cardValor {
+  font-size: 18px;
+  font-weight: bold;
+  color: #222;
+}
+
+.estadoLista {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.estadoItem {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px 15px;
+  border: 1px solid #eee;
+  border-radius: 10px;
+  background-color: #f9f9f9;
+}
+
+.estadoNombre {
+  font-weight: bold;
+  color: #333;
+}
+
+.estadoCantidad {
+  font-size: 14px;
+  color: #555;
+}
+
+.loading,
+.noData {
+  text-align: center;
+  margin-top: 40px;
+  font-size: 16px;
+  color: #666;
+}
