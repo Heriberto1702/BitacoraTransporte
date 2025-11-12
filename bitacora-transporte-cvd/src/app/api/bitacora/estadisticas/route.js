@@ -5,15 +5,23 @@ import prisma from "../../../../lib/prisma";
 const cache = new Map();
 const CACHE_DURATION = 3 * 60 * 1000; // 3 minutos
 
+// 🔹 Helper para ajustar zona horaria manualmente (UTC-6)
+function ajustarZonaHoraria(fechaISO) {
+  const date = new Date(fechaISO);
+  // Restamos 6 horas para llevar de UTC a GMT-6 (ajusta si es necesario)
+  date.setHours(date.getHours() - 6);
+  return date;
+}
+
 export async function GET(request) {
   try {
     const { searchParams } = new URL(request.url);
     const inicioParam = searchParams.get("inicio");
     const finParam = searchParams.get("fin");
     let vendedorParam = searchParams.get("vendedor");
-    const forceRefresh = searchParams.get("refresh") === "true"; // 🔄 Forzar actualización manual
+    const forceRefresh = searchParams.get("refresh") === "true";
 
-    // 🔹 Clave única para este conjunto de parámetros
+    // 🔹 Clave única para caché
     const cacheKey = `${inicioParam || "null"}-${finParam || "null"}-${vendedorParam || "null"}`;
     const now = Date.now();
 
@@ -26,13 +34,13 @@ export async function GET(request) {
       }
     }
 
-    // 🔹 Filtro por fecha
+    // 🔹 Filtro por fecha corregido
     const fechaFilter = {};
     if (inicioParam || finParam) {
       fechaFilter.fecha_creacion = {};
-      if (inicioParam) fechaFilter.fecha_creacion.gte = new Date(inicioParam);
+      if (inicioParam) fechaFilter.fecha_creacion.gte = ajustarZonaHoraria(inicioParam);
       if (finParam) {
-        const finDate = new Date(finParam);
+        const finDate = ajustarZonaHoraria(finParam);
         finDate.setHours(23, 59, 59, 999);
         fechaFilter.fecha_creacion.lte = finDate;
       }
@@ -42,7 +50,7 @@ export async function GET(request) {
       fechaFilter.id_login = vendedorParam;
     }
 
-    // 🔹 Consultas secuenciales
+    // 🔹 Consultas Prisma (igual que antes)
     const estadosGroup = await prisma.registroBitacora.groupBy({
       by: ["id_estado"],
       _count: { id_estado: true },
@@ -170,25 +178,6 @@ export async function GET(request) {
       monto: o._sum.monto_factura || 0,
     }));
 
-    // 🔹 Origen Facturas
-    const origenFacturas = {
-      nueva: { cantidad: 0, monto: 0 },
-      refacturada: { cantidad: 0, monto: 0 },
-      totalMonto: 0,
-    };
-    registrosHistorial.forEach((reg) => {
-      const primerEstado = reg.historial_estados?.[0]?.estado?.toLowerCase();
-      if (primerEstado === "nueva") {
-        origenFacturas.nueva.cantidad++;
-        origenFacturas.nueva.monto += reg.monto_factura || 0;
-      } else if (primerEstado === "refacturada") {
-        origenFacturas.refacturada.cantidad++;
-        origenFacturas.refacturada.monto += reg.monto_factura || 0;
-      }
-    });
-    origenFacturas.totalMonto =
-      origenFacturas.nueva.monto + origenFacturas.refacturada.monto;
-
     // 🔹 Vendedores
     const vendedorIds = vendedoresGroup.map((v) => v.id_login || 0);
     const vendedoresInfo = await prisma.login.findMany({
@@ -205,7 +194,7 @@ export async function GET(request) {
       };
     });
 
-    // ✅ Armar respuesta final
+    // ✅ Respuesta final
     const data = {
       total,
       nuevas,
@@ -224,16 +213,14 @@ export async function GET(request) {
       tipoEnvio: tipoEnvioFinal,
       tiendaSinsa: tiendaSinsaFinal,
       origenInventario: origenFinal,
-      origenFacturas,
       vendedores: vendedoresFinal,
       montoRefacturadas,
       montoDevolucion,
     };
 
-    // 🧠 Guardar o actualizar caché
     cache.set(cacheKey, { data, timestamp: now });
-
     console.log(forceRefresh ? "🔁 Caché actualizada manualmente" : "🟡 Datos guardados en caché");
+
     return NextResponse.json({ ...data, cached: false });
 
   } catch (error) {
