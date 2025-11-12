@@ -7,21 +7,22 @@ export default function useBitacoraData() {
   const [fechaFin, setFechaFin] = useState("");
 
   // Función para traer datos de la API
-  const fetchData = async (inicio, fin, vendedor = "") => {
-    try {
-      const query = [];
-      if (inicio) query.push(`inicio=${inicio}T00:00:00`);
-      if (fin) query.push(`fin=${fin}T23:59:59`);
-      if (vendedor) query.push(`vendedor=${vendedor}`);
-      const url =
-        "/api/bitacora/estadisticas" + (query.length ? `?${query.join("&")}` : "");
-      const res = await fetch(url);
-      const json = await res.json();
-      setData(json);
-    } catch (err) {
-      console.error("Error al cargar estadísticas:", err);
-    }
-  };
+// Función para traer datos de la API
+const fetchData = async (inicio, fin, vendedor = "") => {
+  try {
+    const query = [];
+    if (inicio) query.push(`inicio=${inicio}`);
+    if (fin) query.push(`fin=${fin}`);
+    if (vendedor) query.push(`vendedor=${vendedor}`);
+    const url =
+      "/api/bitacora/estadisticas" + (query.length ? `?${query.join("&")}` : "");
+    const res = await fetch(url);
+    const json = await res.json();
+    setData(json);
+  } catch (err) {
+    console.error("Error al cargar estadísticas:", err);
+  }
+};
 
   // Calcular primer y último día del mes actual
   const calcularMesActual = () => {

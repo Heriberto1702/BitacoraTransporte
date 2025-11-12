@@ -1,15 +1,14 @@
 import { NextResponse } from "next/server";
 import prisma from "../../../../lib/prisma";
 
-// 🧠 Caché simple en memoria
 const cache = new Map();
 const CACHE_DURATION = 3 * 60 * 1000; // 3 minutos
 
-// 🔹 Helper para ajustar zona horaria manualmente (UTC-6)
-function ajustarZonaHoraria(fechaISO) {
-  const date = new Date(fechaISO);
-  // Restamos 6 horas para llevar de UTC a GMT-6 (ajusta si es necesario)
-  date.setHours(date.getHours() + 6);
+// 🔹 Convierte "YYYY-MM-DD" a fecha local exacta
+function convertirFechaLocal(fechaISO, isEnd = false) {
+  const [year, month, day] = fechaISO.split("-").map(Number);
+  if (!year || !month || !day) return null;
+  const date = new Date(year, month - 1, day, isEnd ? 23 : 0, isEnd ? 59 : 0, isEnd ? 59 : 0, 999);
   return date;
 }
 
@@ -21,11 +20,9 @@ export async function GET(request) {
     let vendedorParam = searchParams.get("vendedor");
     const forceRefresh = searchParams.get("refresh") === "true";
 
-    // 🔹 Clave única para caché
     const cacheKey = `${inicioParam || "null"}-${finParam || "null"}-${vendedorParam || "null"}`;
     const now = Date.now();
 
-    // ✅ Revisar si hay datos recientes en caché
     if (!forceRefresh && cache.has(cacheKey)) {
       const { data, timestamp } = cache.get(cacheKey);
       if (now - timestamp < CACHE_DURATION) {
@@ -34,23 +31,19 @@ export async function GET(request) {
       }
     }
 
-    // 🔹 Filtro por fecha corregido
+    // 🔹 Filtro por fecha con zona horaria local
     const fechaFilter = {};
     if (inicioParam || finParam) {
       fechaFilter.fecha_creacion = {};
-      if (inicioParam) fechaFilter.fecha_creacion.gte = ajustarZonaHoraria(inicioParam);
-      if (finParam) {
-        const finDate = ajustarZonaHoraria(finParam);
-        finDate.setHours(23, 59, 59, 999);
-        fechaFilter.fecha_creacion.lte = finDate;
-      }
+      if (inicioParam) fechaFilter.fecha_creacion.gte = convertirFechaLocal(inicioParam);
+      if (finParam) fechaFilter.fecha_creacion.lte = convertirFechaLocal(finParam, true);
     }
     if (vendedorParam) {
       vendedorParam = Number(vendedorParam);
       fechaFilter.id_login = vendedorParam;
     }
 
-    // 🔹 Consultas Prisma (igual que antes)
+    // 🔹 Consultas
     const estadosGroup = await prisma.registroBitacora.groupBy({
       by: ["id_estado"],
       _count: { id_estado: true },
@@ -84,11 +77,6 @@ export async function GET(request) {
       where: fechaFilter,
     });
 
-    const registrosHistorial = await prisma.registroBitacora.findMany({
-      select: { monto_factura: true, historial_estados: true },
-      where: fechaFilter,
-    });
-
     const vendedoresGroup = await prisma.registroBitacora.groupBy({
       by: ["id_login"],
       _count: { id_login: true },
@@ -106,7 +94,7 @@ export async function GET(request) {
       where: fechaFilter,
     });
 
-    // 🔹 Procesamiento de resultados
+    // 🔹 Procesamiento
     const estadoMap = {};
     estadosGroup.forEach((e) => {
       estadoMap[e.id_estado] = {
@@ -123,8 +111,8 @@ export async function GET(request) {
     const preparacion = estadoMap[4]?.count || 0;
     const enviadoACliente = estadoMap[5]?.count || 0;
     const esperaCaliente = estadoMap[6]?.count || 0;
-    const Anuladas = estadoMap[8]?.count || 0;
-    const pendientes = total - (entregadas + Anuladas);
+    const anuladas = estadoMap[8]?.count || 0;
+    const pendientes = total - (entregadas + anuladas);
 
     const montoDevolucion = Number(devolucionesData._sum.monto_devolucion || 0);
     const montoRefacturadas = Number(refacturadasData._sum.monto_factura || 0);
@@ -135,10 +123,9 @@ export async function GET(request) {
       montoTotal - montoDevolucion - montoRefacturadas - montoTotalAnuladas;
     const montoFacturado = montoTotalTotal + montoRefacturadas;
 
-    // 🔹 Tipos de envío
-    const tiposEnvioIds = tipoEnvioGroup.map((t) => t.id_tipenvio);
+    const tipoEnvioIds = tipoEnvioGroup.map((t) => t.id_tipenvio);
     const tiposEnvio = await prisma.tipo_Envio.findMany({
-      where: { id_tipenvio: { in: tiposEnvioIds } },
+      where: { id_tipenvio: { in: tipoEnvioIds } },
     });
     const tipoEnvioFinal = tipoEnvioGroup.map((t) => ({
       id_tipenvio: t.id_tipenvio,
@@ -150,7 +137,6 @@ export async function GET(request) {
       totalFlete: t._sum.flete || 0,
     }));
 
-    // 🔹 Tiendas SINSA
     const tiendaIds = tiendaSinsaGroup.map((t) => t.id_tiendasinsa);
     const tiendasSinsa = await prisma.tiendasinsa.findMany({
       where: { id_tiendasinsa: { in: tiendaIds } },
@@ -164,7 +150,6 @@ export async function GET(request) {
       monto: t._sum.monto_factura || 0,
     }));
 
-    // 🔹 Origen inventario
     const origenIds = origenInventarioGroup.map((o) => o.id_originventario);
     const origenes = await prisma.origenInventario.findMany({
       where: { id_originventario: { in: origenIds } },
@@ -178,7 +163,6 @@ export async function GET(request) {
       monto: o._sum.monto_factura || 0,
     }));
 
-    // 🔹 Vendedores
     const vendedorIds = vendedoresGroup.map((v) => v.id_login || 0);
     const vendedoresInfo = await prisma.login.findMany({
       where: { id_login: { in: vendedorIds.length ? vendedorIds : [0] } },
@@ -194,7 +178,6 @@ export async function GET(request) {
       };
     });
 
-    // ✅ Respuesta final
     const data = {
       total,
       nuevas,
@@ -205,7 +188,7 @@ export async function GET(request) {
       esperaCaliente,
       entregadas,
       pendientes,
-      Anuladas,
+      anuladas,
       montoTotalTotal,
       montoTotalAnuladas,
       montoFacturado,
@@ -219,8 +202,6 @@ export async function GET(request) {
     };
 
     cache.set(cacheKey, { data, timestamp: now });
-    console.log(forceRefresh ? "🔁 Caché actualizada manualmente" : "🟡 Datos guardados en caché");
-
     return NextResponse.json({ ...data, cached: false });
 
   } catch (error) {
