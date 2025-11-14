@@ -1,0 +1,25 @@
+.card {
+  border: 1px solid #ccc;
+  padding: 1rem;
+  border-radius: 8px;
+  background-color: #f9f9f9;
+  width: 250px;
+  margin: 0.5rem;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.title {
+  font-size: 1.2rem;
+  margin-bottom: 0.5rem;
+  color: #333;
+}
+
+.value {
+  font-weight: bold;
+  color: #1a73e8;
+}
+
+.loading {
+  font-style: italic;
+  color: #666;
+}

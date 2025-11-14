@@ -1,0 +1,20 @@
+.tablaContainer {
+  overflow-x: auto;
+  width: 100%;
+}
+
+.tabla {
+  min-width: 1000px;
+  border-collapse: collapse;
+}
+
+.tabla th,
+.tabla td {
+  border: 1px solid #ccc;
+  padding: 0.5rem;
+  text-align: center;
+}
+
+.tabla th select {
+  margin-left: 0.5rem;
+}
