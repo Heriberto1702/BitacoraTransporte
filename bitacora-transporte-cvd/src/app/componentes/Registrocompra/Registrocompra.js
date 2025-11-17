@@ -755,7 +755,7 @@ export default function RegistrarOrden({
                 )}
                 {(rolUsuario !== "vendedor" || !formData.id_registro) && (
                   <div className={styles.formGroup}>
-                    <label className={styles.label}>Estado:</label>
+                    <label className={`${styles.label} ${styles.requiredLabel}`}>Estado:</label>
                     <select
                       name="id_estado"
                       value={estadoTemporal || ""}
@@ -779,7 +779,9 @@ export default function RegistrarOrden({
                   <select
                     name="tipo_orden"
                     value={formData.tipo_orden || ""}
-                    onChange={handleChange}
+                    onChange={(e) => {
+                      if (!soloLectura) handleChange(e);
+                    }}
                     className={styles.select}
                     required
                   >
