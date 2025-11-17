@@ -13,7 +13,7 @@ export default function CardsResumen({ data }) {
         <Card titulo="Enviado a Cliente" valor={data.enviadoACliente} />
         <Card titulo="En espera Caliente" valor={data.esperaCaliente} />
         <Card titulo="Entregadas" valor={data.entregadas} />
-        <Card titulo="Anuladas" valor={data.Anuladas} />
+        <Card titulo="Anuladas" valor={data.anuladas} />
         <Card titulo="Total Registros" valor={data.total} />
       </div>
     </div>
