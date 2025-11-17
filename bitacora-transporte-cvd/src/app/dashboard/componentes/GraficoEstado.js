@@ -17,7 +17,7 @@ export default function GraficoEstadoPie({ data }) {
     { estado: "Preparación", total: data.preparacion },
     { estado: "Enviado a Cliente", total: data.enviadoACliente },
     { estado: "En espera Caliente", total: data.esperaCaliente },
-    { estado: "Anuladas", total: data.Anuladas },
+    { estado: "Anuladas", total: data.anuladas },
     { estado: "Entregadas", total: data.entregadas },
   ];
 
