@@ -7,7 +7,7 @@ const estadoInicial = {
   id_registro: null,
   num_ticket: "",
   ticket_web: "",
-  tipo_orden: "",
+  tipo_orden: "Normal",
   nombre_cliente: "",
   direccion_entrega: "",
   flete: "",
