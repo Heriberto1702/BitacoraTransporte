@@ -283,7 +283,7 @@ export default function RegistrarOrden({
       monto_factura: parseFloat(formData.monto_factura),
       monto_devolucion: parseFloat(formData.monto_devolucion),
       id_tiendasinsa,
-      tipo_orden: formData.tipo_orden && formData.tipo_orden !== "" ? formData.tipo_orden : "Normal",
+      tipo_orden: formData.tipo_orden || "Normal",
     };
 
     const isActualizar =
@@ -779,9 +779,7 @@ export default function RegistrarOrden({
                   <select
                     name="tipo_orden"
                     value={formData.tipo_orden || ""}
-                    onChange={(e) => {
-                      if (!soloLectura) handleChange(e);
-                    }}
+                    onChange={handleChange}
                     className={styles.select}
                     required
                   >

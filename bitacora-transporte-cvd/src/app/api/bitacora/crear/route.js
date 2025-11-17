@@ -77,7 +77,7 @@ if (data.fecha_entrega) {
         flete_web: data.flete_web ? parseFloat(data.flete_web) : null,
         flete: data.flete ? parseFloat(data.flete) : null,
         fecha_entrega: fechaEntrega,
-        tipo_orden: data.tipo_orden,
+        tipo_orden: data.tipo_orden || "Normal",
         observacion: data.observacion || null,
         monto_factura: parseFloat(data.monto_factura),
         monto_devolucion: parseFloat(data.monto_devolucion) || null,
