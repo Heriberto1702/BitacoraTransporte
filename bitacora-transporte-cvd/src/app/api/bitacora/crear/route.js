@@ -71,10 +71,13 @@ if (data.fecha_entrega) {
     const nuevaOrden = await prisma.registroBitacora.create({
       data: {
         num_ticket: numTicket,
+        ticket_web: data.ticket_web || null,
         nombre_cliente: data.nombre_cliente,
         direccion_entrega: data.direccion_entrega || null,
+        flete_web: data.flete_web ? parseFloat(data.flete_web) : null,
         flete: data.flete ? parseFloat(data.flete) : null,
         fecha_entrega: fechaEntrega,
+        tipo_orden: data.tipo_orden,
         observacion: data.observacion || null,
         monto_factura: parseFloat(data.monto_factura),
         monto_devolucion: parseFloat(data.monto_devolucion) || null,

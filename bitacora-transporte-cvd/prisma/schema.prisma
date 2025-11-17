@@ -85,9 +85,12 @@ model TipoPago {
 model RegistroBitacora {
   id_registro        Int              @id @default(autoincrement())
   num_ticket         Int
+  ticket_web          String?
+  tipo_orden          String?
   nombre_cliente     String
   direccion_entrega  String?
   flete              Decimal?         @db.Decimal(10, 2)
+  flete_web              Decimal?         @db.Decimal(10, 2)
   fecha_creacion     DateTime         @default(now())
   id_tiendasinsa     Int?
   id_tipenvio        Int

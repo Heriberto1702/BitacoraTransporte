@@ -6,9 +6,12 @@ import styles from "./Registrocompra.module.css";
 const estadoInicial = {
   id_registro: null,
   num_ticket: "",
+  ticket_web: "",
+  tipo_orden: "",
   nombre_cliente: "",
   direccion_entrega: "",
   flete: "",
+  flete_web: "",
   fecha_entrega: "",
   id_tipenvio: "",
   id_originventario: "",
@@ -202,7 +205,9 @@ export default function RegistrarOrden({
       return;
     }
 
-    if (["monto_devolucion", "monto_factura", "flete"].includes(name)) {
+    if (
+      ["monto_devolucion", "monto_factura", "flete", "flete_web"].includes(name)
+    ) {
       let soloNumerosYDecimal = value.replace(/[^0-9.]/g, "");
       const partes = soloNumerosYDecimal.split(".");
       if (partes.length > 2) {
@@ -434,6 +439,19 @@ export default function RegistrarOrden({
                     required
                   />
                 </div>
+                <div className={styles.formGroup}>
+                  <label className={styles.label}>Ticket Web</label>
+                  <input
+                    type="text"
+                    name="ticket_web"
+                    value={formData.ticket_web}
+                    onChange={handleChange}
+                    readOnly={soloLectura}
+                    className={styles.input}
+                    placeholder="Orden o ticket web"
+                    inputMode="text"
+                  />
+                </div>
 
                 <div className={styles.formGroup}>
                   <label className={`${styles.label} ${styles.requiredLabel}`}>
@@ -653,7 +671,18 @@ export default function RegistrarOrden({
                     placeholder="Monto en córdobas"
                   />
                 </div>
-
+                <div className={styles.formGroup}>
+                  <label className={styles.label}>Flete Web</label>
+                  <input
+                    type="text"
+                    name="flete_web"
+                    value={formData.flete_web}
+                    onChange={handleChange}
+                    readOnly={soloLectura}
+                    className={styles.input}
+                    placeholder="Monto en córdobas"
+                  />
+                </div>
                 <div className={styles.formGroup}>
                   <label className={`${styles.label} ${styles.requiredLabel}`}>
                     Pago
@@ -691,9 +720,7 @@ export default function RegistrarOrden({
                   />
                 </div>
                 <div className={styles.formGroup}>
-                  <label className={styles.label}>
-                    Monto Devolución
-                  </label>
+                  <label className={styles.label}>Devolución Parcial</label>
                   <input
                     type="text"
                     name="monto_devolucion"
@@ -704,6 +731,7 @@ export default function RegistrarOrden({
                     placeholder="Monto en córdobas"
                   />
                 </div>
+
                 {(rolUsuario === "admin" || rolUsuario === "agente") && (
                   <div className={styles.formGroup}>
                     <label className={`${styles.label}`}>Asignado a:</label>
@@ -743,7 +771,26 @@ export default function RegistrarOrden({
                     </select>
                   </div>
                 )}
+                <div className={styles.formGroup}>
+                  <label className={`${styles.label} ${styles.requiredLabel}`}>
+                    Tipo de Orden
+                  </label>
+                  <select
+                    name="tipo_orden"
+                    value={formData.tipo_orden || ""}
+                    onChange={(e) => {
+                      if (!soloLectura) handleChange(e);
+                    }}
+                    className={styles.select}
+                    required
+                  >
+                    <option value="">Seleccione tipo de orden</option>
+                    <option value="Normal">Normal</option>
+                    <option value="Refacturada">Refacturada</option>
+                  </select>
+                </div>
               </div>
+
               <div className={styles.formGroupFull}>
                 <label className={styles.label}>Observaciones</label>
                 <textarea

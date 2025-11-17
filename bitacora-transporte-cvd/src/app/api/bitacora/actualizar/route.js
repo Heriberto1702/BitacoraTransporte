@@ -139,9 +139,11 @@ export async function PUT(req) {
     // --- ADMIN o SUPERUSUARIO ---
     const dataToUpdate = {
       num_ticket: data.num_ticket ? parseInt(data.num_ticket) : null,
+      ticket_web: data.ticket_web || null,
       nombre_cliente: data.nombre_cliente,
       direccion_entrega: data.direccion_entrega || null,
       flete: data.flete ? parseInt(data.flete) : null,
+      flete_web: data.flete_web ? parseInt(data.flete_web) : null,
       fecha_entrega: data.fecha_entrega
         ? (() => {
             const [year, month, day] = data.fecha_entrega
@@ -165,6 +167,7 @@ export async function PUT(req) {
           : parseFloat(data.monto_devolucion),
       cedula: data.cedula,
       telefono: data.telefono,
+      tipo_orden: data.tipo_orden,    
       hora_actualizacion: ahoraUTC,
       tipoenvio: { connect: { id_tipenvio: parseInt(data.id_tipenvio) } },
       tipopago: { connect: { id_tipopago: parseInt(data.id_tipopago) } },

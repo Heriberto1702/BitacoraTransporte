@@ -249,6 +249,8 @@ async function fetchOrdenes(inicio, fin) {
               <tr>
                 <th>Acción</th>
                 <th>N° Ticket</th>
+                <th>Ticket Web</th>
+                <th>Tipo de Orden</th>
                 <th>Estado</th>
                 <th>Fecha creación</th>
                 <th>Fecha entrega</th>
@@ -267,6 +269,7 @@ async function fetchOrdenes(inicio, fin) {
                 <th>Tipo Envío</th>
                 <th>Tipo Pago</th>
                 <th>Flete</th>
+                <th>Flete Web</th>
                 <th>Monto Factura</th>
                 <th>Monto Devolución</th>
                 <th>Dirección</th>
@@ -302,6 +305,8 @@ async function fetchOrdenes(inicio, fin) {
                     </button>
                   </td>
                   <td data-label="N° Ticket">{orden.num_ticket}</td>
+                  <td data-label="Ticket Web">{orden.ticket_web}</td>
+                  <td data-label="Tipo de Orden">{orden.tipo_orden}</td>
                   <td
                     data-label="Estado"
                     className={
@@ -363,6 +368,9 @@ async function fetchOrdenes(inicio, fin) {
                   </td>
                   <td data-label="Flete">
                     {orden.flete ? `C$ ${orden.flete}` : "-"}
+                  </td>
+                    <td data-label="Flete Web">
+                    {orden.flete_web ? `C$ ${orden.flete_web}` : "-"}
                   </td>
                   <td data-label="Monto Factura">
                     {orden.monto_factura ? `C$ ${orden.monto_factura}` : "-"}
