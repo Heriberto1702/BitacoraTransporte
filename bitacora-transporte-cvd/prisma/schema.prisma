@@ -82,6 +82,19 @@ model TipoPago {
   RegistroBitacora RegistroBitacora[]
 }
 
+model RegistroImagen {
+  id_imagen       Int              @id @default(autoincrement())
+  url             String
+  nombre_archivo  String?
+  tamaño_bytes    Int?
+  tipo_mime       String?
+  fecha_subida    DateTime         @default(now())
+
+  // Relación con RegistroBitacora
+  id_registro     Int?
+  registro        RegistroBitacora? @relation(fields: [id_registro], references: [id_registro])
+}
+
 model RegistroBitacora {
   id_registro        Int              @id @default(autoincrement())
   num_ticket         Int
@@ -116,4 +129,5 @@ model RegistroBitacora {
   tiendasinsa        Tiendasinsa?     @relation(fields: [id_tiendasinsa], references: [id_tiendasinsa])
   tipoenvio          Tipo_Envio       @relation(fields: [id_tipenvio], references: [id_tipenvio])
   tipopago           TipoPago         @relation(fields: [id_tipopago], references: [id_tipopago])
+  registro_imagenes RegistroImagen[]
 }
