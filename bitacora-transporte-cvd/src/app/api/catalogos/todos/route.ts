@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import prisma from "../../../../lib/prisma";
 
 // 🕒 Cachear respuesta por 24 horas (86400 segundos)
-export const revalidate = 86400;
+export const revalidate =60;
 
 export async function GET() {
   try {
