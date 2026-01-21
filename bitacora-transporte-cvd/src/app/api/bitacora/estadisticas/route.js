@@ -8,7 +8,16 @@ const CACHE_DURATION = 3 * 60 * 1000; // 3 minutos
 function convertirFechaLocal(fechaISO, isEnd = false) {
   const [year, month, day] = fechaISO.split("-").map(Number);
   if (!year || !month || !day) return null;
-  const date = new Date(year, month - 1, day, isEnd ? 23 : 0, isEnd ? 59 : 0, isEnd ? 59 : 0, 999);
+  const offsetHours = 6;
+  const date = new Date(
+    year,
+    month - 1,
+    day,
+    isEnd ? 23 + offsetHours : offsetHours,
+    isEnd ? 59 : 0,
+    isEnd ? 59 : 0,
+    999,
+  );
   return date;
 }
 
@@ -33,10 +42,17 @@ export async function GET(request) {
 
     // 🔹 Filtro por fecha con zona horaria local
     const fechaFilter = {};
+
     if (inicioParam || finParam) {
       fechaFilter.fecha_creacion = {};
-      if (inicioParam) fechaFilter.fecha_creacion.gte = convertirFechaLocal(inicioParam);
-      if (finParam) fechaFilter.fecha_creacion.lte = convertirFechaLocal(finParam, true);
+
+      if (inicioParam) {
+        fechaFilter.fecha_creacion.gte = convertirFechaLocal(inicioParam);
+      }
+
+      if (finParam) {
+        fechaFilter.fecha_creacion.lte = convertirFechaLocal(finParam, true);
+      }
     }
     if (vendedorParam) {
       vendedorParam = Number(vendedorParam);
@@ -203,9 +219,11 @@ export async function GET(request) {
 
     cache.set(cacheKey, { data, timestamp: now });
     return NextResponse.json({ ...data, cached: false });
-
   } catch (error) {
     console.error("❌ Error en estadísticas:", error);
-    return NextResponse.json({ error: "Error al obtener estadísticas" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Error al obtener estadísticas" },
+      { status: 500 },
+    );
   }
 }

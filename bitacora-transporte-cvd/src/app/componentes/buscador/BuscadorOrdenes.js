@@ -48,10 +48,10 @@ async function fetchOrdenes(inicio, fin) {
     const finMes = new Date(ahora.getFullYear(), ahora.getMonth() + 1, 0)
       .toISOString()
       .split("T")[0];
+      console.log('Órdenes cargadas:', ahora,inicioMes);
 
     fetchOrdenes(inicioMes, finMes);
   }, []);
-
   // --- FILTRADO ---
   const ordenesFiltradas = ordenes.filter((orden) => {
     const busqueda = filtro.toLowerCase().trim();
@@ -67,7 +67,7 @@ async function fetchOrdenes(inicio, fin) {
 
     const fechaCreacionStr = formatearFecha(orden.fecha_creacion);
     const fechaEntregaStr = formatearFecha(orden.fecha_entrega);
-
+    
     return (
       orden.num_ticket?.toString().toLowerCase().includes(busqueda) ||
       orden.estado?.nombre?.toLowerCase().includes(busqueda) ||
