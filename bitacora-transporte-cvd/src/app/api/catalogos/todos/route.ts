@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import prisma from "../../../../lib/prisma";
 
 
-
+export const revalidate = 3600;
 export async function GET() {
   try {
     // Ejecutamos todas las consultas en paralelo (eficiente)
