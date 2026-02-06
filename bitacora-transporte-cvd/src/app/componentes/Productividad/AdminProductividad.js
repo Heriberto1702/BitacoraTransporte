@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import styles from "./AdminProductividad.module.css";
 
 const ESTADOS_ADMIN = ["Nueva", "Refacturada"];
-const TIEMPO_MAX = 30; // minutos
+const TIEMPO_MAX = 15; // minutos
 
 export default function AdminProductividad() {
   const [data, setData] = useState([]);
