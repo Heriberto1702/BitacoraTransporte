@@ -22,6 +22,8 @@ export default function ExportarExcel({ data, fileName = "ordenes.xlsx" }) {
       "Fecha creación": new Date(orden.fecha_creacion).toLocaleDateString("es-ES"),
       "Estado": orden.estado?.nombre || "-",
       "Monto Flete": orden.flete,
+      "Flete web": orden.flete_web,
+      "Tipo orden": orden.tipo_orden,
       "Monto Facturación": orden.monto_factura,
       "Monto Devolución": orden.monto_devolucion,
 

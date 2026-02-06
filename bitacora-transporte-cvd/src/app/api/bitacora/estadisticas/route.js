@@ -35,7 +35,6 @@ export async function GET(request) {
     if (!forceRefresh && cache.has(cacheKey)) {
       const { data, timestamp } = cache.get(cacheKey);
       if (now - timestamp < CACHE_DURATION) {
-        console.log("🟢 Sirviendo datos desde caché");
         return NextResponse.json({ ...data, cached: true });
       }
     }
@@ -68,7 +67,7 @@ export async function GET(request) {
     });
 
     const montosGlobales = await prisma.registroBitacora.aggregate({
-      _sum: { monto_factura: true, flete: true },
+      _sum: { monto_factura: true, flete: true, flete_web: true },
       where: fechaFilter,
     });
 
@@ -99,14 +98,17 @@ export async function GET(request) {
       _sum: { monto_factura: true },
       where: fechaFilter,
     });
-
+    const montoAnuladas = await prisma.registroBitacora.aggregate({
+      _sum: { monto_factura: true, flete: true, flete_web: true },
+      where: { ...fechaFilter, id_estado: 8 },
+    });
     const refacturadasData = await prisma.registroBitacora.aggregate({
-      _sum: { monto_factura: true },
-      where: { ...fechaFilter, id_estado: 2 },
+      _sum: { monto_factura: true, flete: true, flete_web: true },
+      where: { ...fechaFilter, tipo_orden: "Refacturada" },
     });
 
     const devolucionesData = await prisma.registroBitacora.aggregate({
-      _sum: { monto_devolucion: true },
+      _sum: { monto_devolucion: true, flete: true, flete_web: true },
       where: fechaFilter,
     });
 
@@ -133,11 +135,24 @@ export async function GET(request) {
     const montoDevolucion = Number(devolucionesData._sum.monto_devolucion || 0);
     const montoRefacturadas = Number(refacturadasData._sum.monto_factura || 0);
     const montoTotal = Number(montosGlobales._sum.monto_factura || 0);
+    const montoFleteWeb = Number(montosGlobales._sum.flete_web || 0);
     const montoFlete = Number(montosGlobales._sum.flete || 0);
-    const montoTotalAnuladas = estadoMap[8]?.monto || 0;
-    const montoTotalTotal =
-      montoTotal - montoDevolucion - montoRefacturadas - montoTotalAnuladas;
-    const montoFacturado = montoTotalTotal + montoRefacturadas;
+    const montoFleteRefacturadas = Number(refacturadasData._sum.flete || 0);
+    const montoFleteWebRefacturadas = Number(
+      refacturadasData._sum.flete_web || 0,
+    );
+    const montoFleteRefacturadasTotal =
+      montoFleteRefacturadas + montoFleteWebRefacturadas;
+    const montoTotalAnuladas = Number(montoAnuladas._sum.monto_factura || 0);
+    const montototalanulaciones =
+      montoRefacturadas - montoTotalAnuladas - montoDevolucion;
+
+    const fleteAnuladas = Number(montoAnuladas._sum.flete || 0);
+
+    const fleteWebAnuladas = Number(montoAnuladas._sum.flete_web || 0);
+    const fletetotal = montoFlete - fleteAnuladas;
+    const fletetotalweb = montoFleteWeb - fleteWebAnuladas;
+    const montoFacturado = montoTotal + montototalanulaciones;
 
     const tipoEnvioIds = tipoEnvioGroup.map((t) => t.id_tipenvio);
     const tiposEnvio = await prisma.tipo_Envio.findMany({
@@ -200,15 +215,22 @@ export async function GET(request) {
       refacturadas,
       enviadasACedis,
       preparacion,
+      fleteAnuladas,
+      fleteWebAnuladas,
       enviadoACliente,
       esperaCaliente,
       entregadas,
       pendientes,
       anuladas,
-      montoTotalTotal,
+      montoTotal,
+      montoFleteRefacturadasTotal,
       montoTotalAnuladas,
+      montototalanulaciones,
       montoFacturado,
+      fletetotal,
+      fletetotalweb,
       montoFlete,
+      montoFleteWeb,
       tipoEnvio: tipoEnvioFinal,
       tiendaSinsa: tiendaSinsaFinal,
       origenInventario: origenFinal,

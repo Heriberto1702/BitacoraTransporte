@@ -3,17 +3,41 @@ import { useState } from "react";
 import Card from "./Card";
 import styles from "./MontoFacturacion.module.css";
 
-export default function MontoFacturacion({ data, tipoCambio = 36.62, iva = 0.15 }) {
+export default function MontoFacturacion({
+  data,
+  tipoCambio = 36.62,
+  iva = 0.15,
+}) {
   const [enDolares, setEnDolares] = useState(false); // Estado para moneda
   const [conIva, setConIva] = useState(true); // Estado para mostrar con/sin IVA
 
   // 🔹 Función para formatear los montos según moneda y si tiene IVA
-  const formatoMoneda = (valor) => {
+  const formatoMoneda = (
+    valor,
+    aplicarIva = false,
+    aplicarIva2 = false,
+    aplicarIva3 = false,
+  ) => {
     let monto = Number(valor || 0);
 
     // Si el usuario elige SIN IVA, le quitamos el porcentaje
-    if (!conIva) monto = monto / (1 + iva);
-
+    if (aplicarIva && !conIva) {
+      monto =
+        (monto - data.montoFlete - data.montoFleteWeb) / (1 + iva) +
+        data.montoFlete +
+        data.montoFleteWeb;
+    }
+    if (aplicarIva2 && !conIva) {
+      monto =
+        (monto - data.fletetotal - data.fletetotalweb) / (1 + iva) +
+        data.fletetotal +
+        data.fletetotalweb;
+    }
+    if (aplicarIva3 && !conIva) {
+      monto =
+        (monto - data.montoFleteRefacturadasTotal) / (1 + iva) +
+        data.montoFleteRefacturadasTotal;
+    }
     // Convertir a dólares si aplica
     if (enDolares) {
       monto = monto / tipoCambio;
@@ -52,28 +76,44 @@ export default function MontoFacturacion({ data, tipoCambio = 36.62, iva = 0.15 
       </div>
 
       <div className={styles.subcontainer}>
-        <Card titulo="Monto total facturado (bruto)" valor={formatoMoneda(data.montoTotalTotal)} />
+        <Card
+          titulo="Monto bruto facturado"
+          valor={formatoMoneda(data.montoTotal, true)}
+        />
         <Card
           titulo="Monto total Anuladas"
           valor={formatoMoneda(data.montoTotalAnuladas)}
           color="#ef4444"
         />
-        <Card 
-          titulo="Monto de devoluciones"
+        <Card
+          titulo="Monto devoluciones parciales"
           valor={formatoMoneda(data.montoDevolucion)}
           color="#ef4444"
         />
         <Card
+          titulo={
+            data.montototalanulaciones >= 0
+              ? "Monto total recuperado"
+              : "Monto total perdido"
+          }
+          valor={formatoMoneda(data.montototalanulaciones)}
+          color={data.montototalanulaciones >= 0 ? "#22c55e" : "#ef4444"}
+        />
+        <Card
           titulo="Monto Refacturado"
-          valor={formatoMoneda(data.montoRefacturadas)}
+          valor={formatoMoneda(data.montoRefacturadas, false, false, true)}
           color="#f59e0b"
         />
         <Card
           titulo="Monto facturado (neto)"
-          valor={formatoMoneda(data.montoFacturado)}
+          valor={formatoMoneda(data.montoFacturado, false, true)}
           color="#22c55e"
         />
-        <Card titulo="Monto Flete" valor={formatoMoneda(data.montoFlete)} />
+        <Card titulo="Monto Flete" valor={formatoMoneda(data.fletetotal)} />
+        <Card
+          titulo="Monto Flete Web"
+          valor={formatoMoneda(data.fletetotalweb)}
+        />
       </div>
     </div>
   );
