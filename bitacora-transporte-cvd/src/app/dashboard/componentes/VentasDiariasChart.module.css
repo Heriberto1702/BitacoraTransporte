@@ -1,0 +1,62 @@
+.chartContainer {
+  width: 100%;
+  height: 360px;
+}
+
+.chartheader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.chartheader h3 {
+  margin: 0;
+}
+
+.chartheader .buttons {
+  display: flex;
+  gap: 8px;
+}
+.remove {
+  background-color: #ef4444;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.chartcomparison {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.chartcomparison input[type="date"] {
+  padding: 4px 6px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.chartcomparison button {
+  padding: 4px 8px;
+  border: none;
+  background-color: #2563eb;
+  color: white;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.chartcomparison button:hover {
+  background-color: #1e40af;
+}
+
+.chartcomparison button.remove {
+  background-color: #16a34a;
+}
+
+.chartcomparison button.remove:hover {
+  background-color: #15803d;
+}

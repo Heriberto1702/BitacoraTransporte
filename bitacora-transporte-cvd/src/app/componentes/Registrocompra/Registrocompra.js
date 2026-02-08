@@ -98,6 +98,8 @@ export default function RegistrarOrden({
   const [abierto, setAbierto] = useState(false);
   const rolUsuario = session?.user?.rol || "usuario";
   const soloLectura = rolUsuario === "agente";
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   useEffect(() => {
     async function fetchCatalogos() {
       try {
@@ -167,8 +169,8 @@ export default function RegistrarOrden({
 
     const limpio = Object.fromEntries(
       Object.entries(merged).map(([k, v]) =>
-        k === "tipo_identificacion" ? [k, v] : [k, v ?? ""]
-      )
+        k === "tipo_identificacion" ? [k, v] : [k, v ?? ""],
+      ),
     );
 
     setFormData(limpio);
@@ -246,76 +248,82 @@ export default function RegistrarOrden({
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (
-      formData.direccion_entrega &&
-      formData.direccion_entrega.trim().length < 20
-    ) {
-      alert("La dirección de entrega debe tener al menos 20 caracteres.");
-      return;
-    }
+    // 🚫 Evitar doble submit
+    if (isSubmitting) return;
 
-    if (formData.tipo_identificacion === "cedula") {
-      const cedulaRegex = /^\d{3}-\d{6}-\d{4}[A-Z]$/;
-      if (!cedulaRegex.test(formData.cedula)) {
-        alert("La cédula debe tener el formato 001-210995-0038W");
-        return;
-      }
-    } else if (formData.tipo_identificacion === "ruc") {
-      const rucRegex = /^[A-Z]{1}[0-9]{13}$/;
-      if (!rucRegex.test(formData.cedula)) {
-        alert("El RUC debe tener el formato J0310000003456");
-        return;
-      }
-    }
+    setIsSubmitting(true);
 
-    const tiendaSinsaObj = catalogos.tiendasinsa.find(
-      (t) => t.nombre_tiendasinsa === formData.id_tiendasinsa
-    );
-    const id_tiendasinsa = tiendaSinsaObj
-      ? tiendaSinsaObj.id_tiendasinsa
-      : null;
-
-    const payload = {
-      ...formData,
-      id_estado: estadoTemporal, // <--- ✅ usar el temporal al guardar
-      num_ticket: parseInt(formData.num_ticket),
-      flete: formData.flete ? parseInt(formData.flete) : null,
-      monto_factura: parseFloat(formData.monto_factura),
-      monto_devolucion: parseFloat(formData.monto_devolucion),
-      id_tiendasinsa,
-      tipo_orden: formData.tipo_orden || "Normal",
-    };
-
-    const isActualizar =
-      formData.id_registro != null && formData.id_registro !== "";
-
-    const url = isActualizar
-      ? "/api/bitacora/actualizar"
-      : "/api/bitacora/crear";
-    const method = isActualizar ? "PUT" : "POST";
     try {
-      const res = await fetch(url, {
-        method,
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
+      if (
+        formData.direccion_entrega &&
+        formData.direccion_entrega.trim().length < 20
+      ) {
+        alert("La dirección de entrega debe tener al menos 20 caracteres.");
+        return;
+      }
+
+      if (formData.tipo_identificacion === "cedula") {
+        const cedulaRegex = /^\d{3}-\d{6}-\d{4}[A-Z]$/;
+        if (!cedulaRegex.test(formData.cedula)) {
+          alert("La cédula debe tener el formato 001-210995-0038W");
+          return;
+        }
+      } else if (formData.tipo_identificacion === "ruc") {
+        const rucRegex = /^[A-Z]{1}[0-9]{13}$/;
+        if (!rucRegex.test(formData.cedula)) {
+          alert("El RUC debe tener el formato J0310000003456");
+          return;
+        }
+      }
+
+      const tiendaSinsaObj = catalogos.tiendasinsa.find(
+        (t) => t.nombre_tiendasinsa === formData.id_tiendasinsa,
+      );
+
+      const payload = {
+        ...formData,
+        id_estado: estadoTemporal,
+        num_ticket: parseInt(formData.num_ticket),
+        flete: formData.flete ? parseInt(formData.flete) : null,
+        monto_factura: parseFloat(formData.monto_factura),
+        monto_devolucion: parseFloat(formData.monto_devolucion),
+        id_tiendasinsa: tiendaSinsaObj ? tiendaSinsaObj.id_tiendasinsa : null,
+        tipo_orden: formData.tipo_orden || "Normal",
+      };
+
+      const isActualizar =
+        formData.id_registro != null && formData.id_registro !== "";
+
+      const res = await fetch(
+        isActualizar ? "/api/bitacora/actualizar" : "/api/bitacora/crear",
+        {
+          method: isActualizar ? "PUT" : "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        },
+      );
+
       const result = await res.json();
+
       if (!res.ok) {
-        if (result.error) alert(result.error);
-        else alert("Error guardando la orden");
+        alert(result?.error || "Error guardando la orden");
         return;
       }
 
       alert(
-        formData.id_registro
+        isActualizar
           ? "Orden actualizada con éxito"
-          : "Orden registrada con éxito"
+          : "Orden registrada con éxito",
       );
+
       handleLimpiar();
       if (onActualizado) onActualizado();
     } catch (err) {
       console.error(err);
       alert("Error de conexión con el servidor");
+    } finally {
+      // ✅ SIEMPRE se ejecuta
+      setIsSubmitting(false);
     }
   };
 
@@ -334,7 +342,7 @@ export default function RegistrarOrden({
       // Si es creación o no hay estado aún, los vendedores solo pueden Nueva o Refacturada
       if (rolUsuario === "vendedor") {
         return catalogos.estados.filter(
-          (e) => e.id_estado === 1 || e.id_estado === 2
+          (e) => e.id_estado === 1 || e.id_estado === 2,
         );
       }
       if (rolUsuario === "admin") {
@@ -345,12 +353,12 @@ export default function RegistrarOrden({
             e.id_estado === 3 ||
             e.id_estado === 4 ||
             e.id_estado === 7 ||
-            e.id_estado === 8
+            e.id_estado === 8,
         );
       }
       if (rolUsuario === "agente") {
         return catalogos.estados.filter(
-          (e) => e.id_estado === 5 || e.id_estado === 6 || e.id_estado === 7
+          (e) => e.id_estado === 5 || e.id_estado === 6 || e.id_estado === 7,
         );
       }
       return catalogos.estados;
@@ -360,7 +368,7 @@ export default function RegistrarOrden({
     const idsPermitidos = catalogos.transiciones
       .filter(
         (t) =>
-          t.estado_origen === Number(id_estado_actual) && t.rol === rolUsuario
+          t.estado_origen === Number(id_estado_actual) && t.rol === rolUsuario,
       )
       .map((t) => t.estado_destino);
 
@@ -368,7 +376,7 @@ export default function RegistrarOrden({
     return catalogos.estados.filter(
       (e) =>
         e.id_estado === Number(id_estado_actual) ||
-        idsPermitidos.includes(e.id_estado)
+        idsPermitidos.includes(e.id_estado),
     );
   }
   return (
@@ -389,7 +397,12 @@ export default function RegistrarOrden({
         }`}
       >
         {abierto && (
-          <form onSubmit={handleSubmit} className={styles.formContainer}>
+          <form
+            onSubmit={handleSubmit}
+            className={`${styles.formContainer} ${
+              isSubmitting ? styles.disabledForm : ""
+            }`}
+          >
             <h2 className={styles.title}>
               {formData.id_registro
                 ? "Editar Orden de Compra"
@@ -526,10 +539,10 @@ export default function RegistrarOrden({
                       formData.tipo_identificacion === "cedula"
                         ? "Ej: 123-456789-0123X"
                         : formData.tipo_identificacion === "ruc"
-                        ? "Ej: J0310000003456"
-                        : formData.tipo_identificacion === "otro"
-                        ? "Ingrese otro tipo de identificación"
-                        : "Favor seleccione un tipo"
+                          ? "Ej: J0310000003456"
+                          : formData.tipo_identificacion === "otro"
+                            ? "Ingrese otro tipo de identificación"
+                            : "Favor seleccione un tipo"
                     }
                   />
                 </div>
@@ -755,7 +768,11 @@ export default function RegistrarOrden({
                 )}
                 {(rolUsuario !== "vendedor" || !formData.id_registro) && (
                   <div className={styles.formGroup}>
-                    <label className={`${styles.label} ${styles.requiredLabel}`}>Estado:</label>
+                    <label
+                      className={`${styles.label} ${styles.requiredLabel}`}
+                    >
+                      Estado:
+                    </label>
                     <select
                       name="id_estado"
                       value={estadoTemporal || ""}
@@ -806,8 +823,18 @@ export default function RegistrarOrden({
 
             {/* Botones */}
             <div className={styles.buttonGroup}>
-              <button type="submit" className={styles.button}>
-                {formData.id_registro ? "Actualizar" : "Registrar"}
+              <button
+                type="submit"
+                className={styles.button}
+                disabled={isSubmitting}
+              >
+                {isSubmitting
+                  ? formData.id_registro
+                    ? "Actualizando..."
+                    : "Registrando..."
+                  : formData.id_registro
+                    ? "Actualizar"
+                    : "Registrar"}
               </button>
               {tieneDatos && (
                 <button

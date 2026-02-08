@@ -42,7 +42,7 @@
 }
 
 .table th {
-  text-align: left;
+  text-align: center;
   padding: 0.75rem 1rem;
   font-weight: 600;
   color: #374151;
@@ -52,7 +52,7 @@
 .table td {
   padding: 0.75rem 1rem;
   border-bottom: 1px solid #e5e7eb;
-  color: #4b5563;
+  text-align: center;
 }
 
 .table tr:hover {
@@ -112,7 +112,10 @@
   background: #16a34a;
   color: white;
 }
-
+.resaltado {
+  color: #000000; /* rojo suave */
+  font-weight: 700;
+}
 /* 📱 Responsive */
 @media (max-width: 768px) {
   .table th,

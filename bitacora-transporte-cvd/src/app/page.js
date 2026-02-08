@@ -49,7 +49,7 @@ export default function Home() {
       <div className={styles.content}>
         {/* 👇 Botón visible solo para admin o superusuario */}
         {(rolUsuario === "admin" || rolUsuario === "superusuario") && (
-          <div style={{ marginBottom: "20px" }}>
+          <div className={styles.dashboardContainer}>
             <Link
               href="/dashboard"
               className={styles.dashboardButton}

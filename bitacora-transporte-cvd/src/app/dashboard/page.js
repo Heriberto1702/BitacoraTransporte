@@ -10,6 +10,7 @@ import TopOrigenInventario from "../dashboard/componentes/TopOrigenInventario";
 import VendedoresResumen from "../dashboard/componentes/VendedoresResumen";
 import FiltroFechas from "../dashboard/componentes/FiltrosFechas";
 import ExportDashBoard from "../componentes/exportarAexcel/ExportDashBoard";
+import VentasDiariasChart from "../dashboard/componentes/VentasDiariasChart";
 import Link from "next/link";
 import "./pageModule.css"; // Creamos un CSS separado
 
@@ -43,14 +44,17 @@ export default function DashboardBitacora() {
             handleReset={handleResetMesActual}
           />
 
-<select value={vendedor} onChange={(e) => setVendedor(e.target.value)}>
-  <option value="">Todos</option>
-  {(data.vendedores || []).map((v) => (
-    <option key={v.id_login} value={v.id_login}>
-      {v.nombre}
-    </option>
-  ))}
-</select>
+          <select
+            value={vendedor}
+            onChange={(e) => setVendedor(e.target.value)}
+          >
+            <option value="">Todos</option>
+            {(data.vendedores || []).map((v) => (
+              <option key={v.id_login} value={v.id_login}>
+                {v.nombre}
+              </option>
+            ))}
+          </select>
 
           <div className="botones">
             <button onClick={() => handleFiltrar(vendedor)}>
@@ -87,21 +91,23 @@ export default function DashboardBitacora() {
 
         <section className="graficos">
           <GraficoEstado data={data} />
+          <VentasDiariasChart
+            data={data.ventasDiarias}
+            inicioBase={fechaInicio}
+            finBase={fechaFin}
+          />
         </section>
 
         <section className="otros-tops">
           <VendedoresResumen vendedores={data.vendedores} />
           <section className="otros-tops-column">
-          <TopTipoEnvio data={data} />
-          <TopTiendas data={data} />
-          <TopOrigenInventario data={data} />
+            <TopTipoEnvio data={data} />
+            <TopTiendas data={data} />
+            <TopOrigenInventario data={data} />
           </section>
-          
         </section>
 
-        <section className="otros-tops">
-          
-        </section>
+        <section className="otros-tops"></section>
       </main>
     </div>
   );

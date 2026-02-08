@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 
 export default function useBitacoraData() {
-  const [data, setData] = useState(null);
+  const [data, setData] = useState({ ventasDiarias: [], vendedores: [] });
   const [fechaInicio, setFechaInicio] = useState("");
   const [fechaFin, setFechaFin] = useState("");
 
@@ -30,18 +30,20 @@ const fetchData = async (inicio, fin, vendedor = "") => {
     const primerDia = new Date(now.getFullYear(), now.getMonth(), 1)
       .toISOString()
       .split("T")[0];
-    const ultimoDia = new Date(now.getFullYear(), now.getMonth() + 1, 0)
-      .toISOString()
-      .split("T")[0];
-    return { primerDia, ultimoDia };
+   const hoy = new Date(
+    now.getFullYear(),
+    now.getMonth(),
+    now.getDate()
+  ).toISOString().split("T")[0];
+    return { primerDia, hoy  };
   };
 
   // Cargar datos al montar el componente (mes actual)
   useEffect(() => {
-    const { primerDia, ultimoDia } = calcularMesActual();
+    const { primerDia, hoy } = calcularMesActual();
     setFechaInicio(primerDia);
-    setFechaFin(ultimoDia);
-    fetchData(primerDia, ultimoDia);
+    setFechaFin(hoy);
+    fetchData(primerDia, hoy);
   }, []);
 
   // Filtrar por fechas y/o vendedor
@@ -51,10 +53,10 @@ const fetchData = async (inicio, fin, vendedor = "") => {
 
   // Resetear al mes actual
   const handleResetMesActual = () => {
-    const { primerDia, ultimoDia } = calcularMesActual();
+    const { primerDia, hoy } = calcularMesActual();
     setFechaInicio(primerDia);
-    setFechaFin(ultimoDia);
-    fetchData(primerDia, ultimoDia);
+    setFechaFin(hoy);
+    fetchData(primerDia, hoy);
   };
 
   return {

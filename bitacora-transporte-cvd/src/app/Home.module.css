@@ -12,7 +12,38 @@
   z-index: 1000;
   font-family: 'Inter', sans-serif;
 }
+.content {
+ position: relative;
+  padding-top: 20px;
+} 
+.dashboardContainer {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  margin-bottom: 20px;
+}
+.dashboardButton{
+  padding: 1rem 1.25rem;
+  font-weight: 600;
+  background-color: #0070f3;
+  color: white;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  transition:
+    background-color 0.3s ease,
+    transform 0.2s ease;
+  display: inline-flex;
+  justify-content: space-between;
+  align-items: right;
+   
+  border-radius: 6px;
+  text-decoration: none;
+}
+.dashboardButton:hover {
+  background-color: #005bb5;
 
+}
 /* Información del usuario */
 .userInfo {
   font-size: 0.9rem;
