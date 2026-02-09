@@ -1,5 +1,5 @@
 "use client";
-import Card from "./Card";
+import CardEnvio from "./CardEnvio";
 import styles from "./TopTipoEnvio.module.css";
 
 export default function TopTipoEnvio({ data }) {
@@ -7,18 +7,23 @@ export default function TopTipoEnvio({ data }) {
 
   return (
     <div className={styles.container}>
+
       <h2 className={styles.title}>Tipos de Envío más usados</h2>
+
       <div className={styles.grid}>
         {top.map((item, idx) => (
-          <Card
+
+          <CardEnvio
             key={idx}
-            titulo={`${item.nombre} (C$${Number(item.monto).toFixed(
-              2
-            )}) (C$${Number(item.totalFlete).toFixed(2)} Flete)`}
+            titulo={item.nombre}
             valor={item.cantidad}
+            monto={item.monto}
+            flete={item.totalFlete}
+
           />
         ))}
       </div>
+
     </div>
   );
 }

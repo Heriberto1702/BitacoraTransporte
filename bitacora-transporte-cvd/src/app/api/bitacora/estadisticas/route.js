@@ -101,21 +101,21 @@ export async function GET(request) {
       by: ["id_tipenvio"],
       _count: { id_tipenvio: true },
       _sum: { monto_factura: true, flete: true },
-      where: fechaFilter,
+      where: { ...fechaFilter, id_estado: { not: 8 } }
     });
 
     const tiendaSinsaGroup = await prisma.registroBitacora.groupBy({
       by: ["id_tiendasinsa"],
       _count: { id_tiendasinsa: true },
       _sum: { monto_factura: true },
-      where: { ...fechaFilter, id_tiendasinsa: { not: null } },
+      where: { ...fechaFilter, id_tiendasinsa: { not: null }, id_estado: { not: 8 } },
     });
 
     const origenInventarioGroup = await prisma.registroBitacora.groupBy({
       by: ["id_originventario"],
       _count: { id_originventario: true },
       _sum: { monto_factura: true },
-      where: fechaFilter,
+      where: { ...fechaFilter, id_estado: { not: 8 } },
     });
 
     const vendedoresGroup = await prisma.registroBitacora.groupBy({
