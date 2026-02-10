@@ -70,6 +70,7 @@ async function fetchOrdenes(inicio, fin) {
     
     return (
       orden.num_ticket?.toString().toLowerCase().includes(busqueda) ||
+      orden.ticket_web?.toString().toLowerCase().includes(busqueda) ||
       orden.estado?.nombre?.toLowerCase().includes(busqueda) ||
       orden.login?.nombre_vendedor?.toLowerCase().includes(busqueda) ||
       orden.direccion_entrega?.toLowerCase().includes(busqueda) ||

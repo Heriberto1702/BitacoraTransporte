@@ -11,6 +11,7 @@ export default function ExportarExcel({ data, fileName = "ordenes.xlsx" }) {
     // 🔹 Mapear datos para que tengan encabezados claros
     const datosFormateados = data.map((orden) => ({
       "N° Ticket": orden.num_ticket,
+      "N° Ticket Web": orden.ticket_web,
       "Vendedor": orden.login?.nombre_vendedor || "-",
       "Cliente": orden.nombre_cliente,
       "Dirección": orden.direccion_entrega,
