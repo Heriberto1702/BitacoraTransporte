@@ -38,7 +38,7 @@ export async function GET() {
       if (!orderId) return acc;
 
       const status = venta["Status"]?.toLowerCase();
-      const isCanceled = status === "cancelado";
+      const isCanceled = status === "Cancelado";
 
       if (!acc[orderId]) {
         acc[orderId] = {
