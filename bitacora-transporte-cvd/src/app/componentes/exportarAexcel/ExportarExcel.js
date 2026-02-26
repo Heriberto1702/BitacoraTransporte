@@ -22,6 +22,7 @@ export default function ExportarExcel({ data, fileName = "ordenes.xlsx" }) {
       "Tipo Pago": orden.tipopago?.nombre_tipopago || "-",
       "Fecha creación": new Date(orden.fecha_creacion).toLocaleDateString("es-ES"),
       "Estado": orden.estado?.nombre || "-",
+      "Agente": orden.agente?.nombre_agente || "-",
       "Monto Flete": orden.flete,
       "Flete web": orden.flete_web,
       "Tipo orden": orden.tipo_orden,
